@@ -1,0 +1,92 @@
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Visual Studio cache files
+.vs/
+.vscode/
+*.csproj.dotsettings
+
+# Rider
+.idea/
+*.sln.iml
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.VisualState.xml
+TestResult.xml
+*.trx
+
+# Dotnet files
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Rider Code Coverage
+*.dctr
+*.dcvr
+*.lccf
+
+# Output files
+ConditionalAccessPolicies_*.json
+
+# Secrets and sensitive files - This is a general good practice
+# Ensure no actual secrets are committed.
+# If you have specific secret files, add them here.
+# For example:
+# secrets.json
+# .env
+
+# Rider - https://www.jetbrains.com/help/rider/Rider_Editor_Config.html
+*.DotSettings.user
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# Visual Studio code coverage results
+*.coverage
+*.coveragexml
+
+# NCrunch
+_NCrunch_*
+.*crunch*.local.xml
+nCrunchTemp_*
+
+# BenchmarkDotNet comparison results
+BenchmarkDotNet.Artifacts/
+
+# Paket files
+.paket/paket.exe
+paket-files/
+
+# FAKE - F# Make
+.fake/
+
+# VS Code files for Mac
+.DS_Store
+
+# Cake - C# Make
+tools/
+
+# Output files from the application
+ConditionalAccessPolicies_*.json

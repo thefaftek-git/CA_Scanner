@@ -1,0 +1,107 @@
+{
+  "ExportedAt": "2025-05-30T16:45:23.123Z",
+  "TenantId": "12345678-1234-1234-1234-123456789012",
+  "PoliciesCount": 2,
+  "Policies": [
+    {
+      "Id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "DisplayName": "Require MFA for all users",
+      "State": "Enabled",
+      "CreatedDateTime": "2025-01-15T10:30:00Z",
+      "ModifiedDateTime": "2025-05-20T14:22:00Z",
+      "Conditions": {
+        "Applications": {
+          "IncludeApplications": ["All"],
+          "ExcludeApplications": [],
+          "IncludeUserActions": [],
+          "IncludeAuthenticationContextClassReferences": []
+        },
+        "Users": {
+          "IncludeUsers": ["All"],
+          "ExcludeUsers": [],
+          "IncludeGroups": [],
+          "ExcludeGroups": [],
+          "IncludeRoles": [],
+          "ExcludeRoles": []
+        },
+        "ClientAppTypes": ["All"],
+        "Platforms": {
+          "IncludePlatforms": [],
+          "ExcludePlatforms": []
+        },
+        "Locations": {
+          "IncludeLocations": [],
+          "ExcludeLocations": []
+        },
+        "SignInRiskLevels": [],
+        "UserRiskLevels": [],
+        "ClientApplications": {
+          "IncludeServicePrincipals": [],
+          "ExcludeServicePrincipals": []
+        }
+      },
+      "GrantControls": {
+        "Operator": "OR",
+        "BuiltInControls": ["mfa"],
+        "CustomAuthenticationFactors": [],
+        "TermsOfUse": []
+      },
+      "SessionControls": {
+        "ApplicationEnforcedRestrictions": null,
+        "CloudAppSecurity": null,
+        "PersistentBrowser": null,
+        "SignInFrequency": null
+      }
+    },
+    {
+      "Id": "f1e2d3c4-b5a6-9807-fedc-ba0987654321",
+      "DisplayName": "Block legacy authentication",
+      "State": "Enabled",
+      "CreatedDateTime": "2025-01-10T09:15:00Z",
+      "ModifiedDateTime": "2025-03-05T16:45:00Z",
+      "Conditions": {
+        "Applications": {
+          "IncludeApplications": ["All"],
+          "ExcludeApplications": [],
+          "IncludeUserActions": [],
+          "IncludeAuthenticationContextClassReferences": []
+        },
+        "Users": {
+          "IncludeUsers": ["All"],
+          "ExcludeUsers": [],
+          "IncludeGroups": [],
+          "ExcludeGroups": [],
+          "IncludeRoles": [],
+          "ExcludeRoles": []
+        },
+        "ClientAppTypes": ["exchangeActiveSync", "other"],
+        "Platforms": {
+          "IncludePlatforms": [],
+          "ExcludePlatforms": []
+        },
+        "Locations": {
+          "IncludeLocations": [],
+          "ExcludeLocations": []
+        },
+        "SignInRiskLevels": [],
+        "UserRiskLevels": [],
+        "ClientApplications": {
+          "IncludeServicePrincipals": [],
+          "ExcludeServicePrincipals": []
+        }
+      },
+      "GrantControls": {
+        "Operator": "OR",
+        "BuiltInControls": ["block"],
+        "CustomAuthenticationFactors": [],
+        "TermsOfUse": []
+      },
+      "SessionControls": {
+        "ApplicationEnforcedRestrictions": null,
+        "CloudAppSecurity": null,
+        "PersistentBrowser": null,
+        "SignInFrequency": null
+      }
+    }
+  ]
+}
