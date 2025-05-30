@@ -1,0 +1,51 @@
+{
+  "Id": "87654321-4321-4321-4321-210987654321",
+  "DisplayName": "Block legacy authentication",
+  "State": "Enabled",
+  "CreatedDateTime": "2024-01-15T14:00:00Z",
+  "ModifiedDateTime": "2024-04-15T16:45:00Z",
+  "Conditions": {
+    "Applications": {
+      "IncludeApplications": ["All"],
+      "ExcludeApplications": [],
+      "IncludeUserActions": [],
+      "IncludeAuthenticationContextClassReferences": []
+    },
+    "Users": {
+      "IncludeUsers": ["All"],
+      "ExcludeUsers": [],
+      "IncludeGroups": [],
+      "ExcludeGroups": [],
+      "IncludeRoles": [],
+      "ExcludeRoles": []
+    },
+    "ClientAppTypes": ["exchangeActiveSync", "other"],
+    "Platforms": {
+      "IncludePlatforms": [],
+      "ExcludePlatforms": []
+    },
+    "Locations": {
+      "IncludeLocations": [],
+      "ExcludeLocations": []
+    },
+    "SignInRiskLevels": [],
+    "UserRiskLevels": [],
+    "ClientApplications": {
+      "IncludeServicePrincipals": [],
+      "ExcludeServicePrincipals": []
+    }
+  },
+  "GrantControls": {
+    "Operator": "OR",
+    "BuiltInControls": ["block"],
+    "CustomAuthenticationFactors": [],
+    "TermsOfUse": [],
+    "AuthenticationStrength": null
+  },
+  "SessionControls": {
+    "ApplicationEnforcedRestrictions": null,
+    "CloudAppSecurity": null,
+    "PersistentBrowser": null,
+    "SignInFrequency": null
+  }
+}
