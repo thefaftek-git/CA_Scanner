@@ -159,10 +159,71 @@ namespace ConditionalAccessExporter
                 matchingStrategyOption, 
                 caseSensitiveOption);
 
+            // Cross-format compare command
+            var crossFormatCompareCommand = new Command("cross-compare", "Compare policies across different formats (JSON vs Terraform)");
+            var sourceDirectoryOption = new Option<string>(
+                name: "--source-dir",
+                description: "Source directory containing policies (JSON or Terraform)"
+            ) { IsRequired = true };
+            var crossReferenceDirectoryOption = new Option<string>(
+                name: "--reference-dir",
+                description: "Reference directory containing policies (JSON or Terraform)"
+            ) { IsRequired = true };
+            var crossOutputDirectoryOption = new Option<string>(
+                name: "--output-dir",
+                description: "Output directory for cross-format comparison reports",
+                getDefaultValue: () => "cross-format-reports"
+            );
+            var crossReportFormatsOption = new Option<string[]>(
+                name: "--formats",
+                description: "Report formats to generate",
+                getDefaultValue: () => new[] { "console", "json", "html", "markdown" }
+            );
+            var crossMatchingStrategyOption = new Option<string>(
+                name: "--matching",
+                description: "Strategy for matching policies (ByName, ById, SemanticSimilarity, CustomMapping)",
+                getDefaultValue: () => "ByName"
+            );
+            var crossCaseSensitiveOption = new Option<bool>(
+                name: "--case-sensitive",
+                description: "Case sensitive policy name matching",
+                getDefaultValue: () => false
+            );
+            var enableSemanticOption = new Option<bool>(
+                name: "--enable-semantic",
+                description: "Enable semantic equivalence checking",
+                getDefaultValue: () => true
+            );
+            var similarityThresholdOption = new Option<double>(
+                name: "--similarity-threshold",
+                description: "Similarity threshold for semantic matching (0.0-1.0)",
+                getDefaultValue: () => 0.8
+            );
+
+            crossFormatCompareCommand.AddOption(sourceDirectoryOption);
+            crossFormatCompareCommand.AddOption(crossReferenceDirectoryOption);
+            crossFormatCompareCommand.AddOption(crossOutputDirectoryOption);
+            crossFormatCompareCommand.AddOption(crossReportFormatsOption);
+            crossFormatCompareCommand.AddOption(crossMatchingStrategyOption);
+            crossFormatCompareCommand.AddOption(crossCaseSensitiveOption);
+            crossFormatCompareCommand.AddOption(enableSemanticOption);
+            crossFormatCompareCommand.AddOption(similarityThresholdOption);
+
+            crossFormatCompareCommand.SetHandler(CrossFormatComparePoliciesAsync,
+                sourceDirectoryOption,
+                crossReferenceDirectoryOption,
+                crossOutputDirectoryOption,
+                crossReportFormatsOption,
+                crossMatchingStrategyOption,
+                crossCaseSensitiveOption,
+                enableSemanticOption,
+                similarityThresholdOption);
+
             rootCommand.AddCommand(exportCommand);
             rootCommand.AddCommand(terraformCommand);
             rootCommand.AddCommand(jsonToTerraformCommand);
             rootCommand.AddCommand(compareCommand);
+            rootCommand.AddCommand(crossFormatCompareCommand);
 
             // If no arguments provided, default to export for backward compatibility
             if (args.Length == 0)
@@ -626,6 +687,162 @@ namespace ConditionalAccessExporter
             Console.WriteLine();
 
             return exportData;
+        }
+
+        private static async Task<int> CrossFormatComparePoliciesAsync(
+            string sourceDirectory,
+            string referenceDirectory,
+            string outputDirectory,
+            string[] reportFormats,
+            string matchingStrategy,
+            bool caseSensitive,
+            bool enableSemantic,
+            double similarityThreshold)
+        {
+            Console.WriteLine("Cross-Format Policy Comparison");
+            Console.WriteLine("==============================");
+
+            try
+            {
+                // Create output directory if it doesn't exist
+                if (!Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+
+                // Initialize services
+                var jsonComparisonService = new PolicyComparisonService();
+                var terraformParsingService = new TerraformParsingService();
+                var terraformConversionService = new TerraformConversionService();
+                var crossFormatService = new CrossFormatPolicyComparisonService(
+                    jsonComparisonService,
+                    terraformParsingService,
+                    terraformConversionService);
+                var reportService = new CrossFormatReportGenerationService();
+
+                Console.WriteLine($"Source directory: {sourceDirectory}");
+                Console.WriteLine($"Reference directory: {referenceDirectory}");
+                Console.WriteLine($"Output directory: {outputDirectory}");
+                Console.WriteLine($"Report formats: {string.Join(", ", reportFormats)}");
+                Console.WriteLine($"Matching strategy: {matchingStrategy}");
+                Console.WriteLine($"Case sensitive: {caseSensitive}");
+                Console.WriteLine($"Semantic comparison: {enableSemantic}");
+                Console.WriteLine($"Similarity threshold: {similarityThreshold:F2}");
+                Console.WriteLine();
+
+                // Configure matching options
+                var matchingOptions = new CrossFormatMatchingOptions
+                {
+                    Strategy = Enum.Parse<CrossFormatMatchingStrategy>(matchingStrategy, true),
+                    CaseSensitive = caseSensitive,
+                    EnableSemanticComparison = enableSemantic,
+                    SemanticSimilarityThreshold = similarityThreshold
+                };
+
+                Console.WriteLine("Starting cross-format comparison...");
+                var comparisonResult = await crossFormatService.CompareAsync(
+                    sourceDirectory,
+                    referenceDirectory,
+                    matchingOptions);
+
+                // Display console summary
+                if (reportFormats.Contains("console"))
+                {
+                    DisplayCrossFormatComparisonSummary(comparisonResult);
+                }
+
+                // Generate reports
+                var generatedFiles = new List<string>();
+                
+                foreach (var format in reportFormats)
+                {
+                    switch (format.ToLowerInvariant())
+                    {
+                        case "json":
+                            var jsonFile = await reportService.GenerateReportAsync(comparisonResult, outputDirectory, ReportFormat.Json);
+                            generatedFiles.Add(jsonFile);
+                            break;
+                        case "html":
+                            var htmlFile = await reportService.GenerateReportAsync(comparisonResult, outputDirectory, ReportFormat.Html);
+                            generatedFiles.Add(htmlFile);
+                            break;
+                        case "markdown":
+                        case "md":
+                            var mdFile = await reportService.GenerateReportAsync(comparisonResult, outputDirectory, ReportFormat.Markdown);
+                            generatedFiles.Add(mdFile);
+                            break;
+                        case "csv":
+                            var csvFile = await reportService.GenerateReportAsync(comparisonResult, outputDirectory, ReportFormat.Csv);
+                            generatedFiles.Add(csvFile);
+                            break;
+                        case "console":
+                            // Already displayed above
+                            break;
+                        default:
+                            Console.WriteLine($"Warning: Unknown report format '{format}' ignored.");
+                            break;
+                    }
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("Cross-format comparison completed successfully!");
+                if (generatedFiles.Any())
+                {
+                    Console.WriteLine("Generated report files:");
+                    foreach (var file in generatedFiles)
+                    {
+                        Console.WriteLine($"  - {file}");
+                    }
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(ex);
+                return 1;
+            }
+        }
+
+        private static void DisplayCrossFormatComparisonSummary(CrossFormatComparisonResult result)
+        {
+            Console.WriteLine();
+            Console.WriteLine("Cross-Format Comparison Summary");
+            Console.WriteLine("===============================");
+            Console.WriteLine($"Source Format: {result.SourceFormat}");
+            Console.WriteLine($"Reference Format: {result.ReferenceFormat}");
+            Console.WriteLine($"Total Source Policies: {result.Summary.TotalSourcePolicies}");
+            Console.WriteLine($"Total Reference Policies: {result.Summary.TotalReferencePolicies}");
+            Console.WriteLine($"Identical Policies: {result.Summary.MatchingPolicies}");
+            Console.WriteLine($"Semantically Equivalent: {result.Summary.SemanticallyEquivalentPolicies}");
+            Console.WriteLine($"Policies with Differences: {result.Summary.PoliciesWithDifferences}");
+            Console.WriteLine($"Source-Only Policies: {result.Summary.SourceOnlyPolicies}");
+            Console.WriteLine($"Reference-Only Policies: {result.Summary.ReferenceOnlyPolicies}");
+            Console.WriteLine();
+
+            // Display policy-by-policy results
+            Console.WriteLine("Policy Comparison Details");
+            Console.WriteLine("=========================");
+            
+            var groupedComparisons = result.PolicyComparisons.GroupBy(c => c.Status);
+            
+            foreach (var group in groupedComparisons)
+            {
+                Console.WriteLine($"\n{group.Key} ({group.Count()}):");
+                foreach (var comparison in group.Take(10)) // Limit to first 10 for console display
+                {
+                    Console.WriteLine($"  - {comparison.PolicyName}");
+                    if (comparison.ConversionSuggestions?.Any() == true)
+                    {
+                        Console.WriteLine($"    Suggestions: {string.Join("; ", comparison.ConversionSuggestions.Take(2))}");
+                    }
+                }
+                if (group.Count() > 10)
+                {
+                    Console.WriteLine($"    ... and {group.Count() - 10} more policies");
+                }
+            }
+            Console.WriteLine();
         }
 
         private static async Task HandleExceptionAsync(Exception ex)
