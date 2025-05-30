@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ConditionalAccessExporter.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c467043762684901736e3b75d092059718959924")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+22af7691225a84c2490da69a4ad0d0b569b1d5e6")]
 [assembly: System.Reflection.AssemblyProductAttribute("ConditionalAccessExporter.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ConditionalAccessExporter.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
