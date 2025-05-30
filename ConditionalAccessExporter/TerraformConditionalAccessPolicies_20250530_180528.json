@@ -1,0 +1,116 @@
+﻿{
+  "ExportedAt": "2025-05-30T18:05:28.8416711Z",
+  "Source": "Terraform",
+  "SourcePath": "example-terraform/main.tf",
+  "PoliciesCount": 3,
+  "Policies": [
+    {
+      "Id": "bb1adea7-10e2-a342-371b-798420caa914",
+      "DisplayName": "Require MFA for All Users",
+      "State": "enabled",
+      "Conditions": {
+        "Applications": {},
+        "Users": {},
+        "ClientAppTypes": [
+          "browser",
+          "mobileAppsAndDesktopClients"
+        ],
+        "Platforms": {},
+        "Locations": {},
+        "ClientApplications": {}
+      },
+      "GrantControls": {
+        "Operator": "OR",
+        "BuiltInControls": [
+          "mfa"
+        ]
+      },
+      "SessionControls": {},
+      "TerraformMetadata": {
+        "ResourceName": "require_mfa_all_users",
+        "SourceType": "Terraform HCL",
+        "ConvertedAt": "2025-05-30T18:05:28.8415026Z"
+      }
+    },
+    {
+      "Id": "9eedd4c7-0edf-955b-2a75-0d3f9eb2d1a4",
+      "DisplayName": "Block Access from Untrusted Locations",
+      "State": "enabled",
+      "Conditions": {
+        "Applications": {
+          "IncludeApplications": [
+            "All"
+          ]
+        },
+        "Users": {
+          "IncludeUsers": [
+            "All"
+          ]
+        },
+        "ClientAppTypes": [
+          "browser",
+          "mobileAppsAndDesktopClients"
+        ],
+        "Platforms": {},
+        "Locations": {},
+        "ClientApplications": {}
+      },
+      "GrantControls": {
+        "Operator": "OR",
+        "BuiltInControls": [
+          "block"
+        ]
+      },
+      "SessionControls": {},
+      "TerraformMetadata": {
+        "ResourceName": "block_untrusted_locations",
+        "SourceType": "Terraform HCL",
+        "ConvertedAt": "2025-05-30T18:05:28.841653Z"
+      }
+    },
+    {
+      "Id": "aad45bb2-12e4-fb16-ce33-b3b4d4d77060",
+      "DisplayName": "Require Compliant Device for Mobile",
+      "State": "disabled",
+      "Conditions": {
+        "Applications": {
+          "IncludeApplications": [
+            "All"
+          ]
+        },
+        "Users": {
+          "IncludeUsers": [
+            "All"
+          ]
+        },
+        "ClientAppTypes": [
+          "mobileAppsAndDesktopClients"
+        ],
+        "Platforms": {},
+        "Locations": {},
+        "ClientApplications": {}
+      },
+      "GrantControls": {
+        "Operator": "OR",
+        "BuiltInControls": [
+          "compliantDevice",
+          "domainJoinedDevice"
+        ]
+      },
+      "SessionControls": {},
+      "TerraformMetadata": {
+        "ResourceName": "require_compliant_device_mobile",
+        "SourceType": "Terraform HCL",
+        "ConvertedAt": "2025-05-30T18:05:28.8416709Z"
+      }
+    }
+  ],
+  "ConversionSummary": {
+    "SuccessfulConversions": 3,
+    "FailedConversions": 0,
+    "TotalTerraformPolicies": 3,
+    "VariablesFound": 3,
+    "LocalsFound": 2,
+    "DataSourcesFound": 0
+  }
+}

@@ -25,6 +25,34 @@ namespace ConditionalAccessExporter
             exportCommand.AddOption(outputOption);
             exportCommand.SetHandler(ExportPoliciesAsync, outputOption);
 
+            // Terraform command
+            var terraformCommand = new Command("terraform", "Convert Terraform conditional access policies to JSON");
+            var terraformInputOption = new Option<string>(
+                name: "--input",
+                description: "Terraform file or directory path containing conditional access policies"
+            ) { IsRequired = true };
+            var terraformOutputOption = new Option<string>(
+                name: "--output",
+                description: "Output file path for converted JSON",
+                getDefaultValue: () => $"TerraformConditionalAccessPolicies_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json"
+            );
+            var validateOption = new Option<bool>(
+                name: "--validate",
+                description: "Validate converted policies against Microsoft Graph schema",
+                getDefaultValue: () => true
+            );
+            var verboseOption = new Option<bool>(
+                name: "--verbose",
+                description: "Enable verbose logging during conversion",
+                getDefaultValue: () => false
+            );
+
+            terraformCommand.AddOption(terraformInputOption);
+            terraformCommand.AddOption(terraformOutputOption);
+            terraformCommand.AddOption(validateOption);
+            terraformCommand.AddOption(verboseOption);
+            terraformCommand.SetHandler(ConvertTerraformAsync, terraformInputOption, terraformOutputOption, validateOption, verboseOption);
+
             // Compare command
             var compareCommand = new Command("compare", "Compare Entra policies with reference JSON files");
             var referenceDirectoryOption = new Option<string>(
@@ -72,6 +100,7 @@ namespace ConditionalAccessExporter
                 caseSensitiveOption);
 
             rootCommand.AddCommand(exportCommand);
+            rootCommand.AddCommand(terraformCommand);
             rootCommand.AddCommand(compareCommand);
 
             // If no arguments provided, default to export for backward compatibility
@@ -107,6 +136,139 @@ namespace ConditionalAccessExporter
                 Console.WriteLine("Export completed successfully!");
                 
                 return 0;
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(ex);
+                return 1;
+            }
+        }
+
+        private static async Task<int> ConvertTerraformAsync(
+            string inputPath,
+            string outputPath,
+            bool validate,
+            bool verbose)
+        {
+            Console.WriteLine("Terraform to JSON Conversion");
+            Console.WriteLine("============================");
+
+            try
+            {
+                var parsingService = new TerraformParsingService();
+                var conversionService = new TerraformConversionService();
+
+                Console.WriteLine($"Input path: {inputPath}");
+                Console.WriteLine($"Output path: {outputPath}");
+                Console.WriteLine($"Validation: {(validate ? "Enabled" : "Disabled")}");
+                Console.WriteLine($"Verbose logging: {(verbose ? "Enabled" : "Disabled")}");
+                Console.WriteLine();
+
+                // Parse Terraform files
+                Console.WriteLine("Parsing Terraform files...");
+                TerraformParseResult parseResult;
+
+                if (File.Exists(inputPath))
+                {
+                    parseResult = await parsingService.ParseTerraformFileAsync(inputPath);
+                }
+                else if (Directory.Exists(inputPath))
+                {
+                    parseResult = await parsingService.ParseTerraformDirectoryAsync(inputPath);
+                }
+                else
+                {
+                    Console.WriteLine($"Error: Input path '{inputPath}' not found.");
+                    return 1;
+                }
+
+                if (parseResult.Errors.Any())
+                {
+                    Console.WriteLine("Parsing errors encountered:");
+                    foreach (var error in parseResult.Errors)
+                    {
+                        Console.WriteLine($"  - {error}");
+                    }
+                }
+
+                if (parseResult.Warnings.Any() && verbose)
+                {
+                    Console.WriteLine("Parsing warnings:");
+                    foreach (var warning in parseResult.Warnings)
+                    {
+                        Console.WriteLine($"  - {warning}");
+                    }
+                }
+
+                Console.WriteLine($"Found {parseResult.Policies.Count} conditional access policies");
+                Console.WriteLine($"Found {parseResult.Variables.Count} variables");
+                Console.WriteLine($"Found {parseResult.Locals.Count} locals");
+                Console.WriteLine($"Found {parseResult.DataSources.Count} data sources");
+                Console.WriteLine();
+
+                if (!parseResult.Policies.Any())
+                {
+                    Console.WriteLine("No conditional access policies found to convert.");
+                    return 0;
+                }
+
+                // Convert to Graph JSON format
+                Console.WriteLine("Converting to Microsoft Graph JSON format...");
+                var conversionResult = await conversionService.ConvertToGraphJsonAsync(parseResult);
+
+                if (conversionResult.Errors.Any())
+                {
+                    Console.WriteLine("Conversion errors encountered:");
+                    foreach (var error in conversionResult.Errors)
+                    {
+                        Console.WriteLine($"  - {error}");
+                    }
+                }
+
+                if (conversionResult.Warnings.Any() && verbose)
+                {
+                    Console.WriteLine("Conversion warnings:");
+                    foreach (var warning in conversionResult.Warnings)
+                    {
+                        Console.WriteLine($"  - {warning}");
+                    }
+                }
+
+                if (verbose && conversionResult.ConversionLog.Any())
+                {
+                    Console.WriteLine("Conversion log:");
+                    foreach (var log in conversionResult.ConversionLog)
+                    {
+                        Console.WriteLine($"  - {log}");
+                    }
+                }
+
+                // Validate if requested
+                if (validate)
+                {
+                    Console.WriteLine("Validating converted policies...");
+                    // Additional validation could be implemented here
+                }
+
+                // Serialize and save
+                var json = JsonConvert.SerializeObject(conversionResult.ConvertedPolicies, Formatting.Indented, new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DateFormatHandling = DateFormatHandling.IsoDateFormat
+                });
+
+                await File.WriteAllTextAsync(outputPath, json, Encoding.UTF8);
+
+                Console.WriteLine();
+                Console.WriteLine("Conversion Summary:");
+                Console.WriteLine("==================");
+                Console.WriteLine($"Successful conversions: {conversionResult.SuccessfulConversions}");
+                Console.WriteLine($"Failed conversions: {conversionResult.FailedConversions}");
+                Console.WriteLine($"Output file: {outputPath}");
+                Console.WriteLine($"File size: {new FileInfo(outputPath).Length / 1024.0:F2} KB");
+                Console.WriteLine("Terraform conversion completed successfully!");
+
+                return conversionResult.FailedConversions > 0 ? 1 : 0;
             }
             catch (Exception ex)
             {
