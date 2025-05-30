@@ -154,4 +154,147 @@ namespace ConditionalAccessExporter.Models
         public int SuccessfulConversions { get; set; }
         public int FailedConversions { get; set; }
     }
+
+    // Models for JSON-to-Terraform conversion (Microsoft Graph format)
+    public class JsonPolicyExport
+    {
+        public DateTime ExportedAt { get; set; }
+        public string? TenantId { get; set; }
+        public string? Source { get; set; }
+        public int PoliciesCount { get; set; }
+        public List<JsonConditionalAccessPolicy> Policies { get; set; } = new();
+    }
+
+    public class JsonConditionalAccessPolicy
+    {
+        public string Id { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? ModifiedDateTime { get; set; }
+        public JsonConditions? Conditions { get; set; }
+        public JsonGrantControls? GrantControls { get; set; }
+        public JsonSessionControls? SessionControls { get; set; }
+    }
+
+    public class JsonConditions
+    {
+        public JsonApplications? Applications { get; set; }
+        public JsonUsers? Users { get; set; }
+        public List<string>? ClientAppTypes { get; set; }
+        public JsonPlatforms? Platforms { get; set; }
+        public JsonLocations? Locations { get; set; }
+        public List<string>? SignInRiskLevels { get; set; }
+        public List<string>? UserRiskLevels { get; set; }
+        public JsonClientApplications? ClientApplications { get; set; }
+    }
+
+    public class JsonApplications
+    {
+        public List<string>? IncludeApplications { get; set; }
+        public List<string>? ExcludeApplications { get; set; }
+        public List<string>? IncludeUserActions { get; set; }
+        public List<string>? IncludeAuthenticationContextClassReferences { get; set; }
+    }
+
+    public class JsonUsers
+    {
+        public List<string>? IncludeUsers { get; set; }
+        public List<string>? ExcludeUsers { get; set; }
+        public List<string>? IncludeGroups { get; set; }
+        public List<string>? ExcludeGroups { get; set; }
+        public List<string>? IncludeRoles { get; set; }
+        public List<string>? ExcludeRoles { get; set; }
+    }
+
+    public class JsonPlatforms
+    {
+        public List<string>? IncludePlatforms { get; set; }
+        public List<string>? ExcludePlatforms { get; set; }
+    }
+
+    public class JsonLocations
+    {
+        public List<string>? IncludeLocations { get; set; }
+        public List<string>? ExcludeLocations { get; set; }
+    }
+
+    public class JsonClientApplications
+    {
+        public List<string>? IncludeServicePrincipals { get; set; }
+        public List<string>? ExcludeServicePrincipals { get; set; }
+    }
+
+    public class JsonGrantControls
+    {
+        public string? Operator { get; set; }
+        public List<string>? BuiltInControls { get; set; }
+        public List<string>? CustomAuthenticationFactors { get; set; }
+        public List<string>? TermsOfUse { get; set; }
+        public JsonAuthenticationStrength? AuthenticationStrength { get; set; }
+    }
+
+    public class JsonAuthenticationStrength
+    {
+        public string? Id { get; set; }
+        public string? DisplayName { get; set; }
+    }
+
+    public class JsonSessionControls
+    {
+        public JsonApplicationEnforcedRestrictions? ApplicationEnforcedRestrictions { get; set; }
+        public JsonCloudAppSecurity? CloudAppSecurity { get; set; }
+        public JsonPersistentBrowser? PersistentBrowser { get; set; }
+        public JsonSignInFrequency? SignInFrequency { get; set; }
+    }
+
+    public class JsonApplicationEnforcedRestrictions
+    {
+        public bool IsEnabled { get; set; }
+    }
+
+    public class JsonCloudAppSecurity
+    {
+        public bool IsEnabled { get; set; }
+        public string? CloudAppSecurityType { get; set; }
+    }
+
+    public class JsonPersistentBrowser
+    {
+        public bool IsEnabled { get; set; }
+        public string? Mode { get; set; }
+    }
+
+    public class JsonSignInFrequency
+    {
+        public bool IsEnabled { get; set; }
+        public string? Type { get; set; }
+        public int? Value { get; set; }
+        public string? AuthenticationType { get; set; }
+    }
+
+    public class JsonToTerraformResult
+    {
+        public DateTime ConvertedAt { get; set; }
+        public string SourcePath { get; set; } = string.Empty;
+        public string OutputPath { get; set; } = string.Empty;
+        public List<string> GeneratedFiles { get; set; } = new();
+        public List<string> ConversionLog { get; set; } = new();
+        public List<string> Errors { get; set; } = new();
+        public List<string> Warnings { get; set; } = new();
+        public int SuccessfulConversions { get; set; }
+        public int FailedConversions { get; set; }
+        public TerraformOutputOptions Options { get; set; } = new();
+    }
+
+    public class TerraformOutputOptions
+    {
+        public bool GenerateVariables { get; set; } = true;
+        public bool GenerateProviderConfig { get; set; } = true;
+        public bool GenerateModuleStructure { get; set; } = false;
+        public bool SeparateFilePerPolicy { get; set; } = false;
+        public bool IncludeComments { get; set; } = true;
+        public string OutputDirectory { get; set; } = "terraform-output";
+        public string ProviderVersion { get; set; } = "~> 2.0";
+    }
 }

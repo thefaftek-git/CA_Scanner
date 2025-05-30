@@ -53,6 +53,66 @@ namespace ConditionalAccessExporter
             terraformCommand.AddOption(verboseOption);
             terraformCommand.SetHandler(ConvertTerraformAsync, terraformInputOption, terraformOutputOption, validateOption, verboseOption);
 
+            // JSON to Terraform command
+            var jsonToTerraformCommand = new Command("json-to-terraform", "Convert JSON conditional access policies to Terraform HCL");
+            var jsonInputOption = new Option<string>(
+                name: "--input",
+                description: "JSON file path containing conditional access policies"
+            ) { IsRequired = true };
+            var terraformOutputDirOption = new Option<string>(
+                name: "--output-dir",
+                description: "Output directory for generated Terraform files",
+                getDefaultValue: () => "terraform-output"
+            );
+            var generateVariablesOption = new Option<bool>(
+                name: "--generate-variables",
+                description: "Generate variables.tf file for reusable configurations",
+                getDefaultValue: () => true
+            );
+            var generateProviderOption = new Option<bool>(
+                name: "--generate-provider",
+                description: "Generate providers.tf file with version constraints",
+                getDefaultValue: () => true
+            );
+            var separateFilesOption = new Option<bool>(
+                name: "--separate-files",
+                description: "Generate separate .tf file for each policy",
+                getDefaultValue: () => false
+            );
+            var generateModuleOption = new Option<bool>(
+                name: "--generate-module",
+                description: "Generate Terraform module structure",
+                getDefaultValue: () => false
+            );
+            var includeCommentsOption = new Option<bool>(
+                name: "--include-comments",
+                description: "Include descriptive comments in generated Terraform code",
+                getDefaultValue: () => true
+            );
+            var providerVersionOption = new Option<string>(
+                name: "--provider-version",
+                description: "AzureAD provider version constraint",
+                getDefaultValue: () => "~> 2.0"
+            );
+
+            jsonToTerraformCommand.AddOption(jsonInputOption);
+            jsonToTerraformCommand.AddOption(terraformOutputDirOption);
+            jsonToTerraformCommand.AddOption(generateVariablesOption);
+            jsonToTerraformCommand.AddOption(generateProviderOption);
+            jsonToTerraformCommand.AddOption(separateFilesOption);
+            jsonToTerraformCommand.AddOption(generateModuleOption);
+            jsonToTerraformCommand.AddOption(includeCommentsOption);
+            jsonToTerraformCommand.AddOption(providerVersionOption);
+            jsonToTerraformCommand.SetHandler(ConvertJsonToTerraformAsync, 
+                jsonInputOption, 
+                terraformOutputDirOption, 
+                generateVariablesOption,
+                generateProviderOption,
+                separateFilesOption,
+                generateModuleOption,
+                includeCommentsOption,
+                providerVersionOption);
+
             // Compare command
             var compareCommand = new Command("compare", "Compare Entra policies with reference JSON files");
             var referenceDirectoryOption = new Option<string>(
@@ -101,6 +161,7 @@ namespace ConditionalAccessExporter
 
             rootCommand.AddCommand(exportCommand);
             rootCommand.AddCommand(terraformCommand);
+            rootCommand.AddCommand(jsonToTerraformCommand);
             rootCommand.AddCommand(compareCommand);
 
             // If no arguments provided, default to export for backward compatibility
@@ -269,6 +330,108 @@ namespace ConditionalAccessExporter
                 Console.WriteLine("Terraform conversion completed successfully!");
 
                 return conversionResult.FailedConversions > 0 ? 1 : 0;
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(ex);
+                return 1;
+            }
+        }
+
+        private static async Task<int> ConvertJsonToTerraformAsync(
+            string inputPath,
+            string outputDirectory,
+            bool generateVariables,
+            bool generateProvider,
+            bool separateFiles,
+            bool generateModule,
+            bool includeComments,
+            string providerVersion)
+        {
+            Console.WriteLine("JSON to Terraform Conversion");
+            Console.WriteLine("============================");
+
+            try
+            {
+                var jsonToTerraformService = new JsonToTerraformService();
+                
+                Console.WriteLine($"Input JSON file: {inputPath}");
+                Console.WriteLine($"Output directory: {outputDirectory}");
+                Console.WriteLine($"Generate variables: {generateVariables}");
+                Console.WriteLine($"Generate provider config: {generateProvider}");
+                Console.WriteLine($"Separate files per policy: {separateFiles}");
+                Console.WriteLine($"Generate module structure: {generateModule}");
+                Console.WriteLine($"Include comments: {includeComments}");
+                Console.WriteLine($"Provider version: {providerVersion}");
+                Console.WriteLine();
+
+                if (!File.Exists(inputPath))
+                {
+                    Console.WriteLine($"Error: Input file '{inputPath}' not found.");
+                    return 1;
+                }
+
+                var options = new TerraformOutputOptions
+                {
+                    GenerateVariables = generateVariables,
+                    GenerateProviderConfig = generateProvider,
+                    SeparateFilePerPolicy = separateFiles,
+                    GenerateModuleStructure = generateModule,
+                    IncludeComments = includeComments,
+                    OutputDirectory = outputDirectory,
+                    ProviderVersion = providerVersion
+                };
+
+                Console.WriteLine("Converting JSON to Terraform HCL...");
+                var result = await jsonToTerraformService.ConvertJsonToTerraformAsync(inputPath, options);
+
+                if (result.Errors.Any())
+                {
+                    Console.WriteLine("Conversion errors encountered:");
+                    foreach (var error in result.Errors)
+                    {
+                        Console.WriteLine($"  - {error}");
+                    }
+                }
+
+                if (result.Warnings.Any())
+                {
+                    Console.WriteLine("Conversion warnings:");
+                    foreach (var warning in result.Warnings)
+                    {
+                        Console.WriteLine($"  - {warning}");
+                    }
+                }
+
+                if (result.ConversionLog.Any())
+                {
+                    Console.WriteLine("Conversion log:");
+                    foreach (var log in result.ConversionLog)
+                    {
+                        Console.WriteLine($"  - {log}");
+                    }
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("Conversion Summary:");
+                Console.WriteLine("==================");
+                Console.WriteLine($"Successful conversions: {result.SuccessfulConversions}");
+                Console.WriteLine($"Failed conversions: {result.FailedConversions}");
+                Console.WriteLine($"Output directory: {result.OutputPath}");
+                Console.WriteLine($"Generated files: {result.GeneratedFiles.Count}");
+                
+                if (result.GeneratedFiles.Any())
+                {
+                    Console.WriteLine("Generated files:");
+                    foreach (var file in result.GeneratedFiles)
+                    {
+                        Console.WriteLine($"  - {Path.GetFileName(file)}");
+                    }
+                }
+
+                Console.WriteLine("JSON to Terraform conversion completed successfully!");
+
+                return result.FailedConversions > 0 ? 1 : 0;
             }
             catch (Exception ex)
             {
