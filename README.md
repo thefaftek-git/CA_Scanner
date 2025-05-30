@@ -39,7 +39,16 @@ ConditionalAccessExporter/
 
 ## 🔧 Requirements
 
-- .NET 8.0 SDK
+- .NET 8.0 SDK. If not installed, you can install it on Debian-based systems using:
+  ```bash
+  wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+  sudo dpkg -i packages-microsoft-prod.deb
+  rm packages-microsoft-prod.deb
+  sudo apt-get update
+  sudo apt-get install -y apt-transport-https
+  sudo apt-get update
+  sudo apt-get install -y dotnet-sdk-8.0
+  ```
 - Azure App Registration with appropriate permissions
 - Environment variables for Azure credentials
 
@@ -78,7 +87,7 @@ The application has been successfully tested and verified:
   "Policies": [
     {
       "Id": "70ce03fa-054a-48b3-ab0f-081d292cfa59",
-      "DisplayName": "notrustisrael",
+      "DisplayName": "[REDACTED]",
       "State": "Enabled",
       "CreatedDateTime": "2021-04-26T15:41:04.755541+00:00",
       "Conditions": { ... },
