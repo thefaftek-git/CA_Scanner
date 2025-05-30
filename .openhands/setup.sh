@@ -63,19 +63,3 @@ else
     dotnet --version
     echo "--------------------------------------------------"
 fi
-
-echo ""
-echo "--------------------------------------------------"
-echo "Setup script finished."
-echo "The .NET 8 SDK installation (if needed) is complete."
-echo "Please ensure you have an Azure App Registration with 'Policy.Read.All' Microsoft Graph API permission."
-echo "Then, set the following environment variables:"
-echo "  export AZURE_TENANT_ID=\"your-tenant-id-here\""
-echo "  export AZURE_CLIENT_ID=\"your-client-id-here\""
-echo "  export AZURE_CLIENT_SECRET=\"your-client-secret-here\""
-echo ""
-echo "After setting the environment variables, you can build and run the project:"
-echo "  dotnet build"
-echo "  cd ConditionalAccessExporter"
-echo "  dotnet run"
-echo "--------------------------------------------------"
