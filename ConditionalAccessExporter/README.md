@@ -1,13 +1,22 @@
-# Conditional Access Policy Exporter
+# Conditional Access Policy Exporter and Comparator
 
-A .NET 8 console application that uses client credential authentication to export Azure Conditional Access policies to a JSON file.
+A .NET 8 console application that exports Azure Conditional Access policies and provides comparison functionality against reference JSON files.
 
 ## Features
 
+### Export Functionality
 - Uses Azure client credentials (service principal) authentication
 - Exports all Conditional Access policies from an Azure AD tenant
 - Outputs data in structured JSON format with timestamps
 - Comprehensive error handling and detailed permission guidance
+
+### Comparison Functionality
+- Compare live Entra ID policies against static reference JSON files
+- Multiple matching strategies (by name, ID, or custom mapping)
+- Flexible comparison options (case-sensitive/insensitive matching)
+- Multiple report formats (console output, JSON, HTML, CSV)
+- Detailed diff analysis highlighting specific configuration changes
+- Support for both live data and previously exported JSON files
 
 ## Prerequisites
 
@@ -49,14 +58,58 @@ AZURE_CLIENT_SECRET=your-client-secret
 dotnet build
 ```
 
-### Running the Application
+### Export Mode (Default)
+
+Export Conditional Access policies from Entra ID to a JSON file:
 
 ```bash
+# Default export (backward compatible)
 dotnet run
+
+# Export with custom output file
+dotnet run export --output my-policies.json
+
+# Explicit export command
+dotnet run export
 ```
+
+### Comparison Mode
+
+Compare Entra ID policies against reference JSON files:
+
+```bash
+# Basic comparison with live data
+dotnet run compare --reference-dir ./reference-policies
+
+# Compare using a previously exported file
+dotnet run compare --reference-dir ./reference-policies --entra-file exported-policies.json
+
+# Custom output directory and formats
+dotnet run compare --reference-dir ./reference-policies --output-dir ./reports --formats console json html csv
+
+# Different matching strategies
+dotnet run compare --reference-dir ./reference-policies --matching ByName --case-sensitive true
+dotnet run compare --reference-dir ./reference-policies --matching ById
+```
+
+### Command Line Options
+
+#### Export Command
+- `--output`: Output file path (default: timestamped filename)
+
+#### Compare Command
+- `--reference-dir`: Directory containing reference JSON files (required)
+- `--entra-file`: Path to exported Entra policies JSON file (optional, fetches live data if not provided)
+- `--output-dir`: Output directory for comparison reports (default: "comparison-reports")
+- `--formats`: Report formats to generate (default: console, json, html)
+  - Available formats: `console`, `json`, `html`, `csv`
+- `--matching`: Strategy for matching policies (default: ByName)
+  - Available strategies: `ByName`, `ById`, `CustomMapping`
+- `--case-sensitive`: Case sensitive policy name matching (default: false)
 
 ### Example Output
 
+#### Export Mode
 ```
 Conditional Access Policy Exporter
 ==================================
@@ -78,6 +131,50 @@ Conditional Access Policies exported successfully to: ConditionalAccessPolicies_
 File size: 12.45 KB
 
 Export completed successfully!
+```
+
+#### Comparison Mode
+```
+Conditional Access Policy Comparison
+===================================
+Starting comparison with reference directory: ./reference-policies
+Found 3 policies in Entra export
+Found 2 reference policy files
+
+================================================================================
+CONDITIONAL ACCESS POLICY COMPARISON REPORT
+================================================================================
+Compared At: 2025-05-30 16:45:23 UTC
+Tenant ID: 12345678-1234-1234-1234-123456789012
+Reference Directory: ./reference-policies
+
+SUMMARY:
+----------------------------------------
+Total Entra Policies: 3
+Total Reference Policies: 2
+Policies only in Entra: 1
+Policies only in Reference: 0
+Matching Policies: 1
+Policies with Differences: 1
+
+POLICIES ONLY IN ENTRA:
+----------------------------------------
+  • Require compliant device for admins (ID: 99999999-9999-9999-9999-999999999999)
+
+POLICIES WITH DIFFERENCES:
+----------------------------------------
+  • Require MFA for all users
+    Reference File: require-mfa-for-all-users.json
+    Policy ID: 12345678-1234-1234-1234-123456789012
+
+IDENTICAL POLICIES:
+----------------------------------------
+  ✓ Block legacy authentication
+
+JSON report generated: comparison-reports/CA_Comparison_20250530_164523.json
+HTML report generated: comparison-reports/CA_Comparison_20250530_164523.html
+CSV report generated: comparison-reports/CA_Comparison_20250530_164523.csv
+Comparison completed successfully!
 ```
 
 ## Output Format
