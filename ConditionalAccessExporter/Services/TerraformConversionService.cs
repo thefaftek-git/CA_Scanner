@@ -81,7 +81,7 @@ namespace ConditionalAccessExporter.Services
             {
                 Id = GenerateGuid(terraformPolicy.ResourceName), // Generate consistent GUID for resource name
                 DisplayName = ResolveValue(terraformPolicy.DisplayName, parseResult) ?? terraformPolicy.ResourceName,
-                State = ConvertState(ResolveValue(terraformPolicy.State, parseResult)),
+                State = ConvertState(ResolveValue(terraformPolicy.State, parseResult) ?? terraformPolicy.State),
                 CreatedDateTime = (DateTime?)null, // Not available in Terraform
                 ModifiedDateTime = (DateTime?)null, // Not available in Terraform
                 Conditions = ConvertConditions(terraformPolicy.Conditions, parseResult),
@@ -261,7 +261,8 @@ namespace ConditionalAccessExporter.Services
 
         private string ConvertState(string? terraformState)
         {
-            return terraformState?.ToLower() switch
+            var normalizedState = terraformState?.ToLowerInvariant();
+            return normalizedState switch
             {
                 "enabled" => "enabled",
                 "disabled" => "disabled",
