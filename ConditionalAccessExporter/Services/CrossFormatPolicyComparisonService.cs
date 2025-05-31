@@ -672,10 +672,15 @@ namespace ConditionalAccessExporter.Services
                 // 2. A filename ending with .tf that contains the ResourceName
                 var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(referenceFileName);
                 var matchedPolicy = referencePolicies.FirstOrDefault(refPolicy => 
+                    // Exact matches (highest priority)
                     refPolicy.SourceFile == referenceFileName ||
                     refPolicy.SourceFile == fileNameWithoutExtension ||
-                    (referenceFileName.EndsWith(".tf") && referenceFileName.Contains(refPolicy.SourceFile)) ||
-                    (refPolicy.SourceFile.EndsWith(".tf") && refPolicy.SourceFile.Contains(fileNameWithoutExtension)));
+                    // Substring matching with constraints to prevent false positives
+                    (referenceFileName.EndsWith(".tf") && referenceFileName.Contains(refPolicy.SourceFile) && !string.IsNullOrWhiteSpace(refPolicy.SourceFile)) ||
+                    (refPolicy.SourceFile.EndsWith(".tf") && refPolicy.SourceFile.Contains(fileNameWithoutExtension) && !string.IsNullOrWhiteSpace(fileNameWithoutExtension)) ||
+                    // Fallback: careful substring matching for custom mappings (only if strings are reasonable length)
+                    (referenceFileName.Length >= 3 && refPolicy.SourceFile.Length >= 3 && 
+                     (referenceFileName.Contains(refPolicy.SourceFile) || refPolicy.SourceFile.Contains(fileNameWithoutExtension))));
                 
                 return matchedPolicy;
             }
