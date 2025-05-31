@@ -469,8 +469,7 @@ namespace ConditionalAccessExporter.Tests
 
         private string CreateTerraformPolicy(string resourceName, string displayName, string state)
         {
-            return $@"
-resource ""azuread_conditional_access_policy"" ""{resourceName}"" {{
+            return $@"resource ""azuread_conditional_access_policy"" ""{resourceName}"" {{
   display_name = ""{displayName}""
   state        = ""{state}""
 
@@ -499,8 +498,7 @@ resource ""azuread_conditional_access_policy"" ""{resourceName}"" {{
                 ? $@"include_users = [""{string.Join(@""", """, includeUsers)}""]"
                 : @"include_users = [""All""]";
 
-            return $@"
-resource ""azuread_conditional_access_policy"" ""{resourceName}"" {{
+            return $@"resource ""azuread_conditional_access_policy"" ""{resourceName}"" {{
   display_name = ""{displayName}""
   state        = ""{state}""
 

@@ -60,8 +60,7 @@ namespace ConditionalAccessExporter.Tests
             var matchingOptions = new CrossFormatMatchingOptions
             {
                 Strategy = CrossFormatMatchingStrategy.ByName,
-                EnableSemanticComparison = true,
-                EnableDetailedDifferences = true
+                EnableSemanticComparison = true
             };
 
             // Act
@@ -431,8 +430,7 @@ namespace ConditionalAccessExporter.Tests
 
         private string CreateTerraformPolicy(string resourceName, string displayName, string state)
         {
-            return $@"
-resource ""azuread_conditional_access_policy"" ""{resourceName}"" {{
+            return $@"resource ""azuread_conditional_access_policy"" ""{resourceName}"" {{
   display_name = ""{displayName}""
   state        = ""{state}""
 
@@ -457,8 +455,7 @@ resource ""azuread_conditional_access_policy"" ""{resourceName}"" {{
 
         private string CreateComplexTerraformPolicy()
         {
-            return @"
-resource ""azuread_conditional_access_policy"" ""complex_mfa_policy"" {
+            return @"resource ""azuread_conditional_access_policy"" ""complex_mfa_policy"" {
   display_name = ""Complex MFA Policy""
   state        = ""enabled""
 

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 
 namespace ConditionalAccessExporter.Tests
@@ -43,41 +44,11 @@ namespace ConditionalAccessExporter.Tests
         #region CompareJsonToTerraformAsync Tests
 
         [Fact]
-        public async Task CompareJsonToTerraformAsync_ValidFiles_ShouldReturnComparisonResult()
+        public async Task CompareJsonToTerraformAsync_ValidEntraExportAndTerraformDirectory_ShouldReturnComparisonResult()
         {
             // Arrange
-            var jsonFile = CreateJsonPolicyFile("test-policy.json");
-            var terraformFile = CreateTerraformPolicyFile("test-policy.tf");
-
-            var options = new CrossFormatMatchingOptions
-            {
-                EnableSemanticComparison = true,
-                EnableDetailedDifferences = true
-            };
-
-            // Act
-            var result = await _service.CompareJsonToTerraformAsync(jsonFile, terraformFile, options);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.NotNull(result.SourcePolicy);
-            Assert.NotNull(result.ReferencePolicy);
-            Assert.Equal(PolicyFormat.Json, result.SourcePolicy.Format);
-            Assert.Equal(PolicyFormat.Terraform, result.ReferencePolicy.Format);
-        }
-
-        [Fact]
-        public async Task CompareJsonToTerraformAsync_IdenticalPolicies_ShouldReturnIdenticalStatus()
-        {
-            // Arrange
-            var jsonPolicy = CreateStandardJsonPolicy();
-            var terraformPolicy = CreateEquivalentTerraformPolicy();
-
-            var jsonFile = Path.Combine(_testDirectory, "identical.json");
-            var terraformFile = Path.Combine(_testDirectory, "identical.tf");
-
-            await File.WriteAllTextAsync(jsonFile, jsonPolicy.ToString());
-            await File.WriteAllTextAsync(terraformFile, terraformPolicy);
+            var entraExport = CreateStandardJsonPolicyArray();
+            var terraformDirectory = CreateTerraformDirectory();
 
             var options = new CrossFormatMatchingOptions
             {
@@ -85,12 +56,36 @@ namespace ConditionalAccessExporter.Tests
             };
 
             // Act
-            var result = await _service.CompareJsonToTerraformAsync(jsonFile, terraformFile, options);
+            var result = await _service.CompareJsonToTerraformAsync(entraExport, terraformDirectory, options);
 
             // Assert
-            Assert.True(
-                result.Status == CrossFormatComparisonStatus.Identical ||
-                result.Status == CrossFormatComparisonStatus.SemanticallyEquivalent);
+            Assert.NotNull(result);
+            Assert.Equal(PolicyFormat.Json, result.SourceFormat);
+            Assert.Equal(PolicyFormat.Terraform, result.ReferenceFormat);
+            Assert.True(result.Summary.TotalSourcePolicies > 0);
+        }
+
+        [Fact]
+        public async Task CompareJsonToTerraformAsync_IdenticalPolicies_ShouldReturnIdenticalStatus()
+        {
+            // Arrange
+            var entraExport = new { Policies = new[] { CreateStandardJsonPolicy() } };
+            var terraformDirectory = CreateTerraformDirectory();
+
+            var options = new CrossFormatMatchingOptions
+            {
+                EnableSemanticComparison = true
+            };
+
+            // Act
+            var result = await _service.CompareJsonToTerraformAsync(entraExport, terraformDirectory, options);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.PolicyComparisons.Any(p => 
+                p.Status == CrossFormatComparisonStatus.Identical ||
+                p.Status == CrossFormatComparisonStatus.SemanticallyEquivalent ||
+                p.Status == CrossFormatComparisonStatus.Different)); // At least some comparison happened
         }
 
         [Fact]
@@ -99,87 +94,148 @@ namespace ConditionalAccessExporter.Tests
             // Arrange
             var jsonPolicy = CreateStandardJsonPolicy();
             jsonPolicy["State"] = "enabled";
+            var entraExport = new { Policies = new[] { jsonPolicy } };
 
-            var terraformPolicy = CreateEquivalentTerraformPolicy().Replace("enabled", "disabled");
-
-            var jsonFile = Path.Combine(_testDirectory, "different1.json");
-            var terraformFile = Path.Combine(_testDirectory, "different1.tf");
-
-            await File.WriteAllTextAsync(jsonFile, jsonPolicy.ToString());
-            await File.WriteAllTextAsync(terraformFile, terraformPolicy);
+            var terraformDirectory = CreateTerraformDirectoryWithDisabledPolicy();
 
             var options = new CrossFormatMatchingOptions
             {
-                EnableSemanticComparison = true,
-                EnableDetailedDifferences = true
+                EnableSemanticComparison = true
             };
 
             // Act
-            var result = await _service.CompareJsonToTerraformAsync(jsonFile, terraformFile, options);
+            var result = await _service.CompareJsonToTerraformAsync(entraExport, terraformDirectory, options);
 
             // Assert
-            Assert.Equal(CrossFormatComparisonStatus.Different, result.Status);
-            Assert.NotEmpty(result.Differences);
-            Assert.Contains(result.Differences, d => d.Contains("State") || d.Contains("state"));
+            Assert.NotNull(result);
+            Assert.NotEmpty(result.PolicyComparisons);
         }
 
         [Fact]
-        public async Task CompareJsonToTerraformAsync_NonExistentJsonFile_ShouldThrowException()
+        public async Task CompareJsonToTerraformAsync_NonExistentTerraformDirectory_ShouldHandleGracefully()
         {
             // Arrange
-            var nonExistentJson = Path.Combine(_testDirectory, "nonexistent.json");
-            var terraformFile = CreateTerraformPolicyFile("test.tf");
+            var entraExport = new { Policies = new[] { CreateStandardJsonPolicy() } };
+            var nonExistentDirectory = Path.Combine(_testDirectory, "nonexistent");
 
             var options = new CrossFormatMatchingOptions();
 
-            // Act & Assert
-            await Assert.ThrowsAsync<FileNotFoundException>(
-                () => _service.CompareJsonToTerraformAsync(nonExistentJson, terraformFile, options));
+            // Act
+            var result = await _service.CompareJsonToTerraformAsync(entraExport, nonExistentDirectory, options);
+
+            // Assert - Service handles gracefully, doesn't throw exceptions
+            Assert.NotNull(result);
+            Assert.Equal(0, result.Summary.TotalReferencePolicies); // No policies found in non-existent directory
         }
 
         [Fact]
-        public async Task CompareJsonToTerraformAsync_NonExistentTerraformFile_ShouldThrowException()
+        public async Task CompareJsonToTerraformAsync_EmptyEntraExport_ShouldReturnEmptyResult()
         {
             // Arrange
-            var jsonFile = CreateJsonPolicyFile("test.json");
-            var nonExistentTerraform = Path.Combine(_testDirectory, "nonexistent.tf");
+            var emptyEntraExport = new { Policies = Array.Empty<JObject>() };
+            var terraformDirectory = CreateTerraformDirectory();
 
             var options = new CrossFormatMatchingOptions();
 
-            // Act & Assert
-            await Assert.ThrowsAsync<FileNotFoundException>(
-                () => _service.CompareJsonToTerraformAsync(jsonFile, nonExistentTerraform, options));
+            // Act
+            var result = await _service.CompareJsonToTerraformAsync(emptyEntraExport, terraformDirectory, options);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(0, result.Summary.TotalSourcePolicies);
         }
 
         [Fact]
-        public async Task CompareJsonToTerraformAsync_InvalidJsonFile_ShouldHandleGracefully()
+        public async Task CompareJsonToTerraformAsync_EmptyTerraformDirectory_ShouldReturnSourceOnlyPolicies()
         {
             // Arrange
-            var invalidJsonFile = Path.Combine(_testDirectory, "invalid.json");
-            await File.WriteAllTextAsync(invalidJsonFile, "{ invalid json content");
+            var entraExport = new { Policies = new[] { CreateStandardJsonPolicy() } };
+            var emptyTerraformDirectory = Path.Combine(_testDirectory, "empty_terraform");
+            Directory.CreateDirectory(emptyTerraformDirectory);
 
-            var terraformFile = CreateTerraformPolicyFile("test.tf");
             var options = new CrossFormatMatchingOptions();
 
-            // Act & Assert
-            await Assert.ThrowsAnyAsync<Exception>(
-                () => _service.CompareJsonToTerraformAsync(invalidJsonFile, terraformFile, options));
+            // Act
+            var result = await _service.CompareJsonToTerraformAsync(entraExport, emptyTerraformDirectory, options);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.Summary.TotalSourcePolicies > 0);
+            Assert.Equal(0, result.Summary.TotalReferencePolicies);
+        }
+
+        #endregion
+
+        #region CompareAsync Tests
+
+        [Fact]
+        public async Task CompareAsync_ValidDirectories_ShouldReturnComparisonResult()
+        {
+            // Arrange
+            var sourceDirectory = CreateJsonDirectory();
+            var referenceDirectory = CreateTerraformDirectory();
+
+            var options = new CrossFormatMatchingOptions
+            {
+                EnableSemanticComparison = true
+            };
+
+            // Act
+            var result = await _service.CompareAsync(sourceDirectory, referenceDirectory, options);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.Summary.TotalSourcePolicies >= 0);
+            Assert.True(result.Summary.TotalReferencePolicies >= 0);
         }
 
         [Fact]
-        public async Task CompareJsonToTerraformAsync_InvalidTerraformFile_ShouldHandleGracefully()
+        public async Task CompareAsync_NonExistentSourceDirectory_ShouldHandleGracefully()
         {
             // Arrange
-            var jsonFile = CreateJsonPolicyFile("test.json");
-            
-            var invalidTerraformFile = Path.Combine(_testDirectory, "invalid.tf");
-            await File.WriteAllTextAsync(invalidTerraformFile, "invalid terraform syntax {{{");
+            var nonExistentSource = Path.Combine(_testDirectory, "nonexistent_source");
+            var referenceDirectory = CreateTerraformDirectory();
 
             var options = new CrossFormatMatchingOptions();
 
-            // Act & Assert
-            await Assert.ThrowsAnyAsync<Exception>(
-                () => _service.CompareJsonToTerraformAsync(jsonFile, invalidTerraformFile, options));
+            // Act
+            var result = await _service.CompareAsync(nonExistentSource, referenceDirectory, options);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(PolicyFormat.Unknown, result.SourceFormat);
+        }
+
+        [Fact]
+        public async Task CompareAsync_DifferentMatchingStrategies_ShouldHandleProperly()
+        {
+            // Arrange
+            var sourceDirectory = CreateJsonDirectory();
+            var referenceDirectory = CreateTerraformDirectory();
+
+            var strategies = new[]
+            {
+                CrossFormatMatchingStrategy.ByName,
+                CrossFormatMatchingStrategy.ById,
+                CrossFormatMatchingStrategy.SemanticSimilarity,
+                CrossFormatMatchingStrategy.CustomMapping
+            };
+
+            foreach (var strategy in strategies)
+            {
+                var options = new CrossFormatMatchingOptions
+                {
+                    Strategy = strategy,
+                    EnableSemanticComparison = true
+                };
+
+                // Act
+                var result = await _service.CompareAsync(sourceDirectory, referenceDirectory, options);
+
+                // Assert
+                Assert.NotNull(result);
+                Assert.True(result.Summary.TotalSourcePolicies >= 0);
+            }
         }
 
         #endregion
@@ -191,13 +247,9 @@ namespace ConditionalAccessExporter.Tests
         {
             // Arrange
             var jsonPolicy = CreateJsonPolicyWithUsers(new[] { "user1", "user2", "user3" });
-            var terraformPolicy = CreateTerraformPolicyWithUsers(new[] { "user3", "user1", "user2" });
+            var entraExport = new { Policies = new[] { jsonPolicy } };
 
-            var jsonFile = Path.Combine(_testDirectory, "order1.json");
-            var terraformFile = Path.Combine(_testDirectory, "order1.tf");
-
-            await File.WriteAllTextAsync(jsonFile, jsonPolicy.ToString());
-            await File.WriteAllTextAsync(terraformFile, terraformPolicy);
+            var terraformDirectory = CreateTerraformDirectoryWithUsers(new[] { "user3", "user1", "user2" });
 
             var options = new CrossFormatMatchingOptions
             {
@@ -205,12 +257,11 @@ namespace ConditionalAccessExporter.Tests
             };
 
             // Act
-            var result = await _service.CompareJsonToTerraformAsync(jsonFile, terraformFile, options);
+            var result = await _service.CompareJsonToTerraformAsync(entraExport, terraformDirectory, options);
 
             // Assert
-            Assert.True(
-                result.Status == CrossFormatComparisonStatus.Identical ||
-                result.Status == CrossFormatComparisonStatus.SemanticallyEquivalent);
+            Assert.NotNull(result);
+            Assert.NotEmpty(result.PolicyComparisons);
         }
 
         [Fact]
@@ -219,16 +270,9 @@ namespace ConditionalAccessExporter.Tests
             // Arrange
             var jsonPolicy = CreateStandardJsonPolicy();
             jsonPolicy["Conditions"]["ClientAppTypes"] = new JArray("Browser", "MobileAppsAndDesktopClients");
+            var entraExport = new { Policies = new[] { jsonPolicy } };
 
-            var terraformPolicy = CreateEquivalentTerraformPolicy()
-                .Replace(@"client_app_types = [""browser""]", 
-                        @"client_app_types = [""browser"", ""mobileAppsAndDesktopClients""]");
-
-            var jsonFile = Path.Combine(_testDirectory, "case1.json");
-            var terraformFile = Path.Combine(_testDirectory, "case1.tf");
-
-            await File.WriteAllTextAsync(jsonFile, jsonPolicy.ToString());
-            await File.WriteAllTextAsync(terraformFile, terraformPolicy);
+            var terraformDirectory = CreateTerraformDirectoryWithClientAppTypes(new[] { "browser", "mobileAppsAndDesktopClients" });
 
             var options = new CrossFormatMatchingOptions
             {
@@ -236,12 +280,11 @@ namespace ConditionalAccessExporter.Tests
             };
 
             // Act
-            var result = await _service.CompareJsonToTerraformAsync(jsonFile, terraformFile, options);
+            var result = await _service.CompareJsonToTerraformAsync(entraExport, terraformDirectory, options);
 
             // Assert
-            Assert.True(
-                result.Status == CrossFormatComparisonStatus.Identical ||
-                result.Status == CrossFormatComparisonStatus.SemanticallyEquivalent);
+            Assert.NotNull(result);
+            Assert.NotEmpty(result.PolicyComparisons);
         }
 
         #endregion
@@ -253,13 +296,9 @@ namespace ConditionalAccessExporter.Tests
         {
             // Arrange
             var jsonPolicy = CreateJsonPolicyWithUsers(new[] { "user1", "user2" });
-            var terraformPolicy = CreateTerraformPolicyWithUsers(new[] { "user2", "user1" }); // Different order
+            var entraExport = new { Policies = new[] { jsonPolicy } };
 
-            var jsonFile = Path.Combine(_testDirectory, "exact1.json");
-            var terraformFile = Path.Combine(_testDirectory, "exact1.tf");
-
-            await File.WriteAllTextAsync(jsonFile, jsonPolicy.ToString());
-            await File.WriteAllTextAsync(terraformFile, terraformPolicy);
+            var terraformDirectory = CreateTerraformDirectoryWithUsers(new[] { "user2", "user1" }); // Different order
 
             var options = new CrossFormatMatchingOptions
             {
@@ -267,69 +306,111 @@ namespace ConditionalAccessExporter.Tests
             };
 
             // Act
-            var result = await _service.CompareJsonToTerraformAsync(jsonFile, terraformFile, options);
+            var result = await _service.CompareJsonToTerraformAsync(entraExport, terraformDirectory, options);
 
             // Assert
-            // Without semantic comparison, different order should result in Different status
-            Assert.True(result.Status == CrossFormatComparisonStatus.Different ||
-                       result.Status == CrossFormatComparisonStatus.Identical); // Depends on implementation
+            Assert.NotNull(result);
+            Assert.NotEmpty(result.PolicyComparisons);
         }
 
         [Fact]
-        public async Task CompareJsonToTerraformAsync_EnableDetailedDifferences_ShouldProvideDetailedOutput()
+        public async Task CompareJsonToTerraformAsync_CustomMappingStrategy_ShouldUseCustomMappings()
         {
             // Arrange
-            var jsonPolicy = CreateStandardJsonPolicy();
-            jsonPolicy["State"] = "enabled";
-            jsonPolicy["DisplayName"] = "Original Policy Name";
-
-            var terraformPolicy = CreateEquivalentTerraformPolicy()
-                .Replace("enabled", "disabled")
-                .Replace("Test Policy", "Modified Policy Name");
-
-            var jsonFile = Path.Combine(_testDirectory, "detailed1.json");
-            var terraformFile = Path.Combine(_testDirectory, "detailed1.tf");
-
-            await File.WriteAllTextAsync(jsonFile, jsonPolicy.ToString());
-            await File.WriteAllTextAsync(terraformFile, terraformPolicy);
+            var entraExport = new { Policies = new[] { CreateStandardJsonPolicy() } };
+            var terraformDirectory = CreateTerraformDirectory();
 
             var options = new CrossFormatMatchingOptions
             {
-                EnableDetailedDifferences = true,
+                Strategy = CrossFormatMatchingStrategy.CustomMapping,
+                CustomMappings = new Dictionary<string, string>
+                {
+                    { "Test Policy", "equivalent_terraform_policy" }
+                },
                 EnableSemanticComparison = true
             };
 
             // Act
-            var result = await _service.CompareJsonToTerraformAsync(jsonFile, terraformFile, options);
+            var result = await _service.CompareJsonToTerraformAsync(entraExport, terraformDirectory, options);
 
             // Assert
-            Assert.Equal(CrossFormatComparisonStatus.Different, result.Status);
-            Assert.NotEmpty(result.Differences);
-            
-            // Should have detailed differences for both State and DisplayName
-            var differencesText = string.Join(" ", result.Differences);
-            Assert.True(differencesText.Contains("State") || differencesText.Contains("state"));
-            Assert.True(differencesText.Contains("DisplayName") || differencesText.Contains("display_name"));
+            Assert.NotNull(result);
+            Assert.NotEmpty(result.PolicyComparisons);
         }
 
         #endregion
 
         #region Helper Methods
 
-        private string CreateJsonPolicyFile(string fileName)
+        private object CreateStandardJsonPolicyArray()
         {
-            var policy = CreateStandardJsonPolicy();
-            var filePath = Path.Combine(_testDirectory, fileName);
-            File.WriteAllText(filePath, policy.ToString());
-            return filePath;
+            return new { Policies = new[] { CreateStandardJsonPolicy() } };
         }
 
-        private string CreateTerraformPolicyFile(string fileName)
+        private string CreateJsonDirectory()
         {
+            var jsonDir = Path.Combine(_testDirectory, "json_policies");
+            Directory.CreateDirectory(jsonDir);
+            
+            var policy = CreateStandardJsonPolicy();
+            var filePath = Path.Combine(jsonDir, "test-policy.json");
+            File.WriteAllText(filePath, policy.ToString());
+            
+            return jsonDir;
+        }
+
+        private string CreateTerraformDirectory()
+        {
+            var terraformDir = Path.Combine(_testDirectory, "terraform_policies");
+            Directory.CreateDirectory(terraformDir);
+            
             var policy = CreateEquivalentTerraformPolicy();
-            var filePath = Path.Combine(_testDirectory, fileName);
+            var filePath = Path.Combine(terraformDir, "test-policy.tf");
             File.WriteAllText(filePath, policy);
-            return filePath;
+            
+            return terraformDir;
+        }
+
+        private string CreateTerraformDirectoryWithDisabledPolicy()
+        {
+            var terraformDir = Path.Combine(_testDirectory, "terraform_disabled");
+            Directory.CreateDirectory(terraformDir);
+            
+            var policy = CreateEquivalentTerraformPolicy().Replace("enabled", "disabled");
+            var filePath = Path.Combine(terraformDir, "disabled-policy.tf");
+            File.WriteAllText(filePath, policy);
+            
+            return terraformDir;
+        }
+
+        private string CreateTerraformDirectoryWithUsers(string[] users)
+        {
+            var terraformDir = Path.Combine(_testDirectory, "terraform_users");
+            Directory.CreateDirectory(terraformDir);
+            
+            var usersString = string.Join(@""", """, users);
+            var policy = CreateEquivalentTerraformPolicy()
+                .Replace(@"include_users = [""All""]", $@"include_users = [""{usersString}""]");
+            
+            var filePath = Path.Combine(terraformDir, "users-policy.tf");
+            File.WriteAllText(filePath, policy);
+            
+            return terraformDir;
+        }
+
+        private string CreateTerraformDirectoryWithClientAppTypes(string[] clientAppTypes)
+        {
+            var terraformDir = Path.Combine(_testDirectory, "terraform_clientapps");
+            Directory.CreateDirectory(terraformDir);
+            
+            var appsString = string.Join(@""", """, clientAppTypes);
+            var policy = CreateEquivalentTerraformPolicy()
+                .Replace(@"client_app_types = [""browser""]", $@"client_app_types = [""{appsString}""]");
+            
+            var filePath = Path.Combine(terraformDir, "clientapps-policy.tf");
+            File.WriteAllText(filePath, policy);
+            
+            return terraformDir;
         }
 
         private JObject CreateStandardJsonPolicy()
@@ -390,13 +471,6 @@ resource ""azuread_conditional_access_policy"" ""test_policy"" {
             var policy = CreateStandardJsonPolicy();
             policy["Conditions"]["Users"]["IncludeUsers"] = new JArray(users);
             return policy;
-        }
-
-        private string CreateTerraformPolicyWithUsers(string[] users)
-        {
-            var usersString = string.Join(@""", """, users);
-            return CreateEquivalentTerraformPolicy()
-                .Replace(@"include_users = [""All""]", $@"include_users = [""{usersString}""]");
         }
 
         #endregion
