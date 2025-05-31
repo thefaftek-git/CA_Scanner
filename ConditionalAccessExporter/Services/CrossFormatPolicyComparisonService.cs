@@ -539,6 +539,7 @@ namespace ConditionalAccessExporter.Services
                 var semanticComparison = await CompareSemanticEquivalenceAsync(sourcePolicy, matchingReference);
                 comparison.SemanticAnalysis = semanticComparison;
 
+                
                 if (semanticComparison.IsIdentical)
                 {
                     comparison.Status = CrossFormatComparisonStatus.Identical;
@@ -551,6 +552,7 @@ namespace ConditionalAccessExporter.Services
                 {
                     comparison.Status = CrossFormatComparisonStatus.Different;
                 }
+                
 
                 comparison.Differences = semanticComparison.Differences;
                 comparison.ConversionSuggestions = await GenerateConversionSuggestionsAsync(sourcePolicy, matchingReference);
@@ -661,10 +663,26 @@ namespace ConditionalAccessExporter.Services
             Dictionary<string, string> customMappings)
         {
             var key = sourcePolicy.Id ?? sourcePolicy.DisplayName;
+            
             if (key != null && customMappings.TryGetValue(key, out var referenceFileName))
             {
-                return referencePolicies.FirstOrDefault(refPolicy => 
-                    refPolicy.SourceFile == referenceFileName);
+                // Look for a match on the SourceFile (which contains the ResourceName for Terraform policies)
+                // The custom mapping value could be either:
+                // 1. The exact SourceFile (ResourceName)
+                // 2. A filename ending with .tf that contains the ResourceName
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(referenceFileName);
+                var matchedPolicy = referencePolicies.FirstOrDefault(refPolicy => 
+                    // Exact matches (highest priority)
+                    refPolicy.SourceFile == referenceFileName ||
+                    refPolicy.SourceFile == fileNameWithoutExtension ||
+                    // Substring matching with constraints to prevent false positives
+                    (referenceFileName.EndsWith(".tf") && referenceFileName.Contains(refPolicy.SourceFile) && !string.IsNullOrWhiteSpace(refPolicy.SourceFile)) ||
+                    (refPolicy.SourceFile.EndsWith(".tf") && refPolicy.SourceFile.Contains(fileNameWithoutExtension) && !string.IsNullOrWhiteSpace(fileNameWithoutExtension)) ||
+                    // Fallback: careful substring matching for custom mappings (only if strings are reasonable length)
+                    (referenceFileName.Length >= 3 && refPolicy.SourceFile.Length >= 3 && 
+                     (referenceFileName.Contains(refPolicy.SourceFile) || refPolicy.SourceFile.Contains(fileNameWithoutExtension))));
+                
+                return matchedPolicy;
             }
 
             return null;
@@ -705,7 +723,9 @@ namespace ConditionalAccessExporter.Services
 
             result.Differences = differences;
             result.IsIdentical = differences.Count == 0;
-            result.IsSemanticallyEquivalent = differences.Count <= 2; // Allow minor differences for semantic equivalence
+            
+            // Modified logic: Only consider semantically equivalent if there are NO differences
+            result.IsSemanticallyEquivalent = differences.Count == 0;
 
             return await Task.FromResult(result);
         }
