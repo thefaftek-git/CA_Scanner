@@ -39,7 +39,6 @@ if ! command_exists dotnet; then
         rm packages-microsoft-prod.deb
         sudo apt-get update
         sudo apt-get install -y apt-transport-https
-        sudo apt-get update
         sudo apt-get install -y dotnet-sdk-8.0
         echo ".NET 8 SDK installed successfully."
     elif [[ "$OS" == "CentOS Linux" || "$OS" == "Red Hat Enterprise Linux" || "$OS" == "Fedora" ]]; then
