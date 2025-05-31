@@ -674,8 +674,8 @@ namespace ConditionalAccessExporter.Services
                 var matchedPolicy = referencePolicies.FirstOrDefault(refPolicy => 
                     refPolicy.SourceFile == referenceFileName ||
                     refPolicy.SourceFile == fileNameWithoutExtension ||
-                    fileNameWithoutExtension.Contains(refPolicy.SourceFile) ||
-                    refPolicy.SourceFile.Contains(fileNameWithoutExtension));
+                    (referenceFileName.EndsWith(".tf") && refPolicy.SourceFile == fileNameWithoutExtension) ||
+                    (refPolicy.SourceFile.EndsWith(".tf") && Path.GetFileNameWithoutExtension(refPolicy.SourceFile) == fileNameWithoutExtension));
                 
                 return matchedPolicy;
             }
