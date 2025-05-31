@@ -48,8 +48,18 @@ namespace ConditionalAccessExporter.Services
 
         private EntraExportData ParseEntraExport(object entraExport)
         {
-            var json = JsonConvert.SerializeObject(entraExport);
-            var jObject = JsonConvert.DeserializeObject<JObject>(json);
+            JObject jObject;
+            
+            // Handle both JSON strings and objects
+            if (entraExport is string jsonString)
+            {
+                jObject = JsonConvert.DeserializeObject<JObject>(jsonString);
+            }
+            else
+            {
+                var json = JsonConvert.SerializeObject(entraExport);
+                jObject = JsonConvert.DeserializeObject<JObject>(json);
+            }
             
             if (jObject == null)
                 throw new InvalidOperationException("Failed to parse Entra export data");
