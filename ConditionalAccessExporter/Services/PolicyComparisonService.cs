@@ -50,7 +50,7 @@ namespace ConditionalAccessExporter.Services
         {
             JObject jObject;
             
-            // Handle all types appropriately
+            // Parse the input, which can be a JObject, a JSON string, or an arbitrary object
             if (entraExport is JObject existingJObject)
             {
                 jObject = existingJObject;
