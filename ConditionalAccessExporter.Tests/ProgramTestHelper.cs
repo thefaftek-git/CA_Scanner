@@ -121,8 +121,9 @@ namespace ConditionalAccessExporter.Tests
             string outputDirectory,
             string[] reportFormats,
             string matchingStrategy,
-            double similarityThreshold = 0.8,
-            bool enableSemantic = false)
+            bool caseSensitive,
+            bool enableSemantic,
+            double similarityThreshold)
         {
             var method = typeof(Program).GetMethod("CrossFormatComparePoliciesAsync", BindingFlags.NonPublic | BindingFlags.Static);
             if (method == null)
@@ -136,8 +137,9 @@ namespace ConditionalAccessExporter.Tests
                     outputDirectory,
                     reportFormats,
                     matchingStrategy,
-                    similarityThreshold,
-                    enableSemantic
+                    caseSensitive,
+                    enableSemantic,
+                    similarityThreshold
                 });
             return result;
         }
