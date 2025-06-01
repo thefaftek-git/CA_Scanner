@@ -10,13 +10,22 @@ namespace ConditionalAccessExporter.Tests
     internal static class ProgramTestHelper
     {
         /// <summary>
+        /// Retrieves a private static method from the Program class using reflection.
+        /// </summary>
+        private static MethodInfo GetPrivateMethod(string methodName)
+        {
+            var method = typeof(Program).GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+            if (method == null)
+                throw new InvalidOperationException($"Could not find {methodName} method in Program class");
+            return method;
+        }
+        
+        /// <summary>
         /// Invokes the private static Main method in Program class
         /// </summary>
         public static async Task<int> InvokeMainAsync(string[] args)
         {
-            var mainMethod = typeof(Program).GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
-            if (mainMethod == null)
-                throw new InvalidOperationException("Could not find Main method in Program class");
+            var mainMethod = GetPrivateMethod("Main");
             
             var result = await (Task<int>)mainMethod.Invoke(null, new object[] { args });
             return result;
@@ -27,9 +36,7 @@ namespace ConditionalAccessExporter.Tests
         /// </summary>
         public static async Task<int> InvokeExportPoliciesAsync(string outputPath)
         {
-            var method = typeof(Program).GetMethod("ExportPoliciesAsync", BindingFlags.NonPublic | BindingFlags.Static);
-            if (method == null)
-                throw new InvalidOperationException("Could not find ExportPoliciesAsync method in Program class");
+            var method = GetPrivateMethod("ExportPoliciesAsync");
             
             var result = await (Task<int>)method.Invoke(null, new object[] { outputPath });
             return result;
@@ -44,9 +51,7 @@ namespace ConditionalAccessExporter.Tests
             bool validate = true,
             bool verbose = false)
         {
-            var method = typeof(Program).GetMethod("ConvertTerraformAsync", BindingFlags.NonPublic | BindingFlags.Static);
-            if (method == null)
-                throw new InvalidOperationException("Could not find ConvertTerraformAsync method in Program class");
+            var method = GetPrivateMethod("ConvertTerraformAsync");
             
             var result = await (Task<int>)method.Invoke(null, new object[] { inputPath, outputPath, validate, verbose });
             return result;
@@ -65,9 +70,7 @@ namespace ConditionalAccessExporter.Tests
             bool includeComments,
             string providerVersion)
         {
-            var method = typeof(Program).GetMethod("ConvertJsonToTerraformAsync", BindingFlags.NonPublic | BindingFlags.Static);
-            if (method == null)
-                throw new InvalidOperationException("Could not find ConvertJsonToTerraformAsync method in Program class");
+            var method = GetPrivateMethod("ConvertJsonToTerraformAsync");
             
             var result = await (Task<int>)method.Invoke(
                 null, 
@@ -95,9 +98,7 @@ namespace ConditionalAccessExporter.Tests
             Models.MatchingStrategy matchingStrategy,
             bool caseSensitive)
         {
-            var method = typeof(Program).GetMethod("ComparePoliciesAsync", BindingFlags.NonPublic | BindingFlags.Static);
-            if (method == null)
-                throw new InvalidOperationException("Could not find ComparePoliciesAsync method in Program class");
+            var method = GetPrivateMethod("ComparePoliciesAsync");
             
             var result = await (Task<int>)method.Invoke(
                 null, 
@@ -125,9 +126,7 @@ namespace ConditionalAccessExporter.Tests
             bool enableSemantic,
             double similarityThreshold)
         {
-            var method = typeof(Program).GetMethod("CrossFormatComparePoliciesAsync", BindingFlags.NonPublic | BindingFlags.Static);
-            if (method == null)
-                throw new InvalidOperationException("Could not find CrossFormatComparePoliciesAsync method in Program class");
+            var method = GetPrivateMethod("CrossFormatComparePoliciesAsync");
             
             var result = await (Task<int>)method.Invoke(
                 null, 
@@ -149,9 +148,7 @@ namespace ConditionalAccessExporter.Tests
         /// </summary>
         public static async Task<ConditionalAccessPolicyCollectionResponse> InvokeFetchEntraPoliciesAsync()
         {
-            var method = typeof(Program).GetMethod("FetchEntraPoliciesAsync", BindingFlags.NonPublic | BindingFlags.Static);
-            if (method == null)
-                throw new InvalidOperationException("Could not find FetchEntraPoliciesAsync method in Program class");
+            var method = GetPrivateMethod("FetchEntraPoliciesAsync");
             
             var result = await (Task<ConditionalAccessPolicyCollectionResponse>)method.Invoke(null, null);
             return result;
@@ -162,9 +159,7 @@ namespace ConditionalAccessExporter.Tests
         /// </summary>
         public static async Task InvokeHandleExceptionAsync(Exception exception)
         {
-            var method = typeof(Program).GetMethod("HandleExceptionAsync", BindingFlags.NonPublic | BindingFlags.Static);
-            if (method == null)
-                throw new InvalidOperationException("Could not find HandleExceptionAsync method in Program class");
+            var method = GetPrivateMethod("HandleExceptionAsync");
             
             await (Task)method.Invoke(null, new object[] { exception });
         }
