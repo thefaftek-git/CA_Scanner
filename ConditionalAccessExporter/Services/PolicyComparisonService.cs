@@ -50,8 +50,12 @@ namespace ConditionalAccessExporter.Services
         {
             JObject jObject;
             
-            // Handle both JSON strings and objects
-            if (entraExport is string jsonString)
+            // Handle all types appropriately
+            if (entraExport is JObject existingJObject)
+            {
+                jObject = existingJObject;
+            }
+            else if (entraExport is string jsonString)
             {
                 jObject = JsonConvert.DeserializeObject<JObject>(jsonString);
             }
