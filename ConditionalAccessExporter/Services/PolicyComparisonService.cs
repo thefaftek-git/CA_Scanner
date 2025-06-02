@@ -69,9 +69,13 @@ namespace ConditionalAccessExporter.Services
                     throw new ArgumentException("Failed to parse JSON string.", nameof(json));
                 }
             }
-            catch (JsonException ex)
+            catch (JsonReaderException ex)
             {
                 throw new ArgumentException("Failed to parse JSON string due to invalid JSON format.", nameof(json), ex);
+            }
+            catch (JsonException ex)
+            {
+                throw new ArgumentException("Failed to parse JSON string due to JSON processing error.", nameof(json), ex);
             }
             
             if (parsedToken is JObject obj)
