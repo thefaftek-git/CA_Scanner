@@ -677,7 +677,6 @@ namespace ConditionalAccessExporter.Tests
             string testEntraFile = "entra_export.json";
             string testOutputDir = "compare_reports";
             string[] formats = new[] { "json", "html" };
-            string matchingStrategy = "ById";
             bool caseSensitive = true;
             
             try
@@ -690,7 +689,7 @@ namespace ConditionalAccessExporter.Tests
                         testEntraFile, 
                         testOutputDir, 
                         formats, 
-                        matchingStrategy, 
+                        Models.MatchingStrategy.ById, 
                         caseSensitive);
                     
                     // A successful result should be zero
@@ -718,7 +717,6 @@ namespace ConditionalAccessExporter.Tests
             string testEntraFile = "entra_export.json";
             string testOutputDir = "compare_reports";
             string[] formats = new[] { "json", "html" };
-            string matchingStrategy = "ById";
             bool caseSensitive = true;
             
             try
@@ -731,7 +729,7 @@ namespace ConditionalAccessExporter.Tests
                         testEntraFile, 
                         testOutputDir, 
                         formats, 
-                        matchingStrategy, 
+                        Models.MatchingStrategy.ById, 
                         caseSensitive);
                     
                     // A failure result should be one
@@ -762,6 +760,7 @@ namespace ConditionalAccessExporter.Tests
             string matchingStrategy = "ByName";
             double similarityThreshold = 0.8;
             bool enableSemantic = false;
+            bool caseSensitive = false;
             
             try
             {
@@ -774,8 +773,9 @@ namespace ConditionalAccessExporter.Tests
                         testOutputDir, 
                         formats, 
                         matchingStrategy, 
-                        similarityThreshold, 
-                        enableSemantic);
+                        caseSensitive, 
+                        enableSemantic,
+                        similarityThreshold);
                     
                     // A successful result should be zero
                     Assert.Equal(0, result);
@@ -805,6 +805,7 @@ namespace ConditionalAccessExporter.Tests
             string matchingStrategy = "ByName";
             double similarityThreshold = 0.8;
             bool enableSemantic = false;
+            bool caseSensitive = false;
             
             try
             {
@@ -817,8 +818,9 @@ namespace ConditionalAccessExporter.Tests
                         testOutputDir, 
                         formats, 
                         matchingStrategy, 
-                        similarityThreshold, 
-                        enableSemantic);
+                        caseSensitive, 
+                        enableSemantic,
+                        similarityThreshold);
                     
                     // A failure result should be one
                     Assert.Equal(1, result);
