@@ -46,10 +46,107 @@ namespace ConditionalAccessExporter.Services
             return result;
         }
 
+        /// <summary>
+        /// Deserializes a JSON string into a JObject, with proper error handling for various input formats.
+        /// </summary>
+        /// <param name="json">The JSON string to deserialize</param>
+        /// <returns>A JObject representing the parsed JSON</returns>
+        /// <exception cref="ArgumentException">Thrown when the input is null, empty, or represents a non-object JSON structure</exception>
+        private static JObject DeserializeToJObject(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                throw new ArgumentException("Input JSON string cannot be null or empty.", nameof(json));
+            }
+
+            JToken parsedToken;
+            try
+            {
+                parsedToken = JsonConvert.DeserializeObject<JToken>(json);
+                
+                if (parsedToken == null)
+                {
+                    throw new ArgumentException("Failed to parse JSON string.", nameof(json));
+                }
+            }
+            catch (JsonException ex)
+            {
+                throw new ArgumentException("Failed to parse JSON string due to JSON processing error.", nameof(json), ex);
+            }
+            
+            if (parsedToken is JObject obj)
+            {
+                return obj;
+            }
+            else if (parsedToken is JArray)
+            {
+                throw new ArgumentException("JSON string represents an array, but an object was expected.", nameof(json));
+            }
+            else
+            {
+                throw new ArgumentException($"Unsupported JSON type: {parsedToken.Type}. Expected a JSON object.", nameof(json));
+            }
+        }
+
+        /// <summary>
+        /// Parses various input formats into an EntraExportData object.
+        /// </summary>
+        /// <param name="entraExport">The export data, which can be a JObject, a JSON string, or an arbitrary object</param>
+        /// <returns>A structured EntraExportData object containing tenant ID and policies</returns>
+        /// <exception cref="ArgumentException">Thrown when the input is invalid or in an unsupported format</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the input is null</exception>
         private EntraExportData ParseEntraExport(object entraExport)
         {
-            var json = JsonConvert.SerializeObject(entraExport);
-            var jObject = JsonConvert.DeserializeObject<JObject>(json);
+            if (entraExport == null)
+            {
+                throw new ArgumentNullException(nameof(entraExport), "The Entra export data cannot be null.");
+            }
+            
+            JObject jObject;
+            
+            // Parse the input based on its type (JObject, JToken, string, or arbitrary object)
+            if (entraExport is JObject existingJObject)
+            {
+                jObject = existingJObject;
+            }
+            else if (entraExport is JToken token)
+            {
+                if (token.Type == JTokenType.Object)
+                {
+                    jObject = (JObject)token;
+                }
+                else
+                {
+                    throw new ArgumentException($"Unsupported JToken type: {token.Type}. Expected a JObject.", nameof(entraExport));
+                }
+            }
+            else if (entraExport is string jsonString)
+            {
+                // Delegate validation to DeserializeToJObject
+                jObject = DeserializeToJObject(jsonString);
+            }
+            else
+            {
+                // Use JToken.FromObject for arbitrary objects
+                // Note: While this uses serialization under the hood, it's the most reliable approach
+                // for converting arbitrary objects to JObject without custom mapping logic
+                try
+                {
+                    var token = JToken.FromObject(entraExport);
+                    if (token.Type == JTokenType.Object)
+                    {
+                        jObject = (JObject)token;
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Unsupported object type: {token.Type}. Expected a JSON object.", nameof(entraExport));
+                    }
+                }
+                catch (JsonException ex)
+                {
+                    throw new ArgumentException("Failed to convert object to JSON format.", nameof(entraExport), ex);
+                }
+            }
             
             if (jObject == null)
                 throw new InvalidOperationException("Failed to parse Entra export data");
