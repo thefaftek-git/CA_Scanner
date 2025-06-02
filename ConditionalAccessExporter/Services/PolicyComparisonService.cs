@@ -132,14 +132,14 @@ namespace ConditionalAccessExporter.Services
                 // for converting arbitrary objects to JObject without custom mapping logic
                 try
                 {
-                    var token = JToken.FromObject(entraExport);
-                    if (token.Type == JTokenType.Object)
+                    var convertedToken = JToken.FromObject(entraExport);
+                    if (convertedToken.Type == JTokenType.Object)
                     {
-                        jObject = (JObject)token;
+                        jObject = (JObject)convertedToken;
                     }
                     else
                     {
-                        throw new ArgumentException($"Unsupported object type: {token.Type}. Expected a JSON object.", nameof(entraExport));
+                        throw new ArgumentException($"Unsupported object type: {convertedToken.Type}. Expected a JSON object.", nameof(entraExport));
                     }
                 }
                 catch (JsonException ex)

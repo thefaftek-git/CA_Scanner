@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConditionalAccessExporter", "ConditionalAccessExporter\ConditionalAccessExporter.csproj", "{0F320B10-74AC-41EE-A48F-BFC08123E808}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConditionalAccessExporter.Tests", "ConditionalAccessExporter.Tests\ConditionalAccessExporter.Tests.csproj", "{FF9D5C36-1C6B-4EAB-8F94-F7ACE21D6108}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{0F320B10-74AC-41EE-A48F-BFC08123E808}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F320B10-74AC-41EE-A48F-BFC08123E808}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F320B10-74AC-41EE-A48F-BFC08123E808}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF9D5C36-1C6B-4EAB-8F94-F7ACE21D6108}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF9D5C36-1C6B-4EAB-8F94-F7ACE21D6108}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF9D5C36-1C6B-4EAB-8F94-F7ACE21D6108}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF9D5C36-1C6B-4EAB-8F94-F7ACE21D6108}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

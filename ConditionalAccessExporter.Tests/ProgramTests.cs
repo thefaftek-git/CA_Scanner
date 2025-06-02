@@ -6,7 +6,6 @@ using ConditionalAccessExporter.Models;
 using ConditionalAccessExporter.Services;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
-using Microsoft.Graph.Models.ConditionalAccess;
 using Moq;
 using Xunit;
 
@@ -389,20 +388,6 @@ namespace ConditionalAccessExporter.Tests
         }
 
         [Theory]
-        [InlineData("cross-compare", "--source-dir", "./src", "--reference-dir", "./ref")]
-        [InlineData("cross-compare", "--source-dir", "./src_tf", "--reference-dir", "./ref_json", "--output-dir", "cross_reports/", 
-            "--formats", "markdown", "--matching", "SemanticSimilarity", "--similarity-threshold", "0.75", "--enable-semantic", "false")]
-        public async Task CrossCompare_Command_ValidArgs_CallsHandler(params string[] args)
-        {
-            // This will test Issue Test Case 5.1 and 5.2
-            // Arrange
-
-            // Act
-
-            // Assert
-        }
-
-        [Theory]
         [InlineData("cross-compare", "--source-dir", "./src")]
         [InlineData("cross-compare", "--reference-dir", "./ref")]
         public async Task CrossCompare_Command_MissingRequiredOption_ReturnsError(params string[] args)
@@ -692,7 +677,6 @@ namespace ConditionalAccessExporter.Tests
             string testEntraFile = "entra_export.json";
             string testOutputDir = "compare_reports";
             string[] formats = new[] { "json", "html" };
-            string matchingStrategy = "ById";
             bool caseSensitive = true;
             
             try
@@ -705,7 +689,7 @@ namespace ConditionalAccessExporter.Tests
                         testEntraFile, 
                         testOutputDir, 
                         formats, 
-                        matchingStrategy, 
+                        Models.MatchingStrategy.ById, 
                         caseSensitive);
                     
                     // A successful result should be zero
@@ -733,7 +717,6 @@ namespace ConditionalAccessExporter.Tests
             string testEntraFile = "entra_export.json";
             string testOutputDir = "compare_reports";
             string[] formats = new[] { "json", "html" };
-            string matchingStrategy = "ById";
             bool caseSensitive = true;
             
             try
@@ -746,7 +729,7 @@ namespace ConditionalAccessExporter.Tests
                         testEntraFile, 
                         testOutputDir, 
                         formats, 
-                        matchingStrategy, 
+                        Models.MatchingStrategy.ById, 
                         caseSensitive);
                     
                     // A failure result should be one
@@ -777,6 +760,7 @@ namespace ConditionalAccessExporter.Tests
             string matchingStrategy = "ByName";
             double similarityThreshold = 0.8;
             bool enableSemantic = false;
+            bool caseSensitive = false;
             
             try
             {
@@ -789,8 +773,9 @@ namespace ConditionalAccessExporter.Tests
                         testOutputDir, 
                         formats, 
                         matchingStrategy, 
-                        similarityThreshold, 
-                        enableSemantic);
+                        caseSensitive, 
+                        enableSemantic,
+                        similarityThreshold);
                     
                     // A successful result should be zero
                     Assert.Equal(0, result);
@@ -820,6 +805,7 @@ namespace ConditionalAccessExporter.Tests
             string matchingStrategy = "ByName";
             double similarityThreshold = 0.8;
             bool enableSemantic = false;
+            bool caseSensitive = false;
             
             try
             {
@@ -832,8 +818,9 @@ namespace ConditionalAccessExporter.Tests
                         testOutputDir, 
                         formats, 
                         matchingStrategy, 
-                        similarityThreshold, 
-                        enableSemantic);
+                        caseSensitive, 
+                        enableSemantic,
+                        similarityThreshold);
                     
                     // A failure result should be one
                     Assert.Equal(1, result);
