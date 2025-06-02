@@ -46,11 +46,26 @@ namespace ConditionalAccessExporter.Services
             return result;
         }
 
+        /// <summary>
+        /// Deserializes a JSON string into a JObject, with proper error handling for various input formats.
+        /// </summary>
+        /// <param name="json">The JSON string to deserialize</param>
+        /// <returns>A JObject representing the parsed JSON</returns>
+        /// <exception cref="ArgumentException">Thrown when the input is null, empty, or represents a non-object JSON structure</exception>
         private static JObject DeserializeToJObject(string json)
         {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                throw new ArgumentException("Input JSON string cannot be null or empty.", nameof(json));
+            }
+
             var parsedToken = JsonConvert.DeserializeObject<JToken>(json);
             
-            if (parsedToken is JObject obj)
+            if (parsedToken == null)
+            {
+                throw new ArgumentException("Failed to parse JSON string.", nameof(json));
+            }
+            else if (parsedToken is JObject obj)
             {
                 return obj;
             }
@@ -60,10 +75,16 @@ namespace ConditionalAccessExporter.Services
             }
             else
             {
-                throw new ArgumentException("Unsupported JSON type. Expected a JSON object.", nameof(json));
+                throw new ArgumentException($"Unsupported JSON type: {parsedToken.Type}. Expected a JSON object.", nameof(json));
             }
         }
 
+        /// <summary>
+        /// Parses various input formats into an EntraExportData object.
+        /// </summary>
+        /// <param name="entraExport">The export data, which can be a JObject, a JSON string, or an arbitrary object</param>
+        /// <returns>A structured EntraExportData object containing tenant ID and policies</returns>
+        /// <exception cref="ArgumentException">Thrown when the input is invalid or in an unsupported format</exception>
         private EntraExportData ParseEntraExport(object entraExport)
         {
             JObject jObject;
@@ -82,6 +103,10 @@ namespace ConditionalAccessExporter.Services
             }
             else if (entraExport is string jsonString)
             {
+                if (string.IsNullOrWhiteSpace(jsonString))
+                {
+                    throw new ArgumentException("Input JSON string cannot be null or empty.", nameof(entraExport));
+                }
                 jObject = DeserializeToJObject(jsonString);
             }
             else
