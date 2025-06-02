@@ -170,17 +170,24 @@ namespace ConditionalAccessExporter.Tests
         public static string CaptureConsoleOutput(Action action)
         {
             var originalOutput = Console.Out;
-            using var stringWriter = new StringWriter();
-            Console.SetOut(stringWriter);
+            var originalError = Console.Error;
+            using var outputWriter = new StringWriter();
+            using var errorWriter = new StringWriter();
+            Console.SetOut(outputWriter);
+            Console.SetError(errorWriter);
             
             try
             {
                 action();
-                return stringWriter.ToString();
+                // Combine both stdout and stderr output
+                var output = outputWriter.ToString();
+                var error = errorWriter.ToString();
+                return string.IsNullOrEmpty(error) ? output : error + output;
             }
             finally
             {
                 Console.SetOut(originalOutput);
+                Console.SetError(originalError);
             }
         }
         
@@ -190,17 +197,24 @@ namespace ConditionalAccessExporter.Tests
         public static async Task<string> CaptureConsoleOutputAsync(Func<Task> action)
         {
             var originalOutput = Console.Out;
-            using var stringWriter = new StringWriter();
-            Console.SetOut(stringWriter);
+            var originalError = Console.Error;
+            using var outputWriter = new StringWriter();
+            using var errorWriter = new StringWriter();
+            Console.SetOut(outputWriter);
+            Console.SetError(errorWriter);
             
             try
             {
                 await action();
-                return stringWriter.ToString();
+                // Combine both stdout and stderr output
+                var output = outputWriter.ToString();
+                var error = errorWriter.ToString();
+                return string.IsNullOrEmpty(error) ? output : error + output;
             }
             finally
             {
                 Console.SetOut(originalOutput);
+                Console.SetError(originalError);
             }
         }
     }
