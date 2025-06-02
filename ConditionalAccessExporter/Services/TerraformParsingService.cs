@@ -169,13 +169,21 @@ namespace ConditionalAccessExporter.Services
                             {
                                 try
                                 {
-                                    var policy = ParseConditionalAccessPolicyFromState(resource.name, instance.attributes);
+                                    // Convert dynamic objects to string and object explicitly to avoid binding issues
+                                    string resourceName = resource.name?.ToString() ?? "unknown";
+                                    object attributes = instance.attributes;
+                                    
+                                    var policy = ParsePolicyFromTerraformState(resourceName, attributes);
                                     result.Policies.Add(policy);
-                                    _logs.Add($"Parsed policy from state: {resource.name}");
+                                    _logs.Add($"Parsed policy from state: {resourceName}");
+                                }
+                                catch (ArgumentException ex)
+                                {
+                                    _errors.Add($"Error parsing policy from state '{resource.name}': {ex.Message}");
                                 }
                                 catch (Exception ex)
                                 {
-                                    _errors.Add($"Error parsing policy from state '{resource.name}': {ex.Message}");
+                                    _errors.Add($"Error parsing policy from state '{resource.name}': {ex.GetType().Name} - {ex.Message}");
                                 }
                             }
                         }
@@ -232,32 +240,67 @@ namespace ConditionalAccessExporter.Services
             return policy;
         }
 
-        private TerraformConditionalAccessPolicy ParseConditionalAccessPolicyFromState(string resourceName, dynamic attributes)
+        private TerraformConditionalAccessPolicy ParsePolicyFromTerraformState(string resourceName, object attributes)
         {
             var policy = new TerraformConditionalAccessPolicy { ResourceName = resourceName };
             
-            if (attributes?.display_name != null)
-                policy.DisplayName = attributes.display_name;
-            
-            if (attributes?.state != null)
-                policy.State = attributes.state;
-
-            // Parse conditions from state
-            if (attributes?.conditions != null)
+            // Handle both JObject and dynamic objects
+            if (attributes is Newtonsoft.Json.Linq.JObject jObj)
             {
-                policy.Conditions = ParseConditionsFromState(attributes.conditions);
+                // Use JObject properties directly instead of dynamic conversion
+                var displayNameToken = jObj["display_name"];
+                if (displayNameToken != null)
+                    policy.DisplayName = displayNameToken.ToString();
+                
+                var stateToken = jObj["state"];
+                if (stateToken != null)
+                    policy.State = stateToken.ToString();
+
+                // Parse conditions from state
+                var conditionsToken = jObj["conditions"];
+                if (conditionsToken != null)
+                {
+                    policy.Conditions = ParseConditionsFromStateToken(conditionsToken);
+                }
+
+                // Parse grant_controls from state
+                var grantControlsToken = jObj["grant_controls"];
+                if (grantControlsToken != null)
+                {
+                    policy.GrantControls = ParseGrantControlsFromStateToken(grantControlsToken);
+                }
+
+                // Parse session_controls from state
+                var sessionControlsToken = jObj["session_controls"];
+                if (sessionControlsToken != null)
+                {
+                    policy.SessionControls = ParseSessionControlsFromStateToken(sessionControlsToken);
+                }
             }
-
-            // Parse grant_controls from state
-            if (attributes?.grant_controls != null)
+            else
             {
-                policy.GrantControls = ParseGrantControlsFromState(attributes.grant_controls);
-            }
+                // Handle dynamic objects using reflection-based approach
+                var dynAttributes = attributes;
+                
+                // Use reflection to safely get properties
+                var displayNameProp = dynAttributes?.GetType().GetProperty("display_name");
+                if (displayNameProp != null)
+                {
+                    var displayNameValue = displayNameProp.GetValue(dynAttributes);
+                    if (displayNameValue != null)
+                        policy.DisplayName = displayNameValue.ToString();
+                }
+                
+                var stateProp = dynAttributes?.GetType().GetProperty("state");
+                if (stateProp != null)
+                {
+                    var stateValue = stateProp.GetValue(dynAttributes);
+                    if (stateValue != null)
+                        policy.State = stateValue.ToString();
+                }
 
-            // Parse session_controls from state
-            if (attributes?.session_controls != null)
-            {
-                policy.SessionControls = ParseSessionControlsFromState(attributes.session_controls);
+                // For now, we'll skip conditions/grant_controls for non-JObject types
+                // to avoid complex reflection handling
             }
 
             return policy;
@@ -311,6 +354,31 @@ namespace ConditionalAccessExporter.Services
             return result;
         }
 
+        private TerraformConditions ParseConditionsFromStateToken(Newtonsoft.Json.Linq.JToken conditionsToken)
+        {
+            var result = new TerraformConditions();
+
+            var applicationsToken = conditionsToken["applications"];
+            if (applicationsToken != null)
+            {
+                result.Applications = ParseApplicationsFromStateToken(applicationsToken);
+            }
+
+            var usersToken = conditionsToken["users"];
+            if (usersToken != null)
+            {
+                result.Users = ParseUsersFromStateToken(usersToken);
+            }
+
+            var clientAppTypesToken = conditionsToken["client_app_types"];
+            if (clientAppTypesToken != null)
+            {
+                result.ClientAppTypes = ParseStringArrayFromStateToken(clientAppTypesToken);
+            }
+
+            return result;
+        }
+
         private TerraformApplications ParseApplications(string applicationsBody)
         {
             return new TerraformApplications
@@ -328,6 +396,16 @@ namespace ConditionalAccessExporter.Services
                 IncludeApplications = ParseStringArrayFromState(applications?.include_applications),
                 ExcludeApplications = ParseStringArrayFromState(applications?.exclude_applications),
                 IncludeUserActions = ParseStringArrayFromState(applications?.include_user_actions)
+            };
+        }
+
+        private TerraformApplications ParseApplicationsFromStateToken(Newtonsoft.Json.Linq.JToken applicationsToken)
+        {
+            return new TerraformApplications
+            {
+                IncludeApplications = ParseStringArrayFromStateToken(applicationsToken["include_applications"]),
+                ExcludeApplications = ParseStringArrayFromStateToken(applicationsToken["exclude_applications"]),
+                IncludeUserActions = ParseStringArrayFromStateToken(applicationsToken["include_user_actions"])
             };
         }
 
@@ -357,6 +435,19 @@ namespace ConditionalAccessExporter.Services
             };
         }
 
+        private TerraformUsers ParseUsersFromStateToken(Newtonsoft.Json.Linq.JToken usersToken)
+        {
+            return new TerraformUsers
+            {
+                IncludeUsers = ParseStringArrayFromStateToken(usersToken["include_users"]),
+                ExcludeUsers = ParseStringArrayFromStateToken(usersToken["exclude_users"]),
+                IncludeGroups = ParseStringArrayFromStateToken(usersToken["include_groups"]),
+                ExcludeGroups = ParseStringArrayFromStateToken(usersToken["exclude_groups"]),
+                IncludeRoles = ParseStringArrayFromStateToken(usersToken["include_roles"]),
+                ExcludeRoles = ParseStringArrayFromStateToken(usersToken["exclude_roles"])
+            };
+        }
+
         private TerraformGrantControls ParseGrantControls(string grantControlsBody)
         {
             return new TerraformGrantControls
@@ -379,6 +470,17 @@ namespace ConditionalAccessExporter.Services
             };
         }
 
+        private TerraformGrantControls ParseGrantControlsFromStateToken(Newtonsoft.Json.Linq.JToken grantControlsToken)
+        {
+            return new TerraformGrantControls
+            {
+                Operator = grantControlsToken["operator"]?.ToString(),
+                BuiltInControls = ParseStringArrayFromStateToken(grantControlsToken["built_in_controls"]),
+                CustomAuthenticationFactors = ParseStringArrayFromStateToken(grantControlsToken["custom_authentication_factors"]),
+                TermsOfUse = ParseStringArrayFromStateToken(grantControlsToken["terms_of_use"])
+            };
+        }
+
         private TerraformSessionControls ParseSessionControls(string sessionControlsBody)
         {
             // This is a simplified implementation - in a real scenario, you'd parse nested blocks
@@ -390,6 +492,11 @@ namespace ConditionalAccessExporter.Services
             return new TerraformSessionControls();
         }
 
+        private TerraformSessionControls ParseSessionControlsFromStateToken(Newtonsoft.Json.Linq.JToken sessionControlsToken)
+        {
+            return new TerraformSessionControls();
+        }
+
         private TerraformVariable ParseVariable(string name, string variableBody)
         {
             return new TerraformVariable
@@ -397,24 +504,115 @@ namespace ConditionalAccessExporter.Services
                 Name = name,
                 Type = ParseStringValue(variableBody, "type"),
                 Description = ParseStringValue(variableBody, "description"),
-                Sensitive = ParseBoolValue(variableBody, "sensitive")
+                Sensitive = ParseBoolValue(variableBody, "sensitive"),
+                DefaultValue = ParseVariableDefaultValue(variableBody)
             };
+        }
+        
+        private object? ParseVariableDefaultValue(string variableBody)
+        {
+            // Try to parse default value - could be quoted string, unquoted value, or complex structure
+            var quotedPattern = @"default\s*=\s*""([^""]*)""";
+            var quotedMatch = Regex.Match(variableBody, quotedPattern);
+            if (quotedMatch.Success)
+            {
+                return quotedMatch.Groups[1].Value;
+            }
+            
+            // Try list/array pattern
+            var listPattern = @"default\s*=\s*\[(.*?)\]";
+            var listMatch = Regex.Match(variableBody, listPattern, RegexOptions.Singleline);
+            if (listMatch.Success)
+            {
+                var listContent = listMatch.Groups[1].Value;
+                // Simple parsing - split by comma and clean up quotes
+                var items = listContent.Split(',')
+                    .Select(item => item.Trim().Trim('"'))
+                    .Where(item => !string.IsNullOrEmpty(item))
+                    .ToList();
+                return items;
+            }
+            
+            // Try simple unquoted values (numbers, booleans, etc.)
+            var simplePattern = @"default\s*=\s*([^\s\n]+)";
+            var simpleMatch = Regex.Match(variableBody, simplePattern);
+            if (simpleMatch.Success)
+            {
+                var value = simpleMatch.Groups[1].Value;
+                if (bool.TryParse(value, out bool boolValue))
+                    return boolValue;
+                if (int.TryParse(value, out int intValue))
+                    return intValue;
+                return value; // Return as string if can't parse as other types
+            }
+            
+            return null;
         }
 
         private List<TerraformLocal> ParseLocals(string localsBody)
         {
             var locals = new List<TerraformLocal>();
             
-            // Simple regex to parse key = value pairs in locals
-            var matches = Regex.Matches(localsBody, @"(\w+)\s*=\s*([^=]+?)(?=\n\s*\w+\s*=|\n?\s*\}|$)");
+            // Use a more sophisticated parsing approach to handle nested structures
+            var lines = localsBody.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            var i = 0;
             
-            foreach (Match match in matches)
+            while (i < lines.Length)
             {
-                locals.Add(new TerraformLocal
+                var line = lines[i].Trim();
+                if (string.IsNullOrEmpty(line) || line.StartsWith("//") || line.StartsWith("#"))
                 {
-                    Name = match.Groups[1].Value.Trim(),
-                    Value = match.Groups[2].Value.Trim()
-                });
+                    i++;
+                    continue;
+                }
+                
+                // Look for key = value pattern
+                var equalIndex = line.IndexOf('=');
+                if (equalIndex > 0)
+                {
+                    var key = line.Substring(0, equalIndex).Trim();
+                    var valueStart = line.Substring(equalIndex + 1).Trim();
+                    
+                    // If value starts with {, need to find the matching }
+                    if (valueStart.StartsWith("{"))
+                    {
+                        var braceCount = 1;
+                        var value = valueStart;
+                        i++;
+                        
+                        while (i < lines.Length && braceCount > 0)
+                        {
+                            var nextLine = lines[i];
+                            value += "\n" + nextLine;
+                            
+                            foreach (char c in nextLine)
+                            {
+                                if (c == '{') braceCount++;
+                                if (c == '}') braceCount--;
+                            }
+                            i++;
+                        }
+                        
+                        locals.Add(new TerraformLocal
+                        {
+                            Name = key,
+                            Value = value
+                        });
+                    }
+                    else
+                    {
+                        locals.Add(new TerraformLocal
+                        {
+                            Name = key,
+                            Value = valueStart
+                        });
+                        i++;
+                    }
+                }
+                else
+                {
+                    i++;
+                }
             }
 
             return locals;
@@ -449,11 +647,43 @@ namespace ConditionalAccessExporter.Services
             return result.Any() ? result : null;
         }
 
+        private List<string>? ParseStringArrayFromStateToken(Newtonsoft.Json.Linq.JToken? arrayToken)
+        {
+            if (arrayToken == null) return null;
+            
+            var result = new List<string>();
+            
+            if (arrayToken.Type == Newtonsoft.Json.Linq.JTokenType.Array)
+            {
+                foreach (var item in arrayToken.Children())
+                {
+                    if (item != null)
+                        result.Add(item.ToString());
+                }
+            }
+            
+            return result.Any() ? result : null;
+        }
+
         private string? ParseStringValue(string content, string attributeName)
         {
-            var pattern = $@"{attributeName}\s*=\s*""([^""]*)""";
-            var match = Regex.Match(content, pattern);
-            return match.Success ? match.Groups[1].Value : null;
+            // First try quoted strings
+            var quotedPattern = $@"{attributeName}\s*=\s*""([^""]*)""";
+            var quotedMatch = Regex.Match(content, quotedPattern);
+            if (quotedMatch.Success)
+            {
+                return quotedMatch.Groups[1].Value;
+            }
+            
+            // Then try unquoted values (for types like string, bool, numbers, etc.)
+            var unquotedPattern = $@"{attributeName}\s*=\s*([^\s\n]+)";
+            var unquotedMatch = Regex.Match(content, unquotedPattern);
+            if (unquotedMatch.Success)
+            {
+                return unquotedMatch.Groups[1].Value;
+            }
+            
+            return null;
         }
 
         private bool ParseBoolValue(string content, string attributeName)
