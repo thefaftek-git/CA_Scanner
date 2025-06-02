@@ -169,18 +169,18 @@ namespace ConditionalAccessExporter.Services
                             {
                                 try
                                 {
-                                    // Handle the dynamic type issue - JObject needs special handling
-                                    var attributesObj = instance.attributes;
-                                    // Convert JObject to string and back to dynamic for proper deserialization
-                                    string attributesJson = attributesObj.ToString();
-                                    dynamic attributesDynamic = JsonConvert.DeserializeObject(attributesJson)!;
-                                    var policy = ParsePolicyFromTerraformState(resource.name, attributesDynamic);
+                                    // Pass the JObject directly and let the method handle conversion
+                                    var policy = ParsePolicyFromTerraformState(resource.name, instance.attributes);
                                     result.Policies.Add(policy);
                                     _logs.Add($"Parsed policy from state: {resource.name}");
                                 }
-                                catch (Exception ex)
+                                catch (ArgumentException ex)
                                 {
                                     _errors.Add($"Error parsing policy from state '{resource.name}': {ex.Message}");
+                                }
+                                catch (Exception ex)
+                                {
+                                    _errors.Add($"Error parsing policy from state '{resource.name}': {ex.GetType().Name} - {ex.Message}");
                                 }
                             }
                         }
@@ -237,32 +237,44 @@ namespace ConditionalAccessExporter.Services
             return policy;
         }
 
-        private TerraformConditionalAccessPolicy ParsePolicyFromTerraformState(string resourceName, dynamic attributes)
+        private TerraformConditionalAccessPolicy ParsePolicyFromTerraformState(string resourceName, object attributes)
         {
             var policy = new TerraformConditionalAccessPolicy { ResourceName = resourceName };
             
-            if (attributes?.display_name != null)
-                policy.DisplayName = attributes.display_name.ToString();
+            // Handle both JObject and dynamic objects
+            dynamic dynAttributes;
+            if (attributes is Newtonsoft.Json.Linq.JObject jObj)
+            {
+                // Convert JObject to proper dynamic by re-deserializing
+                dynAttributes = JsonConvert.DeserializeObject(jObj.ToString())!;
+            }
+            else
+            {
+                dynAttributes = attributes;
+            }
             
-            if (attributes?.state != null)
-                policy.State = attributes.state.ToString();
+            if (dynAttributes?.display_name != null)
+                policy.DisplayName = dynAttributes.display_name.ToString();
+            
+            if (dynAttributes?.state != null)
+                policy.State = dynAttributes.state.ToString();
 
             // Parse conditions from state
-            if (attributes?.conditions != null)
+            if (dynAttributes?.conditions != null)
             {
-                policy.Conditions = ParseConditionsFromState(attributes.conditions);
+                policy.Conditions = ParseConditionsFromState(dynAttributes.conditions);
             }
 
             // Parse grant_controls from state
-            if (attributes?.grant_controls != null)
+            if (dynAttributes?.grant_controls != null)
             {
-                policy.GrantControls = ParseGrantControlsFromState(attributes.grant_controls);
+                policy.GrantControls = ParseGrantControlsFromState(dynAttributes.grant_controls);
             }
 
             // Parse session_controls from state
-            if (attributes?.session_controls != null)
+            if (dynAttributes?.session_controls != null)
             {
-                policy.SessionControls = ParseSessionControlsFromState(attributes.session_controls);
+                policy.SessionControls = ParseSessionControlsFromState(dynAttributes.session_controls);
             }
 
             return policy;
