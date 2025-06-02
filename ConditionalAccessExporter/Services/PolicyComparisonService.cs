@@ -98,8 +98,12 @@ namespace ConditionalAccessExporter.Services
         {
             JObject jObject;
             
-            // Parse the input based on its type (JToken, string, or arbitrary object)
-            if (entraExport is JToken token)
+            // Parse the input based on its type (JObject, JToken, string, or arbitrary object)
+            if (entraExport is JObject existingJObject)
+            {
+                jObject = existingJObject;
+            }
+            else if (entraExport is JToken token)
             {
                 if (token.Type == JTokenType.Object)
                 {
