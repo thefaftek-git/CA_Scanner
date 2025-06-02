@@ -169,7 +169,12 @@ namespace ConditionalAccessExporter.Services
                             {
                                 try
                                 {
-                                    var policy = ParseConditionalAccessPolicyFromState(resource.name, instance.attributes);
+                                    // Handle the dynamic type issue - JObject needs special handling
+                                    var attributesObj = instance.attributes;
+                                    // Convert JObject to string and back to dynamic for proper deserialization
+                                    string attributesJson = attributesObj.ToString();
+                                    dynamic attributesDynamic = JsonConvert.DeserializeObject(attributesJson)!;
+                                    var policy = ParsePolicyFromTerraformState(resource.name, attributesDynamic);
                                     result.Policies.Add(policy);
                                     _logs.Add($"Parsed policy from state: {resource.name}");
                                 }
@@ -232,15 +237,15 @@ namespace ConditionalAccessExporter.Services
             return policy;
         }
 
-        private TerraformConditionalAccessPolicy ParseConditionalAccessPolicyFromState(string resourceName, dynamic attributes)
+        private TerraformConditionalAccessPolicy ParsePolicyFromTerraformState(string resourceName, dynamic attributes)
         {
             var policy = new TerraformConditionalAccessPolicy { ResourceName = resourceName };
             
             if (attributes?.display_name != null)
-                policy.DisplayName = attributes.display_name;
+                policy.DisplayName = attributes.display_name.ToString();
             
             if (attributes?.state != null)
-                policy.State = attributes.state;
+                policy.State = attributes.state.ToString();
 
             // Parse conditions from state
             if (attributes?.conditions != null)
@@ -397,24 +402,115 @@ namespace ConditionalAccessExporter.Services
                 Name = name,
                 Type = ParseStringValue(variableBody, "type"),
                 Description = ParseStringValue(variableBody, "description"),
-                Sensitive = ParseBoolValue(variableBody, "sensitive")
+                Sensitive = ParseBoolValue(variableBody, "sensitive"),
+                DefaultValue = ParseVariableDefaultValue(variableBody)
             };
+        }
+        
+        private object? ParseVariableDefaultValue(string variableBody)
+        {
+            // Try to parse default value - could be quoted string, unquoted value, or complex structure
+            var quotedPattern = @"default\s*=\s*""([^""]*)""";
+            var quotedMatch = Regex.Match(variableBody, quotedPattern);
+            if (quotedMatch.Success)
+            {
+                return quotedMatch.Groups[1].Value;
+            }
+            
+            // Try list/array pattern
+            var listPattern = @"default\s*=\s*\[(.*?)\]";
+            var listMatch = Regex.Match(variableBody, listPattern, RegexOptions.Singleline);
+            if (listMatch.Success)
+            {
+                var listContent = listMatch.Groups[1].Value;
+                // Simple parsing - split by comma and clean up quotes
+                var items = listContent.Split(',')
+                    .Select(item => item.Trim().Trim('"'))
+                    .Where(item => !string.IsNullOrEmpty(item))
+                    .ToList();
+                return items;
+            }
+            
+            // Try simple unquoted values (numbers, booleans, etc.)
+            var simplePattern = @"default\s*=\s*([^\s\n]+)";
+            var simpleMatch = Regex.Match(variableBody, simplePattern);
+            if (simpleMatch.Success)
+            {
+                var value = simpleMatch.Groups[1].Value;
+                if (bool.TryParse(value, out bool boolValue))
+                    return boolValue;
+                if (int.TryParse(value, out int intValue))
+                    return intValue;
+                return value; // Return as string if can't parse as other types
+            }
+            
+            return null;
         }
 
         private List<TerraformLocal> ParseLocals(string localsBody)
         {
             var locals = new List<TerraformLocal>();
             
-            // Simple regex to parse key = value pairs in locals
-            var matches = Regex.Matches(localsBody, @"(\w+)\s*=\s*([^=]+?)(?=\n\s*\w+\s*=|\n?\s*\}|$)");
+            // Use a more sophisticated parsing approach to handle nested structures
+            var lines = localsBody.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            var i = 0;
             
-            foreach (Match match in matches)
+            while (i < lines.Length)
             {
-                locals.Add(new TerraformLocal
+                var line = lines[i].Trim();
+                if (string.IsNullOrEmpty(line) || line.StartsWith("//") || line.StartsWith("#"))
                 {
-                    Name = match.Groups[1].Value.Trim(),
-                    Value = match.Groups[2].Value.Trim()
-                });
+                    i++;
+                    continue;
+                }
+                
+                // Look for key = value pattern
+                var equalIndex = line.IndexOf('=');
+                if (equalIndex > 0)
+                {
+                    var key = line.Substring(0, equalIndex).Trim();
+                    var valueStart = line.Substring(equalIndex + 1).Trim();
+                    
+                    // If value starts with {, need to find the matching }
+                    if (valueStart.StartsWith("{"))
+                    {
+                        var braceCount = 1;
+                        var value = valueStart;
+                        i++;
+                        
+                        while (i < lines.Length && braceCount > 0)
+                        {
+                            var nextLine = lines[i];
+                            value += "\n" + nextLine;
+                            
+                            foreach (char c in nextLine)
+                            {
+                                if (c == '{') braceCount++;
+                                if (c == '}') braceCount--;
+                            }
+                            i++;
+                        }
+                        
+                        locals.Add(new TerraformLocal
+                        {
+                            Name = key,
+                            Value = value
+                        });
+                    }
+                    else
+                    {
+                        locals.Add(new TerraformLocal
+                        {
+                            Name = key,
+                            Value = valueStart
+                        });
+                        i++;
+                    }
+                }
+                else
+                {
+                    i++;
+                }
             }
 
             return locals;
@@ -451,9 +547,23 @@ namespace ConditionalAccessExporter.Services
 
         private string? ParseStringValue(string content, string attributeName)
         {
-            var pattern = $@"{attributeName}\s*=\s*""([^""]*)""";
-            var match = Regex.Match(content, pattern);
-            return match.Success ? match.Groups[1].Value : null;
+            // First try quoted strings
+            var quotedPattern = $@"{attributeName}\s*=\s*""([^""]*)""";
+            var quotedMatch = Regex.Match(content, quotedPattern);
+            if (quotedMatch.Success)
+            {
+                return quotedMatch.Groups[1].Value;
+            }
+            
+            // Then try unquoted values (for types like string, bool, numbers, etc.)
+            var unquotedPattern = $@"{attributeName}\s*=\s*([^\s\n]+)";
+            var unquotedMatch = Regex.Match(content, unquotedPattern);
+            if (unquotedMatch.Success)
+            {
+                return unquotedMatch.Groups[1].Value;
+            }
+            
+            return null;
         }
 
         private bool ParseBoolValue(string content, string attributeName)
