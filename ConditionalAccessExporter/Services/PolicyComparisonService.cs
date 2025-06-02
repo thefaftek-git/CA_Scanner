@@ -50,10 +50,17 @@ namespace ConditionalAccessExporter.Services
         {
             JObject jObject;
             
-            // Parse the input, which can be a JObject, a JSON string, or an arbitrary object
-            if (entraExport is JObject existingJObject)
+            // Handle different input types: JToken, JSON string, or arbitrary object
+            if (entraExport is JToken token)
             {
-                jObject = existingJObject;
+                if (token.Type == JTokenType.Object)
+                {
+                    jObject = (JObject)token;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Unsupported JToken type: {token.Type}. Expected a JObject.");
+                }
             }
             else if (entraExport is string jsonString)
             {
