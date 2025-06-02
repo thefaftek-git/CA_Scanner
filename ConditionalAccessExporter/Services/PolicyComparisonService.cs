@@ -94,8 +94,14 @@ namespace ConditionalAccessExporter.Services
         /// <param name="entraExport">The export data, which can be a JObject, a JSON string, or an arbitrary object</param>
         /// <returns>A structured EntraExportData object containing tenant ID and policies</returns>
         /// <exception cref="ArgumentException">Thrown when the input is invalid or in an unsupported format</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the input is null</exception>
         private EntraExportData ParseEntraExport(object entraExport)
         {
+            if (entraExport == null)
+            {
+                throw new ArgumentNullException(nameof(entraExport), "The Entra export data cannot be null.");
+            }
+            
             JObject jObject;
             
             // Parse the input based on its type (JObject, JToken, string, or arbitrary object)
