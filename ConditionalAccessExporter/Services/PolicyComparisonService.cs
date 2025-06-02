@@ -46,11 +46,29 @@ namespace ConditionalAccessExporter.Services
             return result;
         }
 
+        private JObject DeserializeToJObject(string json)
+        {
+            var parsedToken = JsonConvert.DeserializeObject<JToken>(json);
+            
+            if (parsedToken is JObject obj)
+            {
+                return obj;
+            }
+            else if (parsedToken is JArray)
+            {
+                throw new ArgumentException("JSON string represents an array, but an object was expected.", nameof(json));
+            }
+            else
+            {
+                throw new ArgumentException("Unsupported JSON type. Expected a JSON object.", nameof(json));
+            }
+        }
+
         private EntraExportData ParseEntraExport(object entraExport)
         {
             JObject jObject;
             
-            // Parse the input, which can be a JObject, a JSON string, or an arbitrary object
+            // Parse the input based on its type (JToken, string, or arbitrary object)
             if (entraExport is JToken token)
             {
                 if (token.Type == JTokenType.Object)
@@ -59,17 +77,17 @@ namespace ConditionalAccessExporter.Services
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Unsupported JToken type: {token.Type}. Expected a JObject.");
+                    throw new ArgumentException($"Unsupported JToken type: {token.Type}. Expected a JObject.", nameof(entraExport));
                 }
             }
             else if (entraExport is string jsonString)
             {
-                jObject = JsonConvert.DeserializeObject<JObject>(jsonString);
+                jObject = DeserializeToJObject(jsonString);
             }
             else
             {
                 var json = JsonConvert.SerializeObject(entraExport);
-                jObject = JsonConvert.DeserializeObject<JObject>(json);
+                jObject = DeserializeToJObject(json);
             }
             
             if (jObject == null)
