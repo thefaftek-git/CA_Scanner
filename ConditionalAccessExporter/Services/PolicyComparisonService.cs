@@ -46,7 +46,7 @@ namespace ConditionalAccessExporter.Services
             return result;
         }
 
-        private JObject DeserializeToJObject(string json)
+        private static JObject DeserializeToJObject(string json)
         {
             var parsedToken = JsonConvert.DeserializeObject<JToken>(json);
             
