@@ -59,13 +59,22 @@ namespace ConditionalAccessExporter.Services
                 throw new ArgumentException("Input JSON string cannot be null or empty.", nameof(json));
             }
 
-            var parsedToken = JsonConvert.DeserializeObject<JToken>(json);
-            
-            if (parsedToken == null)
+            JToken parsedToken;
+            try
             {
-                throw new ArgumentException("Failed to parse JSON string.", nameof(json));
+                parsedToken = JsonConvert.DeserializeObject<JToken>(json);
+                
+                if (parsedToken == null)
+                {
+                    throw new ArgumentException("Failed to parse JSON string.", nameof(json));
+                }
             }
-            else if (parsedToken is JObject obj)
+            catch (JsonException ex)
+            {
+                throw new ArgumentException("Failed to parse JSON string due to invalid JSON format.", nameof(json), ex);
+            }
+            
+            if (parsedToken is JObject obj)
             {
                 return obj;
             }
