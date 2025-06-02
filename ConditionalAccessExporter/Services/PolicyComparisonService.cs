@@ -86,8 +86,16 @@ namespace ConditionalAccessExporter.Services
             }
             else
             {
-                var json = JsonConvert.SerializeObject(entraExport);
-                jObject = DeserializeToJObject(json);
+                // Convert arbitrary object to JObject directly without serialization roundtrip
+                var token = JToken.FromObject(entraExport);
+                if (token.Type == JTokenType.Object)
+                {
+                    jObject = (JObject)token;
+                }
+                else
+                {
+                    throw new ArgumentException($"Unsupported object type: {token.Type}. Expected a JSON object.", nameof(entraExport));
+                }
             }
             
             if (jObject == null)
