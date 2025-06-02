@@ -132,7 +132,7 @@ namespace ConditionalAccessExporter
                 name: "--formats",
                 description: "Report formats to generate",
                 getDefaultValue: () => new[] { "console", "json", "html" }
-            );
+            ) { AllowMultipleArgumentsPerToken = true };
             var matchingStrategyOption = new Option<MatchingStrategy>(
                 name: "--matching",
                 description: "Strategy for matching policies",
@@ -178,7 +178,7 @@ namespace ConditionalAccessExporter
                 name: "--formats",
                 description: "Report formats to generate",
                 getDefaultValue: () => new[] { "console", "json", "html", "markdown" }
-            );
+            ) { AllowMultipleArgumentsPerToken = true };
             var crossMatchingStrategyOption = new Option<string>(
                 name: "--matching",
                 description: "Strategy for matching policies (ByName, ById, SemanticSimilarity, CustomMapping)",
@@ -511,6 +511,10 @@ namespace ConditionalAccessExporter
         {
             Console.WriteLine("Conditional Access Policy Comparison");
             Console.WriteLine("===================================");
+            
+            Console.WriteLine($"Reference directory: {referenceDirectory}");
+            Console.WriteLine($"Output directory: {outputDirectory}");
+            Console.WriteLine($"Matching strategy: {matchingStrategy}");
 
             try
             {
@@ -518,6 +522,7 @@ namespace ConditionalAccessExporter
 
                 if (!string.IsNullOrEmpty(entraFile))
                 {
+                    Console.WriteLine($"Entra file: {entraFile}");
                     Console.WriteLine($"Loading Entra policies from file: {entraFile}");
                     if (!File.Exists(entraFile))
                     {
