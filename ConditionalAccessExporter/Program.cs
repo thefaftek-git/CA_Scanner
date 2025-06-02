@@ -238,6 +238,7 @@ namespace ConditionalAccessExporter
         {
             Console.WriteLine("Conditional Access Policy Exporter");
             Console.WriteLine("==================================");
+            Console.WriteLine($"Output file: {outputPath}");
 
             try
             {
@@ -706,6 +707,7 @@ namespace ConditionalAccessExporter
         {
             Console.WriteLine("Cross-Format Policy Comparison");
             Console.WriteLine("==============================");
+            Console.WriteLine("Cross-comparing policies");
 
             try
             {
