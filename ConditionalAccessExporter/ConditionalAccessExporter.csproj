@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>ConditionalAccessExporter.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.14.0" />
     <PackageReference Include="Microsoft.Graph" Version="5.79.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

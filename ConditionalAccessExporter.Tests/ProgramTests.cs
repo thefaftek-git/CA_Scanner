@@ -6,7 +6,6 @@ using ConditionalAccessExporter.Models;
 using ConditionalAccessExporter.Services;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
-using Microsoft.Graph.Models.ConditionalAccess;
 using Moq;
 using Xunit;
 
@@ -386,20 +385,6 @@ namespace ConditionalAccessExporter.Tests
                     }
                 }
             }
-        }
-
-        [Theory]
-        [InlineData("cross-compare", "--source-dir", "./src", "--reference-dir", "./ref")]
-        [InlineData("cross-compare", "--source-dir", "./src_tf", "--reference-dir", "./ref_json", "--output-dir", "cross_reports/", 
-            "--formats", "markdown", "--matching", "SemanticSimilarity", "--similarity-threshold", "0.75", "--enable-semantic", "false")]
-        public async Task CrossCompare_Command_ValidArgs_CallsHandler(params string[] args)
-        {
-            // This will test Issue Test Case 5.1 and 5.2
-            // Arrange
-
-            // Act
-
-            // Assert
         }
 
         [Theory]

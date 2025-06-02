@@ -9,9 +9,9 @@ using ConditionalAccessExporter.Services;
 
 namespace ConditionalAccessExporter
 {
-    class Program
+    public class Program
     {
-        private static async Task<int> Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
             var rootCommand = new RootCommand("Conditional Access Policy Exporter and Comparator");
 
