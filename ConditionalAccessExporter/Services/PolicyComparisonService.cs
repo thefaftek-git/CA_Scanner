@@ -69,10 +69,6 @@ namespace ConditionalAccessExporter.Services
                     throw new ArgumentException("Failed to parse JSON string.", nameof(json));
                 }
             }
-            catch (JsonReaderException ex)
-            {
-                throw new ArgumentException("Failed to parse JSON string due to invalid JSON format.", nameof(json), ex);
-            }
             catch (JsonException ex)
             {
                 throw new ArgumentException("Failed to parse JSON string due to JSON processing error.", nameof(json), ex);
@@ -126,23 +122,29 @@ namespace ConditionalAccessExporter.Services
             }
             else if (entraExport is string jsonString)
             {
-                if (string.IsNullOrWhiteSpace(jsonString))
-                {
-                    throw new ArgumentException("Input JSON string cannot be null or empty.", nameof(entraExport));
-                }
+                // Delegate validation to DeserializeToJObject
                 jObject = DeserializeToJObject(jsonString);
             }
             else
             {
-                // Convert arbitrary object to JObject directly without serialization roundtrip
-                var token = JToken.FromObject(entraExport);
-                if (token.Type == JTokenType.Object)
+                // Use JToken.FromObject for arbitrary objects
+                // Note: While this uses serialization under the hood, it's the most reliable approach
+                // for converting arbitrary objects to JObject without custom mapping logic
+                try
                 {
-                    jObject = (JObject)token;
+                    var token = JToken.FromObject(entraExport);
+                    if (token.Type == JTokenType.Object)
+                    {
+                        jObject = (JObject)token;
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Unsupported object type: {token.Type}. Expected a JSON object.", nameof(entraExport));
+                    }
                 }
-                else
+                catch (JsonException ex)
                 {
-                    throw new ArgumentException($"Unsupported object type: {token.Type}. Expected a JSON object.", nameof(entraExport));
+                    throw new ArgumentException("Failed to convert object to JSON format.", nameof(entraExport), ex);
                 }
             }
             
