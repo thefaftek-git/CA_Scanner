@@ -35,8 +35,6 @@ namespace ConditionalAccessExporter.Services
 
         private async Task<string> GenerateJsonReportAsync(CrossFormatComparisonResult comparisonResult, string outputPath)
         {
-            EnsureDirectoryExists(outputPath);
-            
             var fileName = Path.Combine(outputPath, $"cross-format-comparison-{DateTime.UtcNow:yyyyMMdd-HHmmss}.json");
             
             var jsonSettings = new JsonSerializerSettings
@@ -55,8 +53,6 @@ namespace ConditionalAccessExporter.Services
 
         private async Task<string> GenerateHtmlReportAsync(CrossFormatComparisonResult comparisonResult, string outputPath)
         {
-            EnsureDirectoryExists(outputPath);
-            
             var fileName = Path.Combine(outputPath, $"cross-format-comparison-{DateTime.UtcNow:yyyyMMdd-HHmmss}.html");
             
             var html = GenerateHtmlContent(comparisonResult);
@@ -69,8 +65,6 @@ namespace ConditionalAccessExporter.Services
 
         private async Task<string> GenerateMarkdownReportAsync(CrossFormatComparisonResult comparisonResult, string outputPath)
         {
-            EnsureDirectoryExists(outputPath);
-            
             var fileName = Path.Combine(outputPath, $"cross-format-comparison-{DateTime.UtcNow:yyyyMMdd-HHmmss}.md");
             
             var markdown = GenerateMarkdownContent(comparisonResult);
@@ -83,8 +77,6 @@ namespace ConditionalAccessExporter.Services
 
         private async Task<string> GenerateCsvReportAsync(CrossFormatComparisonResult comparisonResult, string outputPath)
         {
-            EnsureDirectoryExists(outputPath);
-            
             var fileName = Path.Combine(outputPath, $"cross-format-comparison-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv");
             
             var csv = GenerateCsvContent(comparisonResult);
