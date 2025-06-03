@@ -6,8 +6,18 @@ namespace ConditionalAccessExporter.Services
 {
     public class CrossFormatReportGenerationService
     {
+        private void EnsureDirectoryExists(string directoryPath)
+        {
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+        }
+
         public async Task<string> GenerateReportAsync(CrossFormatComparisonResult comparisonResult, string outputPath, ReportFormat format = ReportFormat.Json)
         {
+            EnsureDirectoryExists(outputPath);
+            
             switch (format)
             {
                 case ReportFormat.Json:
