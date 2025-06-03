@@ -6,13 +6,17 @@ namespace ConditionalAccessExporter.Services
 {
     public class CrossFormatReportGenerationService
     {
+        private void EnsureDirectoryExists(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+        }
+
         public async Task<string> GenerateReportAsync(CrossFormatComparisonResult comparisonResult, string outputPath, ReportFormat format = ReportFormat.Json)
         {
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputPath))
-            {
-                Directory.CreateDirectory(outputPath);
-            }
+            EnsureDirectoryExists(outputPath);
             
             switch (format)
             {
@@ -31,11 +35,7 @@ namespace ConditionalAccessExporter.Services
 
         private async Task<string> GenerateJsonReportAsync(CrossFormatComparisonResult comparisonResult, string outputPath)
         {
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputPath))
-            {
-                Directory.CreateDirectory(outputPath);
-            }
+            EnsureDirectoryExists(outputPath);
             
             var fileName = Path.Combine(outputPath, $"cross-format-comparison-{DateTime.UtcNow:yyyyMMdd-HHmmss}.json");
             
@@ -55,11 +55,7 @@ namespace ConditionalAccessExporter.Services
 
         private async Task<string> GenerateHtmlReportAsync(CrossFormatComparisonResult comparisonResult, string outputPath)
         {
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputPath))
-            {
-                Directory.CreateDirectory(outputPath);
-            }
+            EnsureDirectoryExists(outputPath);
             
             var fileName = Path.Combine(outputPath, $"cross-format-comparison-{DateTime.UtcNow:yyyyMMdd-HHmmss}.html");
             
@@ -73,11 +69,7 @@ namespace ConditionalAccessExporter.Services
 
         private async Task<string> GenerateMarkdownReportAsync(CrossFormatComparisonResult comparisonResult, string outputPath)
         {
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputPath))
-            {
-                Directory.CreateDirectory(outputPath);
-            }
+            EnsureDirectoryExists(outputPath);
             
             var fileName = Path.Combine(outputPath, $"cross-format-comparison-{DateTime.UtcNow:yyyyMMdd-HHmmss}.md");
             
@@ -91,11 +83,7 @@ namespace ConditionalAccessExporter.Services
 
         private async Task<string> GenerateCsvReportAsync(CrossFormatComparisonResult comparisonResult, string outputPath)
         {
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputPath))
-            {
-                Directory.CreateDirectory(outputPath);
-            }
+            EnsureDirectoryExists(outputPath);
             
             var fileName = Path.Combine(outputPath, $"cross-format-comparison-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv");
             
