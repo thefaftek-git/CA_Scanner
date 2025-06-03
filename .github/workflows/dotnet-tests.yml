@@ -26,7 +26,7 @@ jobs:
       run: dotnet build --no-restore
       
     - name: Test with coverage
-      run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+      run: "dotnet test --no-build --verbosity normal --collect:\"XPlat Code Coverage\" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover"
       
     - name: Generate code coverage report
       uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
