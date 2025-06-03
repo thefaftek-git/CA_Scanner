@@ -286,7 +286,7 @@ namespace ConditionalAccessExporter.Services
                 // Compare the policies
                 var diff = _jsonDiffPatch.Diff(matchingReference.Policy, entraPolicy);
                 
-                if (diff == null)
+                if (diff == null || diff.Type == JTokenType.Object && !diff.HasValues)
                 {
                     comparison.Status = ComparisonStatus.Identical;
                 }
