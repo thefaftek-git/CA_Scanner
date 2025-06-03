@@ -26,8 +26,10 @@ jobs:
       run: dotnet build --no-restore
       
     - name: Test with coverage
-      run: "dotnet test --no-build --verbosity normal --collect:\"XPlat Code Coverage\" --logger \"console;verbosity=detailed\" --nologo || true"
-      # Using '|| true' to ensure the workflow continues even if tests fail
+      continue-on-error: true
+      id: tests
+      run: "dotnet test --no-build --verbosity normal --collect:\"XPlat Code Coverage\" --logger \"console;verbosity=detailed\" --nologo"
+      # Using continue-on-error to ensure the workflow continues even if tests fail
       
     - name: Generate code coverage report
       uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
