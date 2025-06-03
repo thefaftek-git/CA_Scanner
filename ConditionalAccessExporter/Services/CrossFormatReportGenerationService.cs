@@ -6,11 +6,11 @@ namespace ConditionalAccessExporter.Services
 {
     public class CrossFormatReportGenerationService
     {
-        private void EnsureDirectoryExists(string path)
+        private void EnsureDirectoryExists(string directoryPath)
         {
-            if (!Directory.Exists(path))
+            if (!Directory.Exists(directoryPath))
             {
-                Directory.CreateDirectory(path);
+                Directory.CreateDirectory(directoryPath);
             }
         }
 
