@@ -399,6 +399,7 @@ namespace ConditionalAccessExporter
                 Console.WriteLine($"File size: {new FileInfo(outputPath).Length / 1024.0:F2} KB");
                 Console.WriteLine("Terraform conversion completed successfully!");
 
+                // Return failure code if any conversions failed
                 return conversionResult.FailedConversions > 0 ? 1 : 0;
             }
             catch (Exception ex)
@@ -423,6 +424,13 @@ namespace ConditionalAccessExporter
 
             try
             {
+                // Validate required input parameter
+                if (string.IsNullOrEmpty(inputPath))
+                {
+                    Console.WriteLine("Error: Input file is required but was not provided.");
+                    return 1;
+                }
+                
                 Console.WriteLine($"Input file: {inputPath}");
                 Console.WriteLine($"Output directory: {outputDirectory}");
                 Console.WriteLine($"Generate variables: {(generateVariables ? "Yes" : "No")}");
