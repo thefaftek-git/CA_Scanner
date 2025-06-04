@@ -447,7 +447,6 @@ namespace ConditionalAccessExporter
                     ProviderVersion = providerVersion
                 };
 
-                Console.WriteLine("Converting JSON to Terraform HCL...");
                 var result = await jsonToTerraformService.ConvertJsonToTerraformAsync(inputPath, options);
 
                 if (result.Errors.Any())
@@ -723,8 +722,8 @@ namespace ConditionalAccessExporter
             double similarityThreshold)
         {
             Console.WriteLine("Cross-Format Policy Comparison");
-            Console.WriteLine("==============================");
-
+            Console.WriteLine("====================================");
+            
             try
             {
                 Console.WriteLine($"Source directory: {sourceDirectory}");
@@ -733,7 +732,7 @@ namespace ConditionalAccessExporter
                 Console.WriteLine($"Report formats: {string.Join(", ", reportFormats)}");
                 Console.WriteLine($"Matching strategy: {matchingStrategy}");
                 Console.WriteLine($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
-                Console.WriteLine($"Semantic matching: {(enableSemantic ? "Enabled" : "Disabled")}");
+                Console.WriteLine($"Semantic comparison: {(enableSemantic ? "Enabled" : "Disabled")}");
                 Console.WriteLine($"Similarity threshold: {similarityThreshold}");
                 Console.WriteLine();
                 
