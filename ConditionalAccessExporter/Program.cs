@@ -286,6 +286,8 @@ namespace ConditionalAccessExporter
                 Console.WriteLine($"Verbose logging: {(verbose ? "Enabled" : "Disabled")}");
                 Console.WriteLine();
 
+                Console.WriteLine("Converting Terraform policies...");
+
                 // Parse Terraform files
                 Console.WriteLine("Parsing Terraform files...");
                 TerraformParseResult parseResult;
@@ -414,17 +416,19 @@ namespace ConditionalAccessExporter
 
             try
             {
-                var jsonToTerraformService = new JsonToTerraformService();
-                
-                Console.WriteLine($"Input JSON file: {inputPath}");
+                Console.WriteLine($"Input file: {inputPath}");
                 Console.WriteLine($"Output directory: {outputDirectory}");
-                Console.WriteLine($"Generate variables: {generateVariables}");
-                Console.WriteLine($"Generate provider config: {generateProvider}");
-                Console.WriteLine($"Separate files per policy: {separateFiles}");
-                Console.WriteLine($"Generate module structure: {generateModule}");
-                Console.WriteLine($"Include comments: {includeComments}");
+                Console.WriteLine($"Generate variables: {(generateVariables ? "Yes" : "No")}");
+                Console.WriteLine($"Generate provider: {(generateProvider ? "Yes" : "No")}");
+                Console.WriteLine($"Separate files: {(separateFiles ? "Yes" : "No")}");
+                Console.WriteLine($"Generate module: {(generateModule ? "Yes" : "No")}");
+                Console.WriteLine($"Include comments: {(includeComments ? "Yes" : "No")}");
                 Console.WriteLine($"Provider version: {providerVersion}");
                 Console.WriteLine();
+                
+                Console.WriteLine("Converting JSON to Terraform HCL...");
+                
+                var jsonToTerraformService = new JsonToTerraformService();
 
                 if (!File.Exists(inputPath))
                 {
@@ -510,10 +514,29 @@ namespace ConditionalAccessExporter
             bool caseSensitive)
         {
             Console.WriteLine("Conditional Access Policy Comparison");
-            Console.WriteLine("===================================");
+            Console.WriteLine("====================================");
 
             try
             {
+                Console.WriteLine($"Reference directory: {referenceDirectory}");
+                
+                if (!string.IsNullOrEmpty(entraFile))
+                {
+                    Console.WriteLine($"Entra file: {entraFile}");
+                }
+                else
+                {
+                    Console.WriteLine("Entra file: <fetching from live Entra ID>");
+                }
+                
+                Console.WriteLine($"Output directory: {outputDirectory}");
+                Console.WriteLine($"Report formats: {string.Join(", ", reportFormats)}");
+                Console.WriteLine($"Matching strategy: {matchingStrategy}");
+                Console.WriteLine($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
+                Console.WriteLine();
+                
+                Console.WriteLine("Comparing policies...");
+                
                 object entraExport;
 
                 if (!string.IsNullOrEmpty(entraFile))
@@ -704,6 +727,18 @@ namespace ConditionalAccessExporter
 
             try
             {
+                Console.WriteLine($"Source directory: {sourceDirectory}");
+                Console.WriteLine($"Reference directory: {referenceDirectory}");
+                Console.WriteLine($"Output directory: {outputDirectory}");
+                Console.WriteLine($"Report formats: {string.Join(", ", reportFormats)}");
+                Console.WriteLine($"Matching strategy: {matchingStrategy}");
+                Console.WriteLine($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
+                Console.WriteLine($"Semantic matching: {(enableSemantic ? "Enabled" : "Disabled")}");
+                Console.WriteLine($"Similarity threshold: {similarityThreshold}");
+                Console.WriteLine();
+                
+                Console.WriteLine("Cross-comparing policies...");
+                
                 // Create output directory if it doesn't exist
                 if (!Directory.Exists(outputDirectory))
                 {
