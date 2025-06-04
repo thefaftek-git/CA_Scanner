@@ -471,6 +471,7 @@ namespace ConditionalAccessExporter
                     {
                         Console.WriteLine($"  - {error}");
                     }
+                    return 1;
                 }
 
                 if (result.Warnings.Any())
