@@ -284,6 +284,15 @@ namespace ConditionalAccessExporter
                     return 1;
                 }
                 
+                Console.WriteLine("Converting Terraform policies...");
+
+                // Validate required input parameter
+                if (string.IsNullOrEmpty(inputPath))
+                {
+                    Console.WriteLine("Error: Input path is required but was not provided.");
+                    return 1;
+                }
+                
                 var parsingService = new TerraformParsingService();
                 var conversionService = new TerraformConversionService();
 
