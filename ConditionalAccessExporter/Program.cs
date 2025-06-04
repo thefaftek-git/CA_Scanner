@@ -277,6 +277,13 @@ namespace ConditionalAccessExporter
 
             try
             {
+                // Validate required input parameter
+                if (string.IsNullOrEmpty(inputPath))
+                {
+                    Console.WriteLine("Error: Input path is required but was not provided.");
+                    return 1;
+                }
+                
                 var parsingService = new TerraformParsingService();
                 var conversionService = new TerraformConversionService();
 
@@ -517,10 +524,30 @@ namespace ConditionalAccessExporter
 
             try
             {
+                // Validate reference directory is provided
+                if (string.IsNullOrEmpty(referenceDirectory))
+                {
+                    Console.WriteLine("Error: Reference directory is required but was not provided.");
+                    return 1;
+                }
+
+                // Validate reference directory exists
+                if (!Directory.Exists(referenceDirectory))
+                {
+                    Console.WriteLine($"Error: Reference directory '{referenceDirectory}' not found.");
+                    return 1;
+                }
+                
                 Console.WriteLine($"Reference directory: {referenceDirectory}");
                 
                 if (!string.IsNullOrEmpty(entraFile))
                 {
+                    // Validate Entra file exists if specified
+                    if (!File.Exists(entraFile))
+                    {
+                        Console.WriteLine($"Error: Entra file '{entraFile}' not found.");
+                        return 1;
+                    }
                     Console.WriteLine($"Entra file: {entraFile}");
                 }
                 else
@@ -722,10 +749,24 @@ namespace ConditionalAccessExporter
             double similarityThreshold)
         {
             Console.WriteLine("Cross-Format Policy Comparison");
-            Console.WriteLine("====================================");
+            Console.WriteLine("============================");
             
             try
             {
+                // Validate source directory exists
+                if (string.IsNullOrEmpty(sourceDirectory))
+                {
+                    Console.WriteLine("Error: Source directory is required but was not provided.");
+                    return 1;
+                }
+
+                // Validate reference directory exists
+                if (string.IsNullOrEmpty(referenceDirectory))
+                {
+                    Console.WriteLine("Error: Reference directory is required but was not provided.");
+                    return 1;
+                }
+                
                 Console.WriteLine($"Source directory: {sourceDirectory}");
                 Console.WriteLine($"Reference directory: {referenceDirectory}");
                 Console.WriteLine($"Output directory: {outputDirectory}");
@@ -737,12 +778,6 @@ namespace ConditionalAccessExporter
                 Console.WriteLine();
                 
                 Console.WriteLine("Cross-comparing policies...");
-                
-                // Create output directory if it doesn't exist
-                if (!Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
 
                 // Validate source directory exists
                 if (!Directory.Exists(sourceDirectory))
@@ -756,6 +791,12 @@ namespace ConditionalAccessExporter
                 {
                     Console.WriteLine($"Error: Reference directory '{referenceDirectory}' not found.");
                     return 1;
+                }
+                
+                // Create output directory if it doesn't exist
+                if (!Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
                 }
 
                 // Initialize services
@@ -778,15 +819,46 @@ namespace ConditionalAccessExporter
                     EnableSemanticComparison = enableSemantic,
                     SemanticSimilarityThreshold = similarityThreshold
                 };
-
+                
                 Console.WriteLine("Starting cross-format comparison...");
                 
                 try
                 {
-                    var comparisonResult = await crossFormatService.CompareAsync(
-                        sourceDirectory,
-                        referenceDirectory,
-                        matchingOptions);
+                    // Run the comparison
+                    var comparisonResult = await crossFormatService.CompareAsync(sourceDirectory, referenceDirectory, matchingOptions);
+                    
+                    // Generate reports
+                    foreach (var format in reportFormats)
+                    {
+                        try
+                        {
+                            var reportPath = Path.Combine(outputDirectory, $"cross_comparison_report.{format.ToLower()}");
+                            Console.WriteLine($"Generating {format} report: {reportPath}");
+                            await reportService.GenerateReportAsync(comparisonResult, reportPath, format);
+                        }
+                        catch (Exception reportEx)
+                        {
+                            Console.WriteLine($"Error generating {format} report: {reportEx.Message}");
+                        }
+                    }
+                    
+                    // Print summary
+                    Console.WriteLine();
+                    Console.WriteLine("Comparison Complete");
+                    Console.WriteLine("==================");
+                    Console.WriteLine($"Policies compared: {comparisonResult.TotalPoliciesCompared}");
+                    Console.WriteLine($"Matching policies: {comparisonResult.MatchingPolicies.Count}");
+                    Console.WriteLine($"Different policies: {comparisonResult.DifferentPolicies.Count}");
+                    Console.WriteLine($"Only in source: {comparisonResult.OnlyInSource.Count}");
+                    Console.WriteLine($"Only in reference: {comparisonResult.OnlyInReference.Count}");
+                    
+                    return 0;
+                }
+                catch (Exception serviceEx)
+                {
+                    Console.WriteLine($"Error during cross-format comparison: {serviceEx.Message}");
+                    return 1;
+                }
 
                 // Display console summary
                 if (reportFormats.Contains("console"))
