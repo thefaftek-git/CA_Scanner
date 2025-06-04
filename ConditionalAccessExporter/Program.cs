@@ -744,6 +744,20 @@ namespace ConditionalAccessExporter
                     Directory.CreateDirectory(outputDirectory);
                 }
 
+                // Validate source directory exists
+                if (!Directory.Exists(sourceDirectory))
+                {
+                    Console.WriteLine($"Error: Source directory '{sourceDirectory}' not found.");
+                    return 1;
+                }
+
+                // Validate reference directory exists
+                if (!Directory.Exists(referenceDirectory))
+                {
+                    Console.WriteLine($"Error: Reference directory '{referenceDirectory}' not found.");
+                    return 1;
+                }
+
                 // Initialize services
                 var jsonComparisonService = new PolicyComparisonService();
                 var terraformParsingService = new TerraformParsingService();
@@ -754,16 +768,8 @@ namespace ConditionalAccessExporter
                     terraformConversionService);
                 var reportService = new CrossFormatReportGenerationService();
 
-                Console.WriteLine($"Source directory: {sourceDirectory}");
-                Console.WriteLine($"Reference directory: {referenceDirectory}");
-                Console.WriteLine($"Output directory: {outputDirectory}");
-                Console.WriteLine($"Report formats: {string.Join(", ", reportFormats)}");
-                Console.WriteLine($"Matching strategy: {matchingStrategy}");
-                Console.WriteLine($"Case sensitive: {caseSensitive}");
-                Console.WriteLine($"Semantic comparison: {enableSemantic}");
-                Console.WriteLine($"Similarity threshold: {similarityThreshold:F2}");
-                Console.WriteLine();
-
+                Console.WriteLine("Services initialized successfully.");
+                
                 // Configure matching options
                 var matchingOptions = new CrossFormatMatchingOptions
                 {
@@ -774,10 +780,13 @@ namespace ConditionalAccessExporter
                 };
 
                 Console.WriteLine("Starting cross-format comparison...");
-                var comparisonResult = await crossFormatService.CompareAsync(
-                    sourceDirectory,
-                    referenceDirectory,
-                    matchingOptions);
+                
+                try
+                {
+                    var comparisonResult = await crossFormatService.CompareAsync(
+                        sourceDirectory,
+                        referenceDirectory,
+                        matchingOptions);
 
                 // Display console summary
                 if (reportFormats.Contains("console"))
