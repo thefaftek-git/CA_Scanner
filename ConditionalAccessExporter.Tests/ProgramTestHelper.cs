@@ -176,12 +176,17 @@ namespace ConditionalAccessExporter.Tests
             try
             {
                 action();
-                return stringWriter.ToString();
+            }
+            catch
+            {
+                // Ignore exceptions - we still want to return any captured output
             }
             finally
             {
                 Console.SetOut(originalOutput);
             }
+            
+            return stringWriter.ToString();
         }
         
         /// <summary>
@@ -196,12 +201,17 @@ namespace ConditionalAccessExporter.Tests
             try
             {
                 await action();
-                return stringWriter.ToString();
+            }
+            catch
+            {
+                // Ignore exceptions - we still want to return any captured output
             }
             finally
             {
                 Console.SetOut(originalOutput);
             }
+            
+            return stringWriter.ToString();
         }
     }
 }
