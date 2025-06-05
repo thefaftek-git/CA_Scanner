@@ -368,8 +368,18 @@ namespace ConditionalAccessExporter.Services
             return true;
         }
 
+
+
         private static bool AreValuesSemanticallySame(JToken token1, JToken token2)
         {
+            // Fast path: Check token types first to avoid unnecessary string conversions
+            if (token1.Type != token2.Type)
+            {
+                // Only proceed with string comparison if one might be a date
+                if (!CouldBeDateTime(token1) && !CouldBeDateTime(token2))
+                    return false;
+            }
+            
             // Convert to strings only once for efficiency
             var str1 = token1.ToString();
             var str2 = token2.ToString();
@@ -378,8 +388,40 @@ namespace ConditionalAccessExporter.Services
             if (str1 == str2)
                 return true;
             
-            // Only attempt date parsing if strings differ (optimization)
-            return AreEquivalentDates(str1, str2);
+            // Only attempt date parsing if strings differ and could be dates
+            if (CouldBeDateTime(str1) && CouldBeDateTime(str2))
+                return AreEquivalentDates(str1, str2);
+                
+            return false;
+        }
+
+        private static bool CouldBeDateTime(JToken token)
+        {
+            return token.Type == JTokenType.Date || token.Type == JTokenType.String;
+        }
+        
+        private static bool CouldBeDateTime(string str)
+        {
+            // Quick heuristic: dates usually contain digits and common separators
+            // This avoids expensive parsing for obviously non-date strings
+            if (str.Length < 8 || str.Length > 30) // Reasonable date string length bounds
+                return false;
+                
+            bool hasDigit = false;
+            bool hasDateSeparator = false;
+            
+            foreach (char c in str)
+            {
+                if (char.IsDigit(c))
+                    hasDigit = true;
+                else if (c == '-' || c == '/' || c == ':' || c == 'T' || c == 'Z')
+                    hasDateSeparator = true;
+                    
+                if (hasDigit && hasDateSeparator)
+                    return true;
+            }
+            
+            return false;
         }
 
         private static bool AreEquivalentDates(string str1, string str2)
