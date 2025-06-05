@@ -379,22 +379,31 @@ namespace ConditionalAccessExporter.Services
             // Fast path: Check token types first to avoid unnecessary string conversions
             if (token1.Type != token2.Type)
             {
-                // Only proceed with string comparison if one might be a date
-                if (!CouldBeDateTime(token1) && !CouldBeDateTime(token2))
-                    return false;
+                // Check if either token could represent a date
+                if (CouldBeDateTime(token1) || CouldBeDateTime(token2))
+                {
+                    // Proceed to string conversion for potential date comparison
+                    var str1 = token1.ToString();
+                    var str2 = token2.ToString();
+                    
+                    // Only attempt date parsing if strings differ and could be dates
+                    if (CouldBeDateTime(str1) && CouldBeDateTime(str2))
+                        return AreEquivalentDates(str1, str2);
+                }
+                return false; // Short-circuit if neither token could be a date
             }
             
             // Convert to strings only once for efficiency
-            var str1 = token1.ToString();
-            var str2 = token2.ToString();
+            var str1Direct = token1.ToString();
+            var str2Direct = token2.ToString();
             
             // Direct string comparison (handles most cases efficiently)
-            if (str1 == str2)
+            if (str1Direct == str2Direct)
                 return true;
             
             // Only attempt date parsing if strings differ and could be dates
-            if (CouldBeDateTime(str1) && CouldBeDateTime(str2))
-                return AreEquivalentDates(str1, str2);
+            if (CouldBeDateTime(str1Direct) && CouldBeDateTime(str2Direct))
+                return AreEquivalentDates(str1Direct, str2Direct);
                 
             return false;
         }

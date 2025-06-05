@@ -311,9 +311,10 @@ namespace ConditionalAccessExporter.Tests
                         if (Directory.Exists(tempDir))
                             Directory.Delete(tempDir, true);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Ignore cleanup errors
+                        // Log warning if deletion fails to aid in diagnosing file-system issues
+                        Console.WriteLine($"Warning: Failed to delete temporary directory '{tempDir}': {ex.Message}");
                     }
                 }
             }
