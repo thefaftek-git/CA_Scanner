@@ -15,6 +15,17 @@ namespace ConditionalAccessExporter.Tests
     public class ProgramTests
     {
         /// <summary>
+        /// Helper method to assert that a required option error message is present in the captured output
+        /// </summary>
+        /// <param name="capturedOutput">The captured console output</param>
+        /// <param name="optionName">The option name to check for (e.g., "--input")</param>
+        private static void AssertRequiredOptionError(string? capturedOutput, string optionName)
+        {
+            Assert.NotNull(capturedOutput);
+            Assert.Contains(optionName, capturedOutput);
+        }
+
+        /// <summary>
         /// Test infrastructure for invoking Program.Main with command-line arguments
         /// </summary>
         [Fact]
@@ -154,8 +165,7 @@ namespace ConditionalAccessExporter.Tests
             });
 
             // Assert
-            Assert.NotNull(capturedOutput);
-            Assert.Contains("--input", capturedOutput);
+            AssertRequiredOptionError(capturedOutput, "--input");
             Assert.DoesNotContain("Parsing Terraform files", capturedOutput);
         }
 
@@ -230,8 +240,7 @@ namespace ConditionalAccessExporter.Tests
             });
 
             // Assert
-            Assert.NotNull(capturedOutput);
-            Assert.Contains("--input", capturedOutput);
+            AssertRequiredOptionError(capturedOutput, "--input");
             Assert.DoesNotContain("JSON to Terraform Conversion", capturedOutput);
         }
 
@@ -366,8 +375,7 @@ namespace ConditionalAccessExporter.Tests
             });
 
             // Assert
-            Assert.NotNull(capturedOutput);
-            Assert.Contains("--reference-dir", capturedOutput);
+            AssertRequiredOptionError(capturedOutput, "--reference-dir");
             Assert.DoesNotContain("Conditional Access Policy Comparison", capturedOutput);
         }
 
@@ -458,11 +466,11 @@ namespace ConditionalAccessExporter.Tests
             
             if (args.Contains("--source-dir") && !args.Contains("--reference-dir"))
             {
-                Assert.Contains("--reference-dir", capturedOutput);
+                AssertRequiredOptionError(capturedOutput, "--reference-dir");
             }
             else if (args.Contains("--reference-dir") && !args.Contains("--source-dir"))
             {
-                Assert.Contains("--source-dir", capturedOutput);
+                AssertRequiredOptionError(capturedOutput, "--source-dir");
             }
             
             Assert.DoesNotContain("Cross-Format Policy Comparison", capturedOutput);
