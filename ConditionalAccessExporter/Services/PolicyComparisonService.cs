@@ -2,6 +2,7 @@ using ConditionalAccessExporter.Models;
 using JsonDiffPatchDotNet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Globalization;
 
 namespace ConditionalAccessExporter.Services
 {
@@ -346,7 +347,22 @@ namespace ConditionalAccessExporter.Services
                             else
                             {
                                 // Try parsing both as DateTime if they look like dates
-                                if (DateTime.TryParse(str0, out var date0) && DateTime.TryParse(str1, out var date1))
+                                // Use culture-invariant parsing with common date formats
+                                var dateFormats = new[]
+                                {
+                                    "yyyy-MM-ddTHH:mm:ss",
+                                    "yyyy-MM-ddTHH:mm:ssZ",
+                                    "yyyy-MM-ddTHH:mm:ss.fffZ",
+                                    "MM/dd/yyyy HH:mm:ss",
+                                    "dd/MM/yyyy HH:mm:ss"
+                                };
+                                
+                                bool date0Parsed = DateTime.TryParseExact(str0, dateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date0) ||
+                                                   DateTime.TryParse(str0, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date0);
+                                bool date1Parsed = DateTime.TryParseExact(str1, dateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date1) ||
+                                                   DateTime.TryParse(str1, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date1);
+                                
+                                if (date0Parsed && date1Parsed)
                                 {
                                     areEqual = date0 == date1;
                                 }
