@@ -300,7 +300,7 @@ namespace ConditionalAccessExporter.Services
             return comparison;
         }
 
-        private bool IsEmptyDiff(JToken diff)
+        private static bool IsEmptyDiff(JToken diff)
         {
             if (diff == null)
                 return true;
