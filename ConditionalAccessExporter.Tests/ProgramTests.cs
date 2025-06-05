@@ -255,44 +255,39 @@ namespace ConditionalAccessExporter.Tests
             var modifiedArgs = new string[args.Length];
             Array.Copy(args, modifiedArgs, args.Length);
             
+            // Cache indices of arguments to avoid repeated Array.IndexOf calls
+            var refDirIndex = Array.IndexOf(modifiedArgs, "--reference-dir");
+            var entraFileIndex = Array.IndexOf(modifiedArgs, "--entra-file");
+            var outputDirIndex = Array.IndexOf(modifiedArgs, "--output-dir");
+            var matchingIndex = Array.IndexOf(modifiedArgs, "--matching");
+            
             try
             {
+                
                 // Create reference directory if needed
-                if (modifiedArgs.Contains("--reference-dir"))
+                if (refDirIndex >= 0 && refDirIndex < modifiedArgs.Length - 1)
                 {
-                    var refDirIndex = Array.IndexOf(modifiedArgs, "--reference-dir");
-                    if (refDirIndex >= 0 && refDirIndex < modifiedArgs.Length - 1)
-                    {
-                        var tempRefDir = Path.Combine(tempBaseDir, "ref");
-                        Directory.CreateDirectory(tempRefDir);
-                        modifiedArgs[refDirIndex + 1] = tempRefDir;
-                        tempDirs.Add(tempRefDir);
-                    }
+                    var tempRefDir = Path.Combine(tempBaseDir, "ref");
+                    Directory.CreateDirectory(tempRefDir);
+                    modifiedArgs[refDirIndex + 1] = tempRefDir;
+                    tempDirs.Add(tempRefDir);
                 }
                 
                 // Create entra file if needed
-                if (modifiedArgs.Contains("--entra-file"))
+                if (entraFileIndex >= 0 && entraFileIndex < modifiedArgs.Length - 1)
                 {
-                    var entraFileIndex = Array.IndexOf(modifiedArgs, "--entra-file");
-                    if (entraFileIndex >= 0 && entraFileIndex < modifiedArgs.Length - 1)
-                    {
-                        var tempEntraFile = Path.Combine(tempBaseDir, "entra_export.json");
-                        File.WriteAllText(tempEntraFile, "[]"); // Empty JSON array
-                        modifiedArgs[entraFileIndex + 1] = tempEntraFile;
-                    }
+                    var tempEntraFile = Path.Combine(tempBaseDir, "entra_export.json");
+                    File.WriteAllText(tempEntraFile, "[]"); // Empty JSON array
+                    modifiedArgs[entraFileIndex + 1] = tempEntraFile;
                 }
                 
                 // Create output directory if needed
-                if (modifiedArgs.Contains("--output-dir"))
+                if (outputDirIndex >= 0 && outputDirIndex < modifiedArgs.Length - 1)
                 {
-                    var outputDirIndex = Array.IndexOf(modifiedArgs, "--output-dir");
-                    if (outputDirIndex >= 0 && outputDirIndex < modifiedArgs.Length - 1)
-                    {
-                        var tempOutputDir = Path.Combine(tempBaseDir, "reports");
-                        Directory.CreateDirectory(tempOutputDir);
-                        modifiedArgs[outputDirIndex + 1] = tempOutputDir;
-                        tempDirs.Add(tempOutputDir);
-                    }
+                    var tempOutputDir = Path.Combine(tempBaseDir, "reports");
+                    Directory.CreateDirectory(tempOutputDir);
+                    modifiedArgs[outputDirIndex + 1] = tempOutputDir;
+                    tempDirs.Add(tempOutputDir);
                 }
                 
                 // Act
@@ -334,33 +329,21 @@ namespace ConditionalAccessExporter.Tests
             if (modifiedArgs.Length > 3)
             {
                 // Check entra-file if specified
-                if (modifiedArgs.Contains("--entra-file"))
+                if (entraFileIndex >= 0 && entraFileIndex < modifiedArgs.Length - 1)
                 {
-                    var entraFileIndex = Array.IndexOf(modifiedArgs, "--entra-file");
-                    if (entraFileIndex >= 0 && entraFileIndex < modifiedArgs.Length - 1)
-                    {
-                        Assert.Contains($"Entra file: {modifiedArgs[entraFileIndex + 1]}", capturedOutput);
-                    }
+                    Assert.Contains($"Entra file: {modifiedArgs[entraFileIndex + 1]}", capturedOutput);
                 }
                 
                 // Check output-dir if specified
-                if (modifiedArgs.Contains("--output-dir"))
+                if (outputDirIndex >= 0 && outputDirIndex < modifiedArgs.Length - 1)
                 {
-                    var outputDirIndex = Array.IndexOf(modifiedArgs, "--output-dir");
-                    if (outputDirIndex >= 0 && outputDirIndex < modifiedArgs.Length - 1)
-                    {
-                        Assert.Contains($"Output directory: {modifiedArgs[outputDirIndex + 1]}", capturedOutput);
-                    }
+                    Assert.Contains($"Output directory: {modifiedArgs[outputDirIndex + 1]}", capturedOutput);
                 }
                 
                 // Check matching strategy if specified
-                if (modifiedArgs.Contains("--matching"))
+                if (matchingIndex >= 0 && matchingIndex < modifiedArgs.Length - 1)
                 {
-                    var matchingIndex = Array.IndexOf(modifiedArgs, "--matching");
-                    if (matchingIndex >= 0 && matchingIndex < modifiedArgs.Length - 1)
-                    {
-                        Assert.Contains($"Matching strategy: {modifiedArgs[matchingIndex + 1]}", capturedOutput);
-                    }
+                    Assert.Contains($"Matching strategy: {modifiedArgs[matchingIndex + 1]}", capturedOutput);
                 }
             }
         }
