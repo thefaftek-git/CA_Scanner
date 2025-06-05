@@ -852,7 +852,28 @@ namespace ConditionalAccessExporter
                         {
                             var reportPath = Path.Combine(outputDirectory, $"cross_comparison_report.{format.ToLower()}");
                             Console.WriteLine($"Generating {format} report: {reportPath}");
-                            await reportService.GenerateReportAsync(comparisonResult, reportPath, format);
+                            // Convert string format to ReportFormat enum
+                            ReportFormat reportFormat;
+                            switch (format.ToLowerInvariant())
+                            {
+                                case "json":
+                                    reportFormat = ReportFormat.Json;
+                                    break;
+                                case "html":
+                                    reportFormat = ReportFormat.Html;
+                                    break;
+                                case "markdown":
+                                case "md":
+                                    reportFormat = ReportFormat.Markdown;
+                                    break;
+                                case "csv":
+                                    reportFormat = ReportFormat.Csv;
+                                    break;
+                                default:
+                                    Console.WriteLine($"Warning: Unknown report format '{format}' ignored.");
+                                    continue;
+                            }
+                            await reportService.GenerateReportAsync(comparisonResult, outputDirectory, reportFormat);
                         }
                         catch (Exception reportEx)
                         {
@@ -864,11 +885,13 @@ namespace ConditionalAccessExporter
                     Console.WriteLine();
                     Console.WriteLine("Comparison Complete");
                     Console.WriteLine("==================");
-                    Console.WriteLine($"Policies compared: {comparisonResult.TotalPoliciesCompared}");
-                    Console.WriteLine($"Matching policies: {comparisonResult.MatchingPolicies.Count}");
-                    Console.WriteLine($"Different policies: {comparisonResult.DifferentPolicies.Count}");
-                    Console.WriteLine($"Only in source: {comparisonResult.OnlyInSource.Count}");
-                    Console.WriteLine($"Only in reference: {comparisonResult.OnlyInReference.Count}");
+                    Console.WriteLine($"Total source policies: {comparisonResult.Summary.TotalSourcePolicies}");
+                    Console.WriteLine($"Total reference policies: {comparisonResult.Summary.TotalReferencePolicies}");
+                    Console.WriteLine($"Matching policies: {comparisonResult.Summary.MatchingPolicies}");
+                    Console.WriteLine($"Semantically equivalent policies: {comparisonResult.Summary.SemanticallyEquivalentPolicies}");
+                    Console.WriteLine($"Different policies: {comparisonResult.Summary.PoliciesWithDifferences}");
+                    Console.WriteLine($"Source-only policies: {comparisonResult.Summary.SourceOnlyPolicies}");
+                    Console.WriteLine($"Reference-only policies: {comparisonResult.Summary.ReferenceOnlyPolicies}");
                     
                     return 0;
                 }
@@ -877,58 +900,6 @@ namespace ConditionalAccessExporter
                     Console.WriteLine($"Error during cross-format comparison: {serviceEx.Message}");
                     return 1;
                 }
-
-                // Display console summary
-                if (reportFormats.Contains("console"))
-                {
-                    DisplayCrossFormatComparisonSummary(comparisonResult);
-                }
-
-                // Generate reports
-                var generatedFiles = new List<string>();
-                
-                foreach (var format in reportFormats)
-                {
-                    switch (format.ToLowerInvariant())
-                    {
-                        case "json":
-                            var jsonFile = await reportService.GenerateReportAsync(comparisonResult, outputDirectory, ReportFormat.Json);
-                            generatedFiles.Add(jsonFile);
-                            break;
-                        case "html":
-                            var htmlFile = await reportService.GenerateReportAsync(comparisonResult, outputDirectory, ReportFormat.Html);
-                            generatedFiles.Add(htmlFile);
-                            break;
-                        case "markdown":
-                        case "md":
-                            var mdFile = await reportService.GenerateReportAsync(comparisonResult, outputDirectory, ReportFormat.Markdown);
-                            generatedFiles.Add(mdFile);
-                            break;
-                        case "csv":
-                            var csvFile = await reportService.GenerateReportAsync(comparisonResult, outputDirectory, ReportFormat.Csv);
-                            generatedFiles.Add(csvFile);
-                            break;
-                        case "console":
-                            // Already displayed above
-                            break;
-                        default:
-                            Console.WriteLine($"Warning: Unknown report format '{format}' ignored.");
-                            break;
-                    }
-                }
-
-                Console.WriteLine();
-                Console.WriteLine("Cross-format comparison completed successfully!");
-                if (generatedFiles.Any())
-                {
-                    Console.WriteLine("Generated report files:");
-                    foreach (var file in generatedFiles)
-                    {
-                        Console.WriteLine($"  - {file}");
-                    }
-                }
-
-                return 0;
             }
             catch (Exception ex)
             {
