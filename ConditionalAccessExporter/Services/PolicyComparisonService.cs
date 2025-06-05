@@ -9,6 +9,15 @@ namespace ConditionalAccessExporter.Services
     public class PolicyComparisonService
     {
         private readonly JsonDiffPatch _jsonDiffPatch;
+        
+        private static readonly string[] DateFormats = 
+        {
+            "yyyy-MM-ddTHH:mm:ss",
+            "yyyy-MM-ddTHH:mm:ssZ",
+            "yyyy-MM-ddTHH:mm:ss.fffZ",
+            "MM/dd/yyyy HH:mm:ss",
+            "dd/MM/yyyy HH:mm:ss"
+        };
 
         public PolicyComparisonService()
         {
@@ -347,19 +356,10 @@ namespace ConditionalAccessExporter.Services
                             else
                             {
                                 // Try parsing both as DateTime if they look like dates
-                                // Use culture-invariant parsing with common date formats
-                                var dateFormats = new[]
-                                {
-                                    "yyyy-MM-ddTHH:mm:ss",
-                                    "yyyy-MM-ddTHH:mm:ssZ",
-                                    "yyyy-MM-ddTHH:mm:ss.fffZ",
-                                    "MM/dd/yyyy HH:mm:ss",
-                                    "dd/MM/yyyy HH:mm:ss"
-                                };
-                                
-                                bool date0Parsed = DateTime.TryParseExact(str0, dateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date0) ||
+                                // Use culture-invariant parsing with predefined date formats
+                                bool date0Parsed = DateTime.TryParseExact(str0, DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date0) ||
                                                    DateTime.TryParse(str0, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date0);
-                                bool date1Parsed = DateTime.TryParseExact(str1, dateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date1) ||
+                                bool date1Parsed = DateTime.TryParseExact(str1, DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date1) ||
                                                    DateTime.TryParse(str1, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date1);
                                 
                                 if (date0Parsed && date1Parsed)

@@ -244,7 +244,6 @@ namespace ConditionalAccessExporter.Tests
             // This will test Issue Test Case 4.1 and 4.2
             // Arrange - Create required directories for the test using temporary paths
             var tempDirs = new List<string>();
-            var tempFiles = new List<string>();
             string? capturedOutput = null;
             
             // Create a temporary base directory for this test
@@ -280,7 +279,6 @@ namespace ConditionalAccessExporter.Tests
                         var tempEntraFile = Path.Combine(tempBaseDir, "entra_export.json");
                         File.WriteAllText(tempEntraFile, "[]"); // Empty JSON array
                         modifiedArgs[entraFileIndex + 1] = tempEntraFile;
-                        tempFiles.Add(tempEntraFile);
                     }
                 }
                 
