@@ -302,8 +302,6 @@ namespace ConditionalAccessExporter
                 Console.WriteLine($"Verbose logging: {(verbose ? "Enabled" : "Disabled")}");
                 Console.WriteLine();
 
-                Console.WriteLine("Converting Terraform policies...");
-
                 // Parse Terraform files
                 Console.WriteLine("Parsing Terraform files...");
                 TerraformParseResult parseResult;
