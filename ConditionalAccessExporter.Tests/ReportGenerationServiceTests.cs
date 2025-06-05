@@ -8,6 +8,7 @@ using System.Text;
 
 namespace ConditionalAccessExporter.Tests
 {
+    [Collection("Console Output Tests")]
     public class ReportGenerationServiceTests : IDisposable
     {
         private readonly ReportGenerationService _reportService;

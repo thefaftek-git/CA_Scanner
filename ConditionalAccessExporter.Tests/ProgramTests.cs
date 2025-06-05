@@ -11,6 +11,7 @@ using Xunit;
 
 namespace ConditionalAccessExporter.Tests
 {
+    [Collection("Console Output Tests")]
     public class ProgramTests
     {
         /// <summary>
