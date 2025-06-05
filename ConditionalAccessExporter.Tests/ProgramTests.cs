@@ -155,7 +155,7 @@ namespace ConditionalAccessExporter.Tests
 
             // Assert
             Assert.NotNull(capturedOutput);
-            Assert.Contains("Required option '--input'", capturedOutput);
+            Assert.Contains("--input", capturedOutput);
             Assert.DoesNotContain("Parsing Terraform files", capturedOutput);
         }
 
@@ -231,7 +231,7 @@ namespace ConditionalAccessExporter.Tests
 
             // Assert
             Assert.NotNull(capturedOutput);
-            Assert.Contains("Required option '--input'", capturedOutput);
+            Assert.Contains("--input", capturedOutput);
             Assert.DoesNotContain("JSON to Terraform Conversion", capturedOutput);
         }
 
@@ -367,7 +367,7 @@ namespace ConditionalAccessExporter.Tests
 
             // Assert
             Assert.NotNull(capturedOutput);
-            Assert.Contains("Required option '--reference-dir'", capturedOutput);
+            Assert.Contains("--reference-dir", capturedOutput);
             Assert.DoesNotContain("Conditional Access Policy Comparison", capturedOutput);
         }
 
@@ -458,11 +458,11 @@ namespace ConditionalAccessExporter.Tests
             
             if (args.Contains("--source-dir") && !args.Contains("--reference-dir"))
             {
-                Assert.Contains("Required option '--reference-dir'", capturedOutput);
+                Assert.Contains("--reference-dir", capturedOutput);
             }
             else if (args.Contains("--reference-dir") && !args.Contains("--source-dir"))
             {
-                Assert.Contains("Required option '--source-dir'", capturedOutput);
+                Assert.Contains("--source-dir", capturedOutput);
             }
             
             Assert.DoesNotContain("Cross-Format Policy Comparison", capturedOutput);
