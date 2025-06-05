@@ -238,15 +238,45 @@ namespace ConditionalAccessExporter.Tests
         [Theory]
         [InlineData("compare", "--reference-dir", "./ref")]
         [InlineData("compare", "--reference-dir", "./ref", "--entra-file", "entra_export.json", "--output-dir", "reports/",
-            "--formats", "json", "html", "--matching", "ById", "--case-sensitive", "true")]
+            "--formats", "json", "--formats", "html", "--matching", "ById", "--case-sensitive", "true")]
         public async Task Compare_Command_ValidArgs_CallsHandler(params string[] args)
         {
             // This will test Issue Test Case 4.1 and 4.2
-            // Arrange - Capture console output
+            // Arrange - Create required directories for the test
+            var tempDirs = new List<string>();
             string? capturedOutput = null;
             
             try
             {
+                // Create reference directory if needed
+                if (args.Contains("--reference-dir"))
+                {
+                    var refDirIndex = Array.IndexOf(args, "--reference-dir");
+                    if (refDirIndex >= 0 && refDirIndex < args.Length - 1)
+                    {
+                        var refDir = args[refDirIndex + 1];
+                        if (!Directory.Exists(refDir))
+                        {
+                            Directory.CreateDirectory(refDir);
+                            tempDirs.Add(refDir);
+                        }
+                    }
+                }
+                
+                // Create entra file if needed
+                if (args.Contains("--entra-file"))
+                {
+                    var entraFileIndex = Array.IndexOf(args, "--entra-file");
+                    if (entraFileIndex >= 0 && entraFileIndex < args.Length - 1)
+                    {
+                        var entraFile = args[entraFileIndex + 1];
+                        if (!File.Exists(entraFile))
+                        {
+                            File.WriteAllText(entraFile, "[]"); // Empty JSON array
+                        }
+                    }
+                }
+                
                 // Act
                 capturedOutput = await ProgramTestHelper.CaptureConsoleOutputAsync(async () =>
                 {
@@ -257,6 +287,41 @@ namespace ConditionalAccessExporter.Tests
             {
                 // The test might fail due to Graph API or file system issues
                 // We're just testing that the command path is invoked
+            }
+            finally
+            {
+                // Clean up temporary directories
+                foreach (var tempDir in tempDirs)
+                {
+                    try
+                    {
+                        if (Directory.Exists(tempDir))
+                            Directory.Delete(tempDir, true);
+                    }
+                    catch
+                    {
+                        // Ignore cleanup errors
+                    }
+                }
+                
+                // Clean up entra file if created
+                if (args.Contains("--entra-file"))
+                {
+                    var entraFileIndex = Array.IndexOf(args, "--entra-file");
+                    if (entraFileIndex >= 0 && entraFileIndex < args.Length - 1)
+                    {
+                        var entraFile = args[entraFileIndex + 1];
+                        try
+                        {
+                            if (File.Exists(entraFile))
+                                File.Delete(entraFile);
+                        }
+                        catch
+                        {
+                            // Ignore cleanup errors
+                        }
+                    }
+                }
             }
 
             // Assert

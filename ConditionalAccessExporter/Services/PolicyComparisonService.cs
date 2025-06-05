@@ -286,7 +286,7 @@ namespace ConditionalAccessExporter.Services
                 // Compare the policies
                 var diff = _jsonDiffPatch.Diff(matchingReference.Policy, entraPolicy);
                 
-                if (diff == null || diff.Type == JTokenType.Object && !diff.HasValues)
+                if (diff == null || IsEmptyDiff(diff))
                 {
                     comparison.Status = ComparisonStatus.Identical;
                 }
@@ -298,6 +298,89 @@ namespace ConditionalAccessExporter.Services
             }
 
             return comparison;
+        }
+
+        private bool IsEmptyDiff(JToken diff)
+        {
+            if (diff == null)
+                return true;
+
+            if (diff.Type != JTokenType.Object)
+                return false;
+
+            var diffObj = (JObject)diff;
+            if (!diffObj.HasValues)
+                return true;
+
+            // Check if all properties represent no actual changes
+            // In JsonDiffPatch, identical values are represented as [value, value]
+            foreach (var property in diffObj.Properties())
+            {
+                var value = property.Value;
+                
+                // If it's an array with 2 identical elements, it means no change
+                if (value.Type == JTokenType.Array)
+                {
+                    var array = (JArray)value;
+                    
+                    if (array.Count == 2)
+                    {
+                        bool areEqual = false;
+                        
+                        // First try direct comparison
+                        if (JToken.DeepEquals(array[0], array[1]))
+                        {
+                            areEqual = true;
+                        }
+                        else
+                        {
+                            // If direct comparison fails, try string comparison for cases where
+                            // one might be parsed as Date and other as String
+                            var str0 = array[0].ToString();
+                            var str1 = array[1].ToString();
+                            
+                            if (str0 == str1)
+                            {
+                                areEqual = true;
+                            }
+                            else
+                            {
+                                // Try parsing both as DateTime if they look like dates
+                                if (DateTime.TryParse(str0, out var date0) && DateTime.TryParse(str1, out var date1))
+                                {
+                                    areEqual = date0 == date1;
+                                }
+                            }
+                        }
+                        
+                        if (areEqual)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else if (value.Type == JTokenType.Object)
+                {
+                    // Recursively check nested objects
+                    if (!IsEmptyDiff(value))
+                        return false;
+                }
+                else
+                {
+                    // Any other type represents a change
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private ReferencePolicy? FindMatchingReference(
