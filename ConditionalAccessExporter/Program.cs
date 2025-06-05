@@ -277,6 +277,17 @@ namespace ConditionalAccessExporter
 
             try
             {
+                // Validate required input parameter
+                if (string.IsNullOrEmpty(inputPath))
+                {
+                    Console.WriteLine("Error: Input path is required but was not provided.");
+                    return 1;
+                }
+                
+                Console.WriteLine("Converting Terraform policies...");
+
+// Removed redundant null-or-empty check for inputPath
+                
                 var parsingService = new TerraformParsingService();
                 var conversionService = new TerraformConversionService();
 
@@ -390,6 +401,7 @@ namespace ConditionalAccessExporter
                 Console.WriteLine($"File size: {new FileInfo(outputPath).Length / 1024.0:F2} KB");
                 Console.WriteLine("Terraform conversion completed successfully!");
 
+                // Return failure code if any conversions failed
                 return conversionResult.FailedConversions > 0 ? 1 : 0;
             }
             catch (Exception ex)
@@ -414,17 +426,26 @@ namespace ConditionalAccessExporter
 
             try
             {
-                var jsonToTerraformService = new JsonToTerraformService();
+                // Validate required input parameter
+                if (string.IsNullOrEmpty(inputPath))
+                {
+                    Console.WriteLine("Error: Input file is required but was not provided.");
+                    return 1;
+                }
                 
-                Console.WriteLine($"Input JSON file: {inputPath}");
+                Console.WriteLine($"Input file: {inputPath}");
                 Console.WriteLine($"Output directory: {outputDirectory}");
-                Console.WriteLine($"Generate variables: {generateVariables}");
-                Console.WriteLine($"Generate provider config: {generateProvider}");
-                Console.WriteLine($"Separate files per policy: {separateFiles}");
-                Console.WriteLine($"Generate module structure: {generateModule}");
-                Console.WriteLine($"Include comments: {includeComments}");
+                Console.WriteLine($"Generate variables: {(generateVariables ? "Yes" : "No")}");
+                Console.WriteLine($"Generate provider: {(generateProvider ? "Yes" : "No")}");
+                Console.WriteLine($"Separate files: {(separateFiles ? "Yes" : "No")}");
+                Console.WriteLine($"Generate module: {(generateModule ? "Yes" : "No")}");
+                Console.WriteLine($"Include comments: {(includeComments ? "Yes" : "No")}");
                 Console.WriteLine($"Provider version: {providerVersion}");
                 Console.WriteLine();
+                
+                Console.WriteLine("Converting JSON to Terraform HCL...");
+                
+                var jsonToTerraformService = new JsonToTerraformService();
 
                 if (!File.Exists(inputPath))
                 {
@@ -443,7 +464,6 @@ namespace ConditionalAccessExporter
                     ProviderVersion = providerVersion
                 };
 
-                Console.WriteLine("Converting JSON to Terraform HCL...");
                 var result = await jsonToTerraformService.ConvertJsonToTerraformAsync(inputPath, options);
 
                 if (result.Errors.Any())
@@ -453,6 +473,7 @@ namespace ConditionalAccessExporter
                     {
                         Console.WriteLine($"  - {error}");
                     }
+                    return 1;
                 }
 
                 if (result.Warnings.Any())
@@ -510,10 +531,49 @@ namespace ConditionalAccessExporter
             bool caseSensitive)
         {
             Console.WriteLine("Conditional Access Policy Comparison");
-            Console.WriteLine("===================================");
+            Console.WriteLine("====================================");
 
             try
             {
+                // Validate reference directory is provided
+                if (string.IsNullOrEmpty(referenceDirectory))
+                {
+                    Console.WriteLine("Error: Reference directory is required but was not provided.");
+                    return 1;
+                }
+
+                // Validate reference directory exists
+                if (!Directory.Exists(referenceDirectory))
+                {
+                    Console.WriteLine($"Error: Reference directory '{referenceDirectory}' not found.");
+                    return 1;
+                }
+                
+                Console.WriteLine($"Reference directory: {referenceDirectory}");
+                
+                if (!string.IsNullOrEmpty(entraFile))
+                {
+                    // Validate Entra file exists if specified
+                    if (!File.Exists(entraFile))
+                    {
+                        Console.WriteLine($"Error: Entra file '{entraFile}' not found.");
+                        return 1;
+                    }
+                    Console.WriteLine($"Entra file: {entraFile}");
+                }
+                else
+                {
+                    Console.WriteLine("Entra file: <fetching from live Entra ID>");
+                }
+                
+                Console.WriteLine($"Output directory: {outputDirectory}");
+                Console.WriteLine($"Report formats: {string.Join(", ", reportFormats)}");
+                Console.WriteLine($"Matching strategy: {matchingStrategy}");
+                Console.WriteLine($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
+                Console.WriteLine();
+                
+                Console.WriteLine("Comparing policies...");
+                
                 object entraExport;
 
                 if (!string.IsNullOrEmpty(entraFile))
@@ -700,10 +760,50 @@ namespace ConditionalAccessExporter
             double similarityThreshold)
         {
             Console.WriteLine("Cross-Format Policy Comparison");
-            Console.WriteLine("==============================");
-
+            Console.WriteLine("============================");
+            
             try
             {
+                // Validate source directory exists
+                if (string.IsNullOrEmpty(sourceDirectory))
+                {
+                    Console.WriteLine("Error: Source directory is required but was not provided.");
+                    return 1;
+                }
+
+                // Validate reference directory exists
+                if (string.IsNullOrEmpty(referenceDirectory))
+                {
+                    Console.WriteLine("Error: Reference directory is required but was not provided.");
+                    return 1;
+                }
+                
+                Console.WriteLine($"Source directory: {sourceDirectory}");
+                Console.WriteLine($"Reference directory: {referenceDirectory}");
+                Console.WriteLine($"Output directory: {outputDirectory}");
+                Console.WriteLine($"Report formats: {string.Join(", ", reportFormats)}");
+                Console.WriteLine($"Matching strategy: {matchingStrategy}");
+                Console.WriteLine($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
+                Console.WriteLine($"Semantic comparison: {(enableSemantic ? "Enabled" : "Disabled")}");
+                Console.WriteLine($"Similarity threshold: {similarityThreshold}");
+                Console.WriteLine();
+                
+                Console.WriteLine("Cross-comparing policies...");
+
+                // Validate source directory exists
+                if (!Directory.Exists(sourceDirectory))
+                {
+                    Console.WriteLine($"Error: Source directory '{sourceDirectory}' not found.");
+                    return 1;
+                }
+
+                // Validate reference directory exists
+                if (!Directory.Exists(referenceDirectory))
+                {
+                    Console.WriteLine($"Error: Reference directory '{referenceDirectory}' not found.");
+                    return 1;
+                }
+                
                 // Create output directory if it doesn't exist
                 if (!Directory.Exists(outputDirectory))
                 {
@@ -720,16 +820,8 @@ namespace ConditionalAccessExporter
                     terraformConversionService);
                 var reportService = new CrossFormatReportGenerationService();
 
-                Console.WriteLine($"Source directory: {sourceDirectory}");
-                Console.WriteLine($"Reference directory: {referenceDirectory}");
-                Console.WriteLine($"Output directory: {outputDirectory}");
-                Console.WriteLine($"Report formats: {string.Join(", ", reportFormats)}");
-                Console.WriteLine($"Matching strategy: {matchingStrategy}");
-                Console.WriteLine($"Case sensitive: {caseSensitive}");
-                Console.WriteLine($"Semantic comparison: {enableSemantic}");
-                Console.WriteLine($"Similarity threshold: {similarityThreshold:F2}");
-                Console.WriteLine();
-
+                Console.WriteLine("Services initialized successfully.");
+                
                 // Configure matching options
                 var matchingOptions = new CrossFormatMatchingOptions
                 {
@@ -738,64 +830,69 @@ namespace ConditionalAccessExporter
                     EnableSemanticComparison = enableSemantic,
                     SemanticSimilarityThreshold = similarityThreshold
                 };
-
-                Console.WriteLine("Starting cross-format comparison...");
-                var comparisonResult = await crossFormatService.CompareAsync(
-                    sourceDirectory,
-                    referenceDirectory,
-                    matchingOptions);
-
-                // Display console summary
-                if (reportFormats.Contains("console"))
-                {
-                    DisplayCrossFormatComparisonSummary(comparisonResult);
-                }
-
-                // Generate reports
-                var generatedFiles = new List<string>();
                 
-                foreach (var format in reportFormats)
+                Console.WriteLine("Starting cross-format comparison...");
+                
+                try
                 {
-                    switch (format.ToLowerInvariant())
+                    // Run the comparison
+                    var comparisonResult = await crossFormatService.CompareAsync(sourceDirectory, referenceDirectory, matchingOptions);
+                    
+                    // Generate reports
+                    foreach (var format in reportFormats)
                     {
-                        case "json":
-                            var jsonFile = await reportService.GenerateReportAsync(comparisonResult, outputDirectory, ReportFormat.Json);
-                            generatedFiles.Add(jsonFile);
-                            break;
-                        case "html":
-                            var htmlFile = await reportService.GenerateReportAsync(comparisonResult, outputDirectory, ReportFormat.Html);
-                            generatedFiles.Add(htmlFile);
-                            break;
-                        case "markdown":
-                        case "md":
-                            var mdFile = await reportService.GenerateReportAsync(comparisonResult, outputDirectory, ReportFormat.Markdown);
-                            generatedFiles.Add(mdFile);
-                            break;
-                        case "csv":
-                            var csvFile = await reportService.GenerateReportAsync(comparisonResult, outputDirectory, ReportFormat.Csv);
-                            generatedFiles.Add(csvFile);
-                            break;
-                        case "console":
-                            // Already displayed above
-                            break;
-                        default:
-                            Console.WriteLine($"Warning: Unknown report format '{format}' ignored.");
-                            break;
+                        try
+                        {
+                            var reportPath = Path.Combine(outputDirectory, $"cross_comparison_report.{format.ToLower()}");
+                            Console.WriteLine($"Generating {format} report: {reportPath}");
+                            // Convert string format to ReportFormat enum
+                            ReportFormat reportFormat;
+                            switch (format.ToLowerInvariant())
+                            {
+                                case "json":
+                                    reportFormat = ReportFormat.Json;
+                                    break;
+                                case "html":
+                                    reportFormat = ReportFormat.Html;
+                                    break;
+                                case "markdown":
+                                case "md":
+                                    reportFormat = ReportFormat.Markdown;
+                                    break;
+                                case "csv":
+                                    reportFormat = ReportFormat.Csv;
+                                    break;
+                                default:
+                                    Console.WriteLine($"Warning: Unknown report format '{format}' ignored.");
+                                    continue;
+                            }
+                            await reportService.GenerateReportAsync(comparisonResult, outputDirectory, reportFormat);
+                        }
+                        catch (Exception reportEx)
+                        {
+                            Console.WriteLine($"Error generating {format} report: {reportEx.Message}");
+                        }
                     }
+                    
+                    // Print summary
+                    Console.WriteLine();
+                    Console.WriteLine("Comparison Complete");
+                    Console.WriteLine("==================");
+                    Console.WriteLine($"Total source policies: {comparisonResult.Summary.TotalSourcePolicies}");
+                    Console.WriteLine($"Total reference policies: {comparisonResult.Summary.TotalReferencePolicies}");
+                    Console.WriteLine($"Matching policies: {comparisonResult.Summary.MatchingPolicies}");
+                    Console.WriteLine($"Semantically equivalent policies: {comparisonResult.Summary.SemanticallyEquivalentPolicies}");
+                    Console.WriteLine($"Different policies: {comparisonResult.Summary.PoliciesWithDifferences}");
+                    Console.WriteLine($"Source-only policies: {comparisonResult.Summary.SourceOnlyPolicies}");
+                    Console.WriteLine($"Reference-only policies: {comparisonResult.Summary.ReferenceOnlyPolicies}");
+                    
+                    return 0;
                 }
-
-                Console.WriteLine();
-                Console.WriteLine("Cross-format comparison completed successfully!");
-                if (generatedFiles.Any())
+                catch (Exception serviceEx)
                 {
-                    Console.WriteLine("Generated report files:");
-                    foreach (var file in generatedFiles)
-                    {
-                        Console.WriteLine($"  - {file}");
-                    }
+                    Console.WriteLine($"Error during cross-format comparison: {serviceEx.Message}");
+                    return 1;
                 }
-
-                return 0;
             }
             catch (Exception ex)
             {
