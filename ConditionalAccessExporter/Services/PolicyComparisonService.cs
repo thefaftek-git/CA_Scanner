@@ -2,12 +2,26 @@ using ConditionalAccessExporter.Models;
 using JsonDiffPatchDotNet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Globalization;
 
 namespace ConditionalAccessExporter.Services
 {
     public class PolicyComparisonService
     {
         private readonly JsonDiffPatch _jsonDiffPatch;
+        
+        private static readonly string[] DateFormats = 
+        {
+            "yyyy-MM-ddTHH:mm:ss",
+            "yyyy-MM-ddTHH:mm:ssZ",
+            "yyyy-MM-ddTHH:mm:ss.fffZ",
+            "MM/dd/yyyy HH:mm:ss",
+            "dd/MM/yyyy HH:mm:ss"
+        };
+
+        // Constants for date string length validation heuristics
+        private const int MinDateStringLength = 8;   // Minimum reasonable date string length (e.g., "01/01/24")
+        private const int MaxDateStringLength = 30;  // Maximum reasonable date string length (e.g., "2024-01-01T12:00:00.000Z")
 
         public PolicyComparisonService()
         {
@@ -286,7 +300,7 @@ namespace ConditionalAccessExporter.Services
                 // Compare the policies
                 var diff = _jsonDiffPatch.Diff(matchingReference.Policy, entraPolicy);
                 
-                if (diff == null || diff.Type == JTokenType.Object && !diff.HasValues)
+                if (diff == null || IsEmptyDiff(diff))
                 {
                     comparison.Status = ComparisonStatus.Identical;
                 }
@@ -298,6 +312,145 @@ namespace ConditionalAccessExporter.Services
             }
 
             return comparison;
+        }
+
+        private static bool IsEmptyDiff(JToken diff)
+        {
+            if (diff == null)
+                return true;
+
+            if (diff.Type != JTokenType.Object)
+                return false;
+
+            var diffObj = (JObject)diff;
+            if (!diffObj.HasValues)
+                return true;
+
+            // Check if all properties represent no actual changes
+            // In JsonDiffPatch, identical values are represented as [value, value]
+            foreach (var property in diffObj.Properties())
+            {
+                var value = property.Value;
+                
+                // If it's an array with 2 identical elements, it means no change
+                if (value.Type == JTokenType.Array)
+                {
+                    var array = (JArray)value;
+                    
+                    if (array.Count == 2)
+                    {
+                        // First try direct comparison (most efficient)
+                        if (JToken.DeepEquals(array[0], array[1]))
+                        {
+                            continue;
+                        }
+                        
+                        // If direct comparison fails, try semantic comparison
+                        if (!AreValuesSemanticallySame(array[0], array[1]))
+                        {
+                            return false; // Short-circuit on first difference
+                        }
+                    }
+                    else
+                    {
+                        return false; // Short-circuit on non-pair arrays
+                    }
+                }
+                else if (value.Type == JTokenType.Object)
+                {
+                    // Recursively check nested objects
+                    if (!IsEmptyDiff(value))
+                        return false; // Short-circuit on nested differences
+                }
+                else
+                {
+                    // Any other type represents a change
+                    return false; // Short-circuit on direct changes
+                }
+            }
+
+            return true;
+        }
+
+
+
+        private static bool AreValuesSemanticallySame(JToken token1, JToken token2)
+        {
+            // Fast path: Check token types first to avoid unnecessary string conversions
+            if (token1.Type != token2.Type)
+            {
+                // Check if either token could represent a date
+                if (CouldBeDateTime(token1) || CouldBeDateTime(token2))
+                {
+                    // Proceed to string conversion for potential date comparison
+                    var str1 = token1.ToString();
+                    var str2 = token2.ToString();
+                    
+                    // Only attempt date parsing if strings differ and could be dates
+                    if (CouldBeDateTime(str1) && CouldBeDateTime(str2))
+                        return AreEquivalentDates(str1, str2);
+                }
+                return false; // Short-circuit if neither token could be a date
+            }
+            
+            // Convert to strings only once for efficiency
+            var str1Direct = token1.ToString();
+            var str2Direct = token2.ToString();
+            
+            // Direct string comparison (handles most cases efficiently)
+            if (str1Direct == str2Direct)
+                return true;
+            
+            // Only attempt date parsing if strings differ and could be dates
+            if (CouldBeDateTime(str1Direct) && CouldBeDateTime(str2Direct))
+                return AreEquivalentDates(str1Direct, str2Direct);
+                
+            return false;
+        }
+
+        private static bool CouldBeDateTime(JToken token)
+        {
+            return token.Type == JTokenType.Date || token.Type == JTokenType.String;
+        }
+        
+        private static bool CouldBeDateTime(string str)
+        {
+            // Quick heuristic: dates usually contain digits and common separators
+            // This avoids expensive parsing for obviously non-date strings
+            if (str.Length < MinDateStringLength || str.Length > MaxDateStringLength)
+                return false;
+                
+            bool hasDigit = false;
+            bool hasDateSeparator = false;
+            
+            foreach (char c in str)
+            {
+                if (char.IsDigit(c))
+                    hasDigit = true;
+                else if (c == '-' || c == '/' || c == ':' || c == 'T' || c == 'Z')
+                    hasDateSeparator = true;
+                    
+                if (hasDigit && hasDateSeparator)
+                    return true;
+            }
+            
+            return false;
+        }
+
+        private static bool AreEquivalentDates(string str1, string str2)
+        {
+            // Use culture-invariant parsing with predefined date formats
+            bool date1Parsed = DateTime.TryParseExact(str1, DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date1) ||
+                               DateTime.TryParse(str1, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date1);
+            
+            // Short-circuit if first string isn't a valid date
+            if (!date1Parsed)
+                return false;
+            
+            bool date2Parsed = DateTime.TryParseExact(str2, DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date2) ||
+                               DateTime.TryParse(str2, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date2);
+            
+            return date2Parsed && date1 == date2;
         }
 
         private ReferencePolicy? FindMatchingReference(
