@@ -323,7 +323,7 @@ namespace ConditionalAccessExporter.Tests
             Assert.Contains("Conditional Access Policy Comparison", capturedOutput);
             
             // Verify reference directory was correctly extracted from modified args
-            Assert.Contains($"Reference directory: {modifiedArgs[2]}", capturedOutput);
+            Assert.Contains($"Reference directory: {modifiedArgs[refDirIndex + 1]}", capturedOutput);
             
             // Check for additional parameters if provided
             if (modifiedArgs.Length > 3)

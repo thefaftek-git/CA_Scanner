@@ -19,6 +19,10 @@ namespace ConditionalAccessExporter.Services
             "dd/MM/yyyy HH:mm:ss"
         };
 
+        // Constants for date string length validation heuristics
+        private const int MinDateStringLength = 8;   // Minimum reasonable date string length (e.g., "01/01/24")
+        private const int MaxDateStringLength = 30;  // Maximum reasonable date string length (e.g., "2024-01-01T12:00:00.000Z")
+
         public PolicyComparisonService()
         {
             _jsonDiffPatch = new JsonDiffPatch();
@@ -404,7 +408,7 @@ namespace ConditionalAccessExporter.Services
         {
             // Quick heuristic: dates usually contain digits and common separators
             // This avoids expensive parsing for obviously non-date strings
-            if (str.Length < 8 || str.Length > 30) // Reasonable date string length bounds
+            if (str.Length < MinDateStringLength || str.Length > MaxDateStringLength)
                 return false;
                 
             bool hasDigit = false;
