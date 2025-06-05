@@ -335,68 +335,67 @@ namespace ConditionalAccessExporter.Services
                     
                     if (array.Count == 2)
                     {
-                        bool areEqual = false;
-                        
-                        // First try direct comparison
+                        // First try direct comparison (most efficient)
                         if (JToken.DeepEquals(array[0], array[1]))
-                        {
-                            areEqual = true;
-                        }
-                        else
-                        {
-                            // If direct comparison fails, try string comparison for cases where
-                            // one might be parsed as Date and other as String
-                            var str0 = array[0].ToString();
-                            var str1 = array[1].ToString();
-                            
-                            if (str0 == str1)
-                            {
-                                areEqual = true;
-                            }
-                            else
-                            {
-                                // Try parsing both as DateTime if they look like dates
-                                // Use culture-invariant parsing with predefined date formats
-                                bool date0Parsed = DateTime.TryParseExact(str0, DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date0) ||
-                                                   DateTime.TryParse(str0, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date0);
-                                bool date1Parsed = DateTime.TryParseExact(str1, DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date1) ||
-                                                   DateTime.TryParse(str1, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date1);
-                                
-                                if (date0Parsed && date1Parsed)
-                                {
-                                    areEqual = date0 == date1;
-                                }
-                            }
-                        }
-                        
-                        if (areEqual)
                         {
                             continue;
                         }
-                        else
+                        
+                        // If direct comparison fails, try semantic comparison
+                        if (!AreValuesSemanticallySame(array[0], array[1]))
                         {
-                            return false;
+                            return false; // Short-circuit on first difference
                         }
                     }
                     else
                     {
-                        return false;
+                        return false; // Short-circuit on non-pair arrays
                     }
                 }
                 else if (value.Type == JTokenType.Object)
                 {
                     // Recursively check nested objects
                     if (!IsEmptyDiff(value))
-                        return false;
+                        return false; // Short-circuit on nested differences
                 }
                 else
                 {
                     // Any other type represents a change
-                    return false;
+                    return false; // Short-circuit on direct changes
                 }
             }
 
             return true;
+        }
+
+        private static bool AreValuesSemanticallySame(JToken token1, JToken token2)
+        {
+            // Convert to strings only once for efficiency
+            var str1 = token1.ToString();
+            var str2 = token2.ToString();
+            
+            // Direct string comparison (handles most cases efficiently)
+            if (str1 == str2)
+                return true;
+            
+            // Only attempt date parsing if strings differ (optimization)
+            return AreEquivalentDates(str1, str2);
+        }
+
+        private static bool AreEquivalentDates(string str1, string str2)
+        {
+            // Use culture-invariant parsing with predefined date formats
+            bool date1Parsed = DateTime.TryParseExact(str1, DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date1) ||
+                               DateTime.TryParse(str1, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date1);
+            
+            // Short-circuit if first string isn't a valid date
+            if (!date1Parsed)
+                return false;
+            
+            bool date2Parsed = DateTime.TryParseExact(str2, DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date2) ||
+                               DateTime.TryParse(str2, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date2);
+            
+            return date2Parsed && date1 == date2;
         }
 
         private ReferencePolicy? FindMatchingReference(
