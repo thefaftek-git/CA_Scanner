@@ -23,6 +23,7 @@ namespace ConditionalAccessExporter.Tests
         {
             Assert.NotNull(capturedOutput);
             Assert.Contains(optionName, capturedOutput);
+            Assert.Contains("required", capturedOutput, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
