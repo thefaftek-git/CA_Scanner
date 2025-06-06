@@ -561,23 +561,7 @@ namespace ConditionalAccessExporter
                 }
                 
                 // Handle comma-separated formats in addition to space-separated ones
-                var processedFormats = new List<string>();
-                foreach (var format in reportFormats)
-                {
-                    if (format.Contains(','))
-                    {
-                        // Split comma-separated values
-                        var splitFormats = format.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                            .Select(f => f.Trim())
-                            .Where(f => !string.IsNullOrEmpty(f));
-                        processedFormats.AddRange(splitFormats);
-                    }
-                    else
-                    {
-                        processedFormats.Add(format.Trim());
-                    }
-                }
-                reportFormats = processedFormats.ToArray();
+                reportFormats = ProcessReportFormats(reportFormats);
                 
                 Console.WriteLine($"Reference directory: {referenceDirectory}");
                 
@@ -810,23 +794,7 @@ namespace ConditionalAccessExporter
                 }
                 
                 // Handle comma-separated formats in addition to space-separated ones
-                var processedFormats = new List<string>();
-                foreach (var format in reportFormats)
-                {
-                    if (format.Contains(','))
-                    {
-                        // Split comma-separated values
-                        var splitFormats = format.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                            .Select(f => f.Trim())
-                            .Where(f => !string.IsNullOrEmpty(f));
-                        processedFormats.AddRange(splitFormats);
-                    }
-                    else
-                    {
-                        processedFormats.Add(format.Trim());
-                    }
-                }
-                reportFormats = processedFormats.ToArray();
+                reportFormats = ProcessReportFormats(reportFormats);
                 
                 Console.WriteLine($"Source directory: {sourceDirectory}");
                 Console.WriteLine($"Reference directory: {referenceDirectory}");
@@ -990,6 +958,27 @@ namespace ConditionalAccessExporter
                 }
             }
             Console.WriteLine();
+        }
+
+        private static string[] ProcessReportFormats(string[] reportFormats)
+        {
+            var processedFormats = new List<string>();
+            foreach (var format in reportFormats)
+            {
+                if (format.Contains(','))
+                {
+                    // Split comma-separated values
+                    var splitFormats = format.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(f => f.Trim())
+                        .Where(f => !string.IsNullOrEmpty(f));
+                    processedFormats.AddRange(splitFormats);
+                }
+                else
+                {
+                    processedFormats.Add(format.Trim());
+                }
+            }
+            return processedFormats.Distinct().ToArray();
         }
 
         private static async Task HandleExceptionAsync(Exception ex)
