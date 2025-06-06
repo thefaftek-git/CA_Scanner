@@ -112,7 +112,7 @@ namespace ConditionalAccessExporter.Services
                 throw new InvalidOperationException("Missing required environment variables. Please ensure AZURE_TENANT_ID, AZURE_CLIENT_ID, and AZURE_CLIENT_SECRET are set.");
             }
 
-            Console.WriteLine($"Tenant ID: {tenantId}");
+            Console.WriteLine($"Tenant ID: {tenantId?.Substring(0, 4)}***");
             Console.WriteLine($"Client ID: {clientId}");
             Console.WriteLine("Client Secret: [HIDDEN]");
             Console.WriteLine();
