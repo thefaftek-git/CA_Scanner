@@ -25,13 +25,6 @@ jobs:
     - name: Build
       run: dotnet --version && dotnet build --no-restore
     
-    - name: Specific Debugging
-      env:
-        AZURE_TENANT_ID: ${{ secrets.Azure_Tenant_Id }}
-        AZURE_CLIENT_ID: ${{ secrets.Azure_Client_Id }}
-        AZURE_CLIENT_SECRET: ${{ secrets.Azure_Client_Secret }}
-      run: dotnet test --filter "FullyQualifiedName~Export_Command_ValidArgs_CallsHandler" --logger "console;verbosity=detailed"
-      
     - name: Test with coverage
       id: tests
       env:
