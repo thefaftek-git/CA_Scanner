@@ -667,8 +667,8 @@ resource ""azuread_conditional_access_policy"" ""test_policy"" {
             // This will test Issue Test Case 3.4
             // Arrange
             string? capturedOutput = null;
-            string testInputPath = "test_policies.json";
-            string testOutputDir = "terraform_output";
+            string testInputPath = Path.GetTempFileName();
+            string testOutputDir = Path.Combine(Path.GetTempPath(), "terraform_output_" + Guid.NewGuid().ToString("N")[..8]);
             bool generateVariables = true;
             bool generateProvider = true;
             bool separateFiles = false;
@@ -676,8 +676,38 @@ resource ""azuread_conditional_access_policy"" ""test_policy"" {
             bool includeComments = true;
             string providerVersion = "~> 2.0";
             
+            // Create test data
+            var testData = new[]
+            {
+                new
+                {
+                    id = "test-policy-1",
+                    displayName = "Test Policy 1",
+                    state = "enabled",
+                    conditions = new
+                    {
+                        users = new
+                        {
+                            includeUsers = new[] { "All" }
+                        },
+                        applications = new
+                        {
+                            includeApplications = new[] { "All" }
+                        }
+                    },
+                    grantControls = new
+                    {
+                        operator = "AND",
+                        builtInControls = new[] { "mfa" }
+                    }
+                }
+            };
+            
             try
             {
+                // Create test input file
+                await File.WriteAllTextAsync(testInputPath, JsonConvert.SerializeObject(testData, Formatting.Indented));
+                
                 // Act
                 capturedOutput = await ProgramTestHelper.CaptureConsoleOutputAsync(async () =>
                 {
@@ -699,6 +729,14 @@ resource ""azuread_conditional_access_policy"" ""test_policy"" {
             {
                 // The test might fail due to filesystem access
                 // This is a unit test, so we're just testing the return code path
+            }
+            finally
+            {
+                // Clean up
+                if (File.Exists(testInputPath))
+                    File.Delete(testInputPath);
+                if (Directory.Exists(testOutputDir))
+                    Directory.Delete(testOutputDir, true);
             }
 
             // Assert
