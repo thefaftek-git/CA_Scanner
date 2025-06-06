@@ -614,7 +614,7 @@ namespace ConditionalAccessExporter
                 var result = await comparisonService.CompareAsync(entraExport, referenceDirectory, matchingOptions);
 
                 var reportService = new ReportGenerationService();
-                await reportService.GenerateReportsAsync(result, outputDirectory, reportFormats.ToList(), explainValues);
+                await reportService.GenerateReportsAsync(result, outputDirectory, reportFormats.ToList(), explainValues, includeJsonMetadata: true);
 
                 Console.WriteLine("Comparison completed successfully!");
                 return 0;

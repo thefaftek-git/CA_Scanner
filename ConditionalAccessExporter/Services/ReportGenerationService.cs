@@ -6,7 +6,7 @@ namespace ConditionalAccessExporter.Services
 {
     public class ReportGenerationService
     {
-        public async Task GenerateReportsAsync(ComparisonResult result, string outputDirectory, List<string> formats, bool explainValues = false)
+        public async Task GenerateReportsAsync(ComparisonResult result, string outputDirectory, List<string> formats, bool explainValues = false, bool includeJsonMetadata = false)
         {
             if (!Directory.Exists(outputDirectory))
             {
@@ -21,7 +21,7 @@ namespace ConditionalAccessExporter.Services
                 switch (format.ToLowerInvariant())
                 {
                     case "json":
-                        await GenerateJsonReportAsync(result, Path.Combine(outputDirectory, $"{baseFileName}.json"));
+                        await GenerateJsonReportAsync(result, Path.Combine(outputDirectory, $"{baseFileName}.json"), includeJsonMetadata);
                         break;
                     case "html":
                         await GenerateHtmlReportAsync(result, Path.Combine(outputDirectory, $"{baseFileName}.html"));
@@ -39,57 +39,67 @@ namespace ConditionalAccessExporter.Services
             }
         }
 
-        private async Task GenerateJsonReportAsync(ComparisonResult result, string filePath)
+        private async Task GenerateJsonReportAsync(ComparisonResult result, string filePath, bool includeMetadata = false)
         {
-            // Create an enhanced version with field mappings
-            var enhancedResult = new
+            object jsonObject;
+            
+            if (includeMetadata)
             {
-                _metadata = new
+                // Create an enhanced version with field mappings
+                jsonObject = new
                 {
-                    generatedAt = DateTime.UtcNow,
-                    fieldMappings = new
+                    _metadata = new
                     {
-                        BuiltInControls = new
+                        generatedAt = DateTime.UtcNow,
+                        fieldMappings = new
                         {
-                            description = "Numeric codes in BuiltInControls field",
-                            mappings = new Dictionary<string, string>
+                            BuiltInControls = new
                             {
-                                ["1"] = "mfa (Multi-factor Authentication Required)",
-                                ["2"] = "compliantDevice (Compliant Device Required)",
-                                ["3"] = "domainJoinedDevice (Hybrid Azure AD Joined Device Required)",
-                                ["4"] = "approvedApplication (Approved Application Required)",
-                                ["5"] = "compliantApplication (Compliant Application Required)",
-                                ["6"] = "passwordChange (Password Change Required)",
-                                ["7"] = "block (Block Access)"
-                            }
-                        },
-                        ClientAppTypes = new
-                        {
-                            description = "Numeric codes in ClientAppTypes field",
-                            mappings = new Dictionary<string, string>
+                                description = "Numeric codes in BuiltInControls field",
+                                mappings = new Dictionary<string, string>
+                                {
+                                    ["1"] = "mfa (Multi-factor Authentication Required)",
+                                    ["2"] = "compliantDevice (Compliant Device Required)",
+                                    ["3"] = "domainJoinedDevice (Hybrid Azure AD Joined Device Required)",
+                                    ["4"] = "approvedApplication (Approved Application Required)",
+                                    ["5"] = "compliantApplication (Compliant Application Required)",
+                                    ["6"] = "passwordChange (Password Change Required)",
+                                    ["7"] = "block (Block Access)"
+                                }
+                            },
+                            ClientAppTypes = new
                             {
-                                ["0"] = "browser (Web browsers)",
-                                ["1"] = "mobileAppsAndDesktopClients (Mobile apps and desktop clients)",
-                                ["2"] = "exchangeActiveSync (Exchange ActiveSync clients)",
-                                ["3"] = "other (Other clients, legacy authentication)"
-                            }
-                        },
-                        StateValues = new
-                        {
-                            description = "Policy state values",
-                            mappings = new Dictionary<string, string>
+                                description = "Numeric codes in ClientAppTypes field",
+                                mappings = new Dictionary<string, string>
+                                {
+                                    ["0"] = "browser (Web browsers)",
+                                    ["1"] = "mobileAppsAndDesktopClients (Mobile apps and desktop clients)",
+                                    ["2"] = "exchangeActiveSync (Exchange ActiveSync clients)",
+                                    ["3"] = "other (Other clients, legacy authentication)"
+                                }
+                            },
+                            StateValues = new
                             {
-                                ["enabled"] = "Policy is active and enforced",
-                                ["disabled"] = "Policy is inactive",
-                                ["enabledForReportingButNotEnforced"] = "Report-only mode (logs but doesn't enforce)"
+                                description = "Policy state values",
+                                mappings = new Dictionary<string, string>
+                                {
+                                    ["enabled"] = "Policy is active and enforced",
+                                    ["disabled"] = "Policy is inactive",
+                                    ["enabledForReportingButNotEnforced"] = "Report-only mode (logs but doesn't enforce)"
+                                }
                             }
                         }
-                    }
-                },
-                comparisonResult = result
-            };
+                    },
+                    comparisonResult = result
+                };
+            }
+            else
+            {
+                // Use original result for backward compatibility
+                jsonObject = result;
+            }
 
-            var json = JsonConvert.SerializeObject(enhancedResult, Formatting.Indented, new JsonSerializerSettings
+            var json = JsonConvert.SerializeObject(jsonObject, Formatting.Indented, new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore,
                 DateFormatHandling = DateFormatHandling.IsoDateFormat
