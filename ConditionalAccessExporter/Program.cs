@@ -1002,9 +1002,8 @@ namespace ConditionalAccessExporter
                 if (format.Contains(','))
                 {
                     // Split comma-separated values
-                    var splitFormats = format.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                        .Select(f => f.Trim().ToLowerInvariant())
-                        .Where(f => !string.IsNullOrEmpty(f));
+                    var splitFormats = ProcessCommaSeparatedValues(format)
+                        .Select(f => f.ToLowerInvariant());
                     processedFormats.AddRange(splitFormats);
                 }
                 else
@@ -1013,6 +1012,17 @@ namespace ConditionalAccessExporter
                 }
             }
             return processedFormats.Distinct().ToArray();
+        }
+
+        private static List<string> ProcessCommaSeparatedValues(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return new List<string>();
+
+            return value.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(v => v.Trim())
+                .Where(v => !string.IsNullOrEmpty(v))
+                .ToList();
         }
 
         private static async Task<int> GenerateBaselineAsync(
@@ -1031,8 +1041,7 @@ namespace ConditionalAccessExporter
                     {
                         if (name.Contains(','))
                         {
-                            processedPolicyNames.AddRange(name.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                                .Select(n => n.Trim()));
+                            processedPolicyNames.AddRange(ProcessCommaSeparatedValues(name));
                         }
                         else
                         {

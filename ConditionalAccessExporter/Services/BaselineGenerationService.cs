@@ -113,7 +113,7 @@ namespace ConditionalAccessExporter.Services
             }
 
             Console.WriteLine($"Tenant ID: {tenantId?.Substring(0, 4)}***");
-            Console.WriteLine($"Client ID: {clientId}");
+            Console.WriteLine($"Client ID: {clientId?.Substring(0, 4)}***");
             Console.WriteLine("Client Secret: [HIDDEN]");
             Console.WriteLine();
 
