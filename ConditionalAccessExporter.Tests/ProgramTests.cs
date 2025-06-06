@@ -697,7 +697,7 @@ resource ""azuread_conditional_access_policy"" ""test_policy"" {
                     },
                     grantControls = new
                     {
-                        operator = "AND",
+                        @operator = "AND",
                         builtInControls = new[] { "mfa" }
                     }
                 }
