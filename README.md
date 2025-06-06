@@ -2,7 +2,7 @@
 
 A complete .NET 8 solution for exporting Azure Conditional Access policies using Microsoft Graph API with client credential authentication.
 
-<!-- Updated to trigger CI run -->
+<!-- Updated to trigger CI run - Test fixes applied -->
 
 ## 🚀 Quick Start
 
