@@ -18,18 +18,16 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '8.0.x'
-    - name: Dotnet Version
-      run: dotnet --version
         
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet --version && dotnet restore
       
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet --version && dotnet build --no-restore
       
     - name: Test with coverage
       id: tests
-      run: "dotnet test --no-build --verbosity normal --collect:\"XPlat Code Coverage\" --logger \"console;verbosity=detailed\" --nologo"
+      run: "dotnet --version && dotnet test --no-build --verbosity normal --collect:\"XPlat Code Coverage\" --logger \"console;verbosity=detailed\" --nologo"
       
     - name: Generate code coverage report
       if: success()
