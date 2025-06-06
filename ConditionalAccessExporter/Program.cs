@@ -969,13 +969,13 @@ namespace ConditionalAccessExporter
                 {
                     // Split comma-separated values
                     var splitFormats = format.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                        .Select(f => f.Trim())
+                        .Select(f => f.Trim().ToLowerInvariant())
                         .Where(f => !string.IsNullOrEmpty(f));
                     processedFormats.AddRange(splitFormats);
                 }
                 else
                 {
-                    processedFormats.Add(format.Trim());
+                    processedFormats.Add(format.Trim().ToLowerInvariant());
                 }
             }
             return processedFormats.Distinct().ToArray();
