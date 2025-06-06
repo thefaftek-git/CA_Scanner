@@ -10,6 +10,13 @@ A .NET 8 console application that exports Azure Conditional Access policies and 
 - Outputs data in structured JSON format with timestamps
 - Comprehensive error handling and detailed permission guidance
 
+### Baseline Generation Functionality
+- Generate reference policy files from your current tenant
+- Create individual JSON files for each policy (compatible with comparison mode)
+- Filter policies by enabled state or specific policy names
+- Anonymize tenant-specific data for sharing or version control
+- Customizable output directory for organized policy storage
+
 ### Comparison Functionality
 - Compare live Entra ID policies against static reference JSON files
 - Multiple matching strategies (by name, ID, or custom mapping)
@@ -73,6 +80,30 @@ dotnet run export --output my-policies.json
 dotnet run export
 ```
 
+### Baseline Generation Mode
+
+Generate baseline reference policies from your current tenant:
+
+```bash
+# Generate baseline reference files in default directory
+dotnet run baseline
+
+# Generate baseline with custom output directory
+dotnet run baseline --output-dir ./my-references
+
+# Generate only enabled policies
+dotnet run baseline --filter-enabled-only
+
+# Generate anonymized baseline (removes tenant-specific data)
+dotnet run baseline --anonymize
+
+# Generate specific policies by name
+dotnet run baseline --policy-names "MFA Policy" "Block Legacy Auth"
+
+# Combine multiple options
+dotnet run baseline --output-dir ./references --anonymize --filter-enabled-only
+```
+
 ### Comparison Mode
 
 Compare Entra ID policies against reference JSON files:
@@ -96,6 +127,12 @@ dotnet run compare --reference-dir ./reference-policies --matching ById
 
 #### Export Command
 - `--output`: Output file path (default: timestamped filename)
+
+#### Baseline Command
+- `--output-dir`: Directory to save baseline reference files (default: "reference-policies")
+- `--anonymize`: Remove tenant-specific identifiers (IDs, timestamps, tenant references) (default: false)
+- `--filter-enabled-only`: Export only enabled policies (default: false)
+- `--policy-names`: Export specific policies by name (space or comma-separated)
 
 #### Compare Command
 - `--reference-dir`: Directory containing reference JSON files (required)
