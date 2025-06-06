@@ -169,31 +169,21 @@ namespace ConditionalAccessExporter.Tests
         /// </summary>
         public static string CaptureConsoleOutput(Action action)
         {
-            var originalOutput = Console.Out;
-            using var stringWriter = new StringWriter();
-            Console.SetOut(stringWriter);
-            
-            try
-            {
-                action();
-            }
-            catch (Exception)
-            {
-                // Even if an exception occurs, we still want to return any captured output
-                // The tests are checking for console output, not success/failure
-            }
-            finally
-            {
-                Console.SetOut(originalOutput);
-            }
-            
-            return stringWriter.ToString();
+            return CaptureConsoleOutputInternal(() => { action(); return Task.CompletedTask; }).GetAwaiter().GetResult();
         }
         
         /// <summary>
         /// Capture console output to a string (async version)
         /// </summary>
         public static async Task<string> CaptureConsoleOutputAsync(Func<Task> action)
+        {
+            return await CaptureConsoleOutputInternal(action);
+        }
+
+        /// <summary>
+        /// Internal helper method for console output capture with proper exception handling
+        /// </summary>
+        private static async Task<string> CaptureConsoleOutputInternal(Func<Task> action)
         {
             var originalOutput = Console.Out;
             using var stringWriter = new StringWriter();
@@ -203,8 +193,11 @@ namespace ConditionalAccessExporter.Tests
             {
                 await action();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Log the exception details for debugging purposes
+                Console.Error.WriteLine($"Exception occurred: {ex.Message}");
+                Console.Error.WriteLine(ex.StackTrace);
                 // Even if an exception occurs, we still want to return any captured output
                 // The tests are checking for console output, not success/failure
             }
