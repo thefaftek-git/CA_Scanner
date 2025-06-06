@@ -147,6 +147,91 @@ The application has been successfully:
 - Exported policy configuration to JSON format
 - Verified with real Azure tenant data
 
+## 📖 Policy Field Value Mappings Reference
+
+When comparing Conditional Access policies, the system may display numeric codes instead of human-readable values. This reference explains what these numbers represent:
+
+### BuiltInControls Mappings
+
+The `BuiltInControls` field uses numeric codes to represent different access control requirements:
+
+| Numeric Code | String Value | Description |
+|--------------|--------------|-------------|
+| `1` | `mfa` | Multi-factor Authentication Required |
+| `2` | `compliantDevice` | Compliant Device Required |
+| `3` | `domainJoinedDevice` | Hybrid Azure AD Joined Device Required |
+| `4` | `approvedApplication` | Approved Application Required |
+| `5` | `compliantApplication` | Compliant Application Required |
+| `6` | `passwordChange` | Password Change Required |
+| `7` | `block` | Block Access |
+
+**Example:** `"BuiltInControls": [1]` means "Require MFA"
+
+### ClientAppTypes Mappings
+
+The `ClientAppTypes` field uses numeric codes to specify which client applications the policy applies to:
+
+| Numeric Code | String Value | Description |
+|--------------|--------------|-------------|
+| `0` | `browser` | Web browsers |
+| `1` | `mobileAppsAndDesktopClients` | Mobile apps and desktop clients |
+| `2` | `exchangeActiveSync` | Exchange ActiveSync clients |
+| `3` | `other` | Other clients (legacy authentication) |
+
+**Example:** `"ClientAppTypes": [0, 1]` means "Apply to browsers and mobile/desktop clients"
+
+### SignInRiskLevels and UserRiskLevels Mappings
+
+Risk level fields use string values that correspond to Azure Identity Protection risk levels:
+
+| String Value | Description |
+|--------------|-------------|
+| `low` | Low risk level |
+| `medium` | Medium risk level |
+| `high` | High risk level |
+| `hidden` | Hidden risk level |
+| `none` | No risk |
+| `unknownFutureValue` | Unknown or future value |
+
+### State Values
+
+Policy state is represented by string values:
+
+| String Value | Description |
+|--------------|-------------|
+| `enabled` | Policy is active and enforced |
+| `disabled` | Policy is inactive |
+| `enabledForReportingButNotEnforced` | Report-only mode (logs but doesn't enforce) |
+
+### Platform Mappings
+
+The `Platforms` field uses string values to specify device platforms:
+
+| String Value | Description |
+|--------------|-------------|
+| `all` | All platforms |
+| `android` | Android devices |
+| `iOS` | iOS devices |
+| `windows` | Windows devices |
+| `windowsPhone` | Windows Phone devices |
+| `macOS` | macOS devices |
+| `linux` | Linux devices |
+
+### Understanding Comparison Reports
+
+When reviewing comparison reports:
+
+- **Numeric values** typically appear in direct Azure exports
+- **String values** typically appear in Terraform configurations
+- Both represent the same underlying policy settings
+- The comparison engine normalizes these values for accurate matching
+
+### Tips for Interpreting Results
+
+1. **Focus on the meaning**: A policy with `BuiltInControls: [1]` and one with `BuiltInControls: ["mfa"]` are functionally identical
+2. **Check multiple fields**: Policies are compared across all settings, not just individual fields
+3. **Review context**: The policy name and conditions provide important context for understanding the intent
+
 ## 🔗 For More Information
 
 See the [project-specific README](ConditionalAccessExporter/README.md) for detailed usage instructions and troubleshooting.

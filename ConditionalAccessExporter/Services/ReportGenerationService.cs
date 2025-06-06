@@ -6,7 +6,7 @@ namespace ConditionalAccessExporter.Services
 {
     public class ReportGenerationService
     {
-        public async Task GenerateReportsAsync(ComparisonResult result, string outputDirectory, List<string> formats)
+        public async Task GenerateReportsAsync(ComparisonResult result, string outputDirectory, List<string> formats, bool explainValues = false, bool includeJsonMetadata = false)
         {
             if (!Directory.Exists(outputDirectory))
             {
@@ -21,13 +21,13 @@ namespace ConditionalAccessExporter.Services
                 switch (format.ToLowerInvariant())
                 {
                     case "json":
-                        await GenerateJsonReportAsync(result, Path.Combine(outputDirectory, $"{baseFileName}.json"));
+                        await GenerateJsonReportAsync(result, Path.Combine(outputDirectory, $"{baseFileName}.json"), includeJsonMetadata);
                         break;
                     case "html":
                         await GenerateHtmlReportAsync(result, Path.Combine(outputDirectory, $"{baseFileName}.html"));
                         break;
                     case "console":
-                        GenerateConsoleReport(result);
+                        GenerateConsoleReport(result, explainValues);
                         break;
                     case "csv":
                         await GenerateCsvReportAsync(result, Path.Combine(outputDirectory, $"{baseFileName}.csv"));
@@ -39,9 +39,67 @@ namespace ConditionalAccessExporter.Services
             }
         }
 
-        private async Task GenerateJsonReportAsync(ComparisonResult result, string filePath)
+        private async Task GenerateJsonReportAsync(ComparisonResult result, string filePath, bool includeMetadata = false)
         {
-            var json = JsonConvert.SerializeObject(result, Formatting.Indented, new JsonSerializerSettings
+            object jsonObject;
+            
+            if (includeMetadata)
+            {
+                // Create an enhanced version with field mappings
+                jsonObject = new
+                {
+                    _metadata = new
+                    {
+                        generatedAt = DateTime.UtcNow,
+                        fieldMappings = new
+                        {
+                            BuiltInControls = new
+                            {
+                                description = "Numeric codes in BuiltInControls field",
+                                mappings = new Dictionary<string, string>
+                                {
+                                    ["1"] = "mfa (Multi-factor Authentication Required)",
+                                    ["2"] = "compliantDevice (Compliant Device Required)",
+                                    ["3"] = "domainJoinedDevice (Hybrid Azure AD Joined Device Required)",
+                                    ["4"] = "approvedApplication (Approved Application Required)",
+                                    ["5"] = "compliantApplication (Compliant Application Required)",
+                                    ["6"] = "passwordChange (Password Change Required)",
+                                    ["7"] = "block (Block Access)"
+                                }
+                            },
+                            ClientAppTypes = new
+                            {
+                                description = "Numeric codes in ClientAppTypes field",
+                                mappings = new Dictionary<string, string>
+                                {
+                                    ["0"] = "browser (Web browsers)",
+                                    ["1"] = "mobileAppsAndDesktopClients (Mobile apps and desktop clients)",
+                                    ["2"] = "exchangeActiveSync (Exchange ActiveSync clients)",
+                                    ["3"] = "other (Other clients, legacy authentication)"
+                                }
+                            },
+                            StateValues = new
+                            {
+                                description = "Policy state values",
+                                mappings = new Dictionary<string, string>
+                                {
+                                    ["enabled"] = "Policy is active and enforced",
+                                    ["disabled"] = "Policy is inactive",
+                                    ["enabledForReportingButNotEnforced"] = "Report-only mode (logs but doesn't enforce)"
+                                }
+                            }
+                        }
+                    },
+                    comparisonResult = result
+                };
+            }
+            else
+            {
+                // Use original result for backward compatibility
+                jsonObject = result;
+            }
+
+            var json = JsonConvert.SerializeObject(jsonObject, Formatting.Indented, new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore,
                 DateFormatHandling = DateFormatHandling.IsoDateFormat
@@ -72,7 +130,7 @@ namespace ConditionalAccessExporter.Services
             Console.WriteLine($"CSV report generated: {filePath}");
         }
 
-        public void GenerateConsoleReport(ComparisonResult result)
+        public void GenerateConsoleReport(ComparisonResult result, bool explainValues = false)
         {
             Console.WriteLine();
             Console.WriteLine("=".PadRight(80, '='));
@@ -93,6 +151,28 @@ namespace ConditionalAccessExporter.Services
             Console.WriteLine($"Matching Policies: {result.Summary.MatchingPolicies}");
             Console.WriteLine($"Policies with Differences: {result.Summary.PoliciesWithDifferences}");
             Console.WriteLine();
+
+            // Numeric value mappings legend
+            if (explainValues)
+            {
+                Console.WriteLine("NUMERIC VALUE MAPPINGS:");
+                Console.WriteLine("-".PadRight(40, '-'));
+                Console.WriteLine("BuiltInControls:");
+                Console.WriteLine("  1 = mfa (Multi-factor Authentication Required)");
+                Console.WriteLine("  2 = compliantDevice (Compliant Device Required)");
+                Console.WriteLine("  3 = domainJoinedDevice (Hybrid Azure AD Joined Device Required)");
+                Console.WriteLine("  4 = approvedApplication (Approved Application Required)");
+                Console.WriteLine("  5 = compliantApplication (Compliant Application Required)");
+                Console.WriteLine("  6 = passwordChange (Password Change Required)");
+                Console.WriteLine("  7 = block (Block Access)");
+                Console.WriteLine();
+                Console.WriteLine("ClientAppTypes:");
+                Console.WriteLine("  0 = browser (Web browsers)");
+                Console.WriteLine("  1 = mobileAppsAndDesktopClients (Mobile apps and desktop clients)");
+                Console.WriteLine("  2 = exchangeActiveSync (Exchange ActiveSync clients)");
+                Console.WriteLine("  3 = other (Other clients, legacy authentication)");
+                Console.WriteLine();
+            }
 
             // Detailed results
             if (result.Summary.EntraOnlyPolicies > 0)
@@ -184,6 +264,41 @@ namespace ConditionalAccessExporter.Services
             html.AppendLine($"<tr><td>Matching Policies</td><td>{result.Summary.MatchingPolicies}</td></tr>");
             html.AppendLine($"<tr><td>Policies with Differences</td><td>{result.Summary.PoliciesWithDifferences}</td></tr>");
             html.AppendLine("</table>");
+
+            // Policy Field Value Mappings Legend
+            html.AppendLine("<h2>Policy Field Value Mappings Reference</h2>");
+            html.AppendLine("<div class=\"summary\">");
+            html.AppendLine("<p>When comparing policies, you may see numeric codes from Entra exports. This legend explains what they mean:</p>");
+            
+            html.AppendLine("<h3>BuiltInControls Mappings</h3>");
+            html.AppendLine("<table style=\"margin-bottom: 15px;\">");
+            html.AppendLine("<tr><th>Numeric Code</th><th>String Value</th><th>Description</th></tr>");
+            html.AppendLine("<tr><td>1</td><td>mfa</td><td>Multi-factor Authentication Required</td></tr>");
+            html.AppendLine("<tr><td>2</td><td>compliantDevice</td><td>Compliant Device Required</td></tr>");
+            html.AppendLine("<tr><td>3</td><td>domainJoinedDevice</td><td>Hybrid Azure AD Joined Device Required</td></tr>");
+            html.AppendLine("<tr><td>4</td><td>approvedApplication</td><td>Approved Application Required</td></tr>");
+            html.AppendLine("<tr><td>5</td><td>compliantApplication</td><td>Compliant Application Required</td></tr>");
+            html.AppendLine("<tr><td>6</td><td>passwordChange</td><td>Password Change Required</td></tr>");
+            html.AppendLine("<tr><td>7</td><td>block</td><td>Block Access</td></tr>");
+            html.AppendLine("</table>");
+
+            html.AppendLine("<h3>ClientAppTypes Mappings</h3>");
+            html.AppendLine("<table style=\"margin-bottom: 15px;\">");
+            html.AppendLine("<tr><th>Numeric Code</th><th>String Value</th><th>Description</th></tr>");
+            html.AppendLine("<tr><td>0</td><td>browser</td><td>Web browsers</td></tr>");
+            html.AppendLine("<tr><td>1</td><td>mobileAppsAndDesktopClients</td><td>Mobile apps and desktop clients</td></tr>");
+            html.AppendLine("<tr><td>2</td><td>exchangeActiveSync</td><td>Exchange ActiveSync clients</td></tr>");
+            html.AppendLine("<tr><td>3</td><td>other</td><td>Other clients (legacy authentication)</td></tr>");
+            html.AppendLine("</table>");
+
+            html.AppendLine("<h3>State Values</h3>");
+            html.AppendLine("<table>");
+            html.AppendLine("<tr><th>String Value</th><th>Description</th></tr>");
+            html.AppendLine("<tr><td>enabled</td><td>Policy is active and enforced</td></tr>");
+            html.AppendLine("<tr><td>disabled</td><td>Policy is inactive</td></tr>");
+            html.AppendLine("<tr><td>enabledForReportingButNotEnforced</td><td>Report-only mode (logs but doesn't enforce)</td></tr>");
+            html.AppendLine("</table>");
+            html.AppendLine("</div>");
 
             // Detailed comparison table
             html.AppendLine("<h2>Detailed Comparison</h2>");

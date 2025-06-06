@@ -96,7 +96,8 @@ namespace ConditionalAccessExporter.Tests
             string outputDirectory,
             string[] reportFormats,
             Models.MatchingStrategy matchingStrategy,
-            bool caseSensitive)
+            bool caseSensitive,
+            bool explainValues = false)
         {
             var method = GetPrivateMethod("ComparePoliciesAsync");
             
@@ -108,7 +109,8 @@ namespace ConditionalAccessExporter.Tests
                     outputDirectory,
                     reportFormats,
                     matchingStrategy,
-                    caseSensitive
+                    caseSensitive,
+                    explainValues
                 });
             return result;
         }

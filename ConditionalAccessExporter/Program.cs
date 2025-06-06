@@ -143,6 +143,11 @@ namespace ConditionalAccessExporter
                 description: "Case sensitive policy name matching",
                 getDefaultValue: () => false
             );
+            var explainOption = new Option<bool>(
+                name: "--explain",
+                description: "Decode numeric values in console output with human-readable explanations",
+                getDefaultValue: () => false
+            );
 
             compareCommand.AddOption(referenceDirectoryOption);
             compareCommand.AddOption(entraFileOption);
@@ -150,6 +155,7 @@ namespace ConditionalAccessExporter
             compareCommand.AddOption(reportFormatsOption);
             compareCommand.AddOption(matchingStrategyOption);
             compareCommand.AddOption(caseSensitiveOption);
+            compareCommand.AddOption(explainOption);
 
             compareCommand.SetHandler(ComparePoliciesAsync, 
                 referenceDirectoryOption, 
@@ -157,7 +163,8 @@ namespace ConditionalAccessExporter
                 outputDirectoryOption, 
                 reportFormatsOption, 
                 matchingStrategyOption, 
-                caseSensitiveOption);
+                caseSensitiveOption,
+                explainOption);
 
             // Cross-format compare command
             var crossFormatCompareCommand = new Command("cross-compare", "Compare policies across different formats (JSON vs Terraform)");
@@ -529,7 +536,8 @@ namespace ConditionalAccessExporter
             string outputDirectory,
             string[] reportFormats,
             MatchingStrategy matchingStrategy,
-            bool caseSensitive)
+            bool caseSensitive,
+            bool explainValues)
         {
             Console.WriteLine("Conditional Access Policy Comparison");
             Console.WriteLine("====================================");
@@ -571,6 +579,7 @@ namespace ConditionalAccessExporter
                 Console.WriteLine($"Report formats: {string.Join(", ", reportFormats)}");
                 Console.WriteLine($"Matching strategy: {matchingStrategy}");
                 Console.WriteLine($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
+                Console.WriteLine($"Explain numeric values: {(explainValues ? "On" : "Off")}");
                 Console.WriteLine();
                 
                 Console.WriteLine("Comparing policies...");
@@ -605,7 +614,7 @@ namespace ConditionalAccessExporter
                 var result = await comparisonService.CompareAsync(entraExport, referenceDirectory, matchingOptions);
 
                 var reportService = new ReportGenerationService();
-                await reportService.GenerateReportsAsync(result, outputDirectory, reportFormats.ToList());
+                await reportService.GenerateReportsAsync(result, outputDirectory, reportFormats.ToList(), explainValues, includeJsonMetadata: true);
 
                 Console.WriteLine("Comparison completed successfully!");
                 return 0;

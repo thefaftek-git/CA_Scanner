@@ -229,6 +229,102 @@ If authentication fails:
 - Regularly rotate client secrets
 - Monitor application usage and access patterns
 
+## Policy Field Value Mappings
+
+### Understanding Numeric Codes in Exports
+
+When exporting policies directly from Entra ID, certain fields contain numeric codes instead of human-readable strings. This is how the Microsoft Graph API returns the data. Here's what these codes mean:
+
+#### BuiltInControls Field
+
+```json
+"GrantControls": {
+  "BuiltInControls": [1]  // This means "mfa" (Multi-factor Authentication)
+}
+```
+
+**Complete mapping:**
+- `1` → `mfa` (Multi-factor Authentication Required)
+- `2` → `compliantDevice` (Compliant Device Required)
+- `3` → `domainJoinedDevice` (Hybrid Azure AD Joined Device Required)
+- `4` → `approvedApplication` (Approved Application Required)
+- `5` → `compliantApplication` (Compliant Application Required)
+- `6` → `passwordChange` (Password Change Required)
+- `7` → `block` (Block Access)
+
+#### ClientAppTypes Field
+
+```json
+"Conditions": {
+  "ClientAppTypes": [0]  // This means "browser"
+}
+```
+
+**Complete mapping:**
+- `0` → `browser` (Web browsers)
+- `1` → `mobileAppsAndDesktopClients` (Mobile apps and desktop clients)
+- `2` → `exchangeActiveSync` (Exchange ActiveSync clients)
+- `3` → `other` (Other clients, typically legacy authentication)
+
+### Comparison Behavior
+
+The comparison engine automatically handles these differences:
+
+- **Entra Export**: `"ClientAppTypes": [0, 1]`
+- **Terraform Config**: `"ClientAppTypes": ["browser", "mobileAppsAndDesktopClients"]`
+- **Result**: ✅ These are considered **identical** during comparison
+
+### Report Formats
+
+Different report formats handle these values differently:
+
+#### JSON Reports
+- Preserve original numeric codes from Entra exports
+- Include comments explaining common numeric values
+- Show both source and reference values for easy comparison
+
+#### HTML Reports
+- Display a legend explaining numeric codes
+- Use tooltips to show human-readable descriptions
+- Highlight differences with clear explanations
+
+#### Console Output
+- Shows numeric codes as-is for technical accuracy
+- Provides context in comparison summaries
+- Future enhancement: `--explain` flag to decode values inline
+
+### Common Scenarios
+
+#### Scenario 1: MFA Requirement
+**Entra Export:**
+```json
+"GrantControls": {
+  "Operator": "OR",
+  "BuiltInControls": [1]
+}
+```
+
+**Terraform Equivalent:**
+```hcl
+grant_controls {
+  operator          = "OR"
+  built_in_controls = ["mfa"]
+}
+```
+
+#### Scenario 2: Block Legacy Authentication
+**Entra Export:**
+```json
+"Conditions": {
+  "ClientAppTypes": [2, 3]
+},
+"GrantControls": {
+  "BuiltInControls": [7]
+}
+```
+
+**Meaning:** Block access (`7`) for Exchange ActiveSync (`2`) and other legacy clients (`3`)
+
 ## Dependencies
 
 - Microsoft.Graph (5.79.0)
