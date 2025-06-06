@@ -169,6 +169,8 @@ namespace ConditionalAccessExporter.Tests
         /// </summary>
         public static string CaptureConsoleOutput(Action action)
         {
+            // Synchronously wrapping the asynchronous CaptureConsoleOutputInternal method
+            // to provide a synchronous interface for capturing console output.
             return CaptureConsoleOutputInternal(() => { action(); return Task.CompletedTask; }).GetAwaiter().GetResult();
         }
         
