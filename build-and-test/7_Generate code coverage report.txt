@@ -1,0 +1,29 @@
+﻿2025-06-06T18:51:00.9033621Z ##[group]Run danielpalme/ReportGenerator-GitHub-Action@5.2.0
+2025-06-06T18:51:00.9033991Z with:
+2025-06-06T18:51:00.9034782Z   reports: **/coverage.opencover.xml
+2025-06-06T18:51:00.9035187Z   targetdir: coveragereport
+2025-06-06T18:51:00.9035471Z   reporttypes: HtmlInline_AzurePipelines;Cobertura;Badges
+2025-06-06T18:51:00.9035781Z   toolpath: reportgeneratortool
+2025-06-06T18:51:00.9036000Z   assemblyfilters: +*
+2025-06-06T18:51:00.9036195Z   classfilters: +*
+2025-06-06T18:51:00.9036376Z   filefilters: +*
+2025-06-06T18:51:00.9036554Z   verbosity: Info
+2025-06-06T18:51:00.9036719Z   tag: 57_15497613129
+2025-06-06T18:51:00.9036902Z env:
+2025-06-06T18:51:00.9037081Z   DOTNET_ROOT: /usr/share/dotnet
+2025-06-06T18:51:00.9037297Z ##[endgroup]
+2025-06-06T18:51:00.9738214Z Detecting .NET Core SDK
+2025-06-06T18:51:00.9763341Z [command]/usr/share/dotnet/dotnet --version
+2025-06-06T18:51:01.0848151Z 8.0.410
+2025-06-06T18:51:01.0897900Z Detected .NET Core SDK version '8.0.410
+2025-06-06T18:51:01.0898439Z '
+2025-06-06T18:51:01.0899390Z Installing ReportGenerator global tool (https://www.nuget.org/packages/dotnet-reportgenerator-globaltool)
+2025-06-06T18:51:01.0902265Z [command]/usr/share/dotnet/dotnet tool install dotnet-reportgenerator-globaltool --tool-path reportgeneratortool --version 5.2.0 --ignore-failed-sources
+2025-06-06T18:51:02.1796350Z You can invoke the tool using the following command: reportgenerator
+2025-06-06T18:51:02.1797245Z Tool 'dotnet-reportgenerator-globaltool' (version '5.2.0') was successfully installed.
+2025-06-06T18:51:02.1975769Z Successfully installed ReportGenerator global tool
+2025-06-06T18:51:02.1976453Z Executing ReportGenerator
+2025-06-06T18:51:02.1982336Z [command]/home/runner/work/CA_Scanner/CA_Scanner/reportgeneratortool/reportgenerator -reports:**/coverage.opencover.xml -targetdir:coveragereport -reporttypes:HtmlInline_AzurePipelines;Cobertura;Badges -sourcedirs: -historydir: -plugins: -assemblyfilters:+* -classfilters:+* -filefilters:+* -verbosity:Info -title: -tag:57_15497613129 -license:
+2025-06-06T18:51:02.3435936Z 2025-06-06T18:51:02: The report file pattern '**/coverage.opencover.xml' found no matching files.
+2025-06-06T18:51:02.3436878Z 2025-06-06T18:51:02: No report files specified.
+2025-06-06T18:51:02.3539659Z ##[error]Failed to execute ReportGenerator global tool

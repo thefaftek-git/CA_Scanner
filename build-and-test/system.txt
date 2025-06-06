@@ -1,0 +1,5 @@
+2025-06-06T18:50:08.9032126Z Requested labels: ubuntu-latest
+2025-06-06T18:50:08.9032126Z Job defined at: thefaftek-git/CA_Scanner/.github/workflows/dotnet-tests.yml@refs/pull/63/merge
+2025-06-06T18:50:08.9032126Z Waiting for a runner to pick up this job...
+2025-06-06T18:50:09.3080784Z Job is waiting for a hosted runner to come online.
+2025-06-06T18:50:09.3080845Z Job is about to start running on the hosted runner: GitHub Actions 1000000087

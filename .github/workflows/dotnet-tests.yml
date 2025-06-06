@@ -37,7 +37,7 @@ jobs:
       if: success()
       uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
       with:
-        reports: '**/coverage.opencover.xml'
+        reports: '**/coverage.cobertura.xml'
         targetdir: 'coveragereport'
         reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
         
