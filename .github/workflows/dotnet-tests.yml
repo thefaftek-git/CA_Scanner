@@ -24,6 +24,9 @@ jobs:
       
     - name: Build
       run: dotnet --version && dotnet build --no-restore
+    
+    - name: Specific Debugging
+      run: dotnet test --filter "FullyQualifiedName~Export_Command_ValidArgs_CallsHandler" --logger "console;verbosity=detailed"
       
     - name: Test with coverage
       id: tests

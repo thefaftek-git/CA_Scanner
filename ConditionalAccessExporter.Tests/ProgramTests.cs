@@ -15,6 +15,7 @@ namespace ConditionalAccessExporter.Tests
     [Collection("Console Output Tests")]
     public class ProgramTests
     {
+        
         /// <summary>
         /// Helper method to assert that a required option error message is present in the captured output
         /// </summary>
@@ -68,7 +69,7 @@ namespace ConditionalAccessExporter.Tests
             // Arrange - Capture console output
             string? capturedOutput = null;
             var expectedOutputPath = args.Length == 3 ? args[2] : $"ConditionalAccessPolicies_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json";
-            
+            Console.WriteLine(expectedOutputPath);
             try
             {
                 // Act
@@ -77,12 +78,13 @@ namespace ConditionalAccessExporter.Tests
                     await ProgramTestHelper.InvokeMainAsync(args);
                 });
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Console.WriteLine($"Test failed due to exception {e.Message}");
                 // The test might fail due to Graph API authentication
                 // We're just testing that the export code path is invoked
             }
-
+            Console.WriteLine(capturedOutput);
             // Assert
             Assert.NotNull(capturedOutput);
             Assert.Contains("Conditional Access Policy Exporter", capturedOutput);
