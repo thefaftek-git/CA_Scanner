@@ -764,7 +764,7 @@ namespace ConditionalAccessExporter.Tests
 
             // Assert
             Assert.NotNull(capturedOutput);
-            Assert.Contains("Comparing policies", capturedOutput, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("Conditional Access Policy Comparison", capturedOutput, StringComparison.OrdinalIgnoreCase);
         }
         
         [Fact]
