@@ -26,13 +26,11 @@ jobs:
       run: dotnet build --no-restore
       
     - name: Test with coverage
-      continue-on-error: true
       id: tests
       run: "dotnet test --no-build --verbosity normal --collect:\"XPlat Code Coverage\" --logger \"console;verbosity=detailed\" --nologo"
-      # Using continue-on-error to ensure the workflow continues even if tests fail
       
     - name: Generate code coverage report
-      if: success() && steps.tests.outcome == 'success'
+      if: success()
       uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
       with:
         reports: '**/coverage.opencover.xml'
@@ -40,14 +38,14 @@ jobs:
         reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
         
     - name: Upload coverage report artifact
-      if: success() && steps.tests.outcome == 'success'
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: CoverageReport
         path: coveragereport
         
     - name: Publish coverage report to GitHub Pages
-      if: success() && steps.tests.outcome == 'success' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      if: success() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
       uses: JamesIves/github-pages-deploy-action@v4
       with:
         folder: coveragereport
