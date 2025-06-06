@@ -322,6 +322,7 @@ namespace ConditionalAccessExporter
                     {
                         Console.WriteLine($"  - {error}");
                     }
+                    return 1;
                 }
 
                 if (parseResult.Warnings.Any() && verbose)
