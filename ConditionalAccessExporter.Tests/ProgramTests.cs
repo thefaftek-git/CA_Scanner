@@ -545,7 +545,7 @@ namespace ConditionalAccessExporter.Tests
             // Assert
             Assert.NotNull(capturedOutput);
             // Even if we get an exception, we should see some output about the export attempt
-            Assert.Contains("Exporting", capturedOutput, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("Conditional Access Policy Exporter", capturedOutput, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
