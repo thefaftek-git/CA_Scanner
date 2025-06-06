@@ -7,6 +7,7 @@ using ConditionalAccessExporter.Services;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace ConditionalAccessExporter.Tests
@@ -14,6 +15,7 @@ namespace ConditionalAccessExporter.Tests
     [Collection("Console Output Tests")]
     public class ProgramTests
     {
+        
         /// <summary>
         /// Helper method to assert that a required option error message is present in the captured output
         /// </summary>
@@ -67,7 +69,7 @@ namespace ConditionalAccessExporter.Tests
             // Arrange - Capture console output
             string? capturedOutput = null;
             var expectedOutputPath = args.Length == 3 ? args[2] : $"ConditionalAccessPolicies_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json";
-            
+            Console.WriteLine(expectedOutputPath);
             try
             {
                 // Act
@@ -76,12 +78,13 @@ namespace ConditionalAccessExporter.Tests
                     await ProgramTestHelper.InvokeMainAsync(args);
                 });
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Console.WriteLine($"Test failed due to exception {e.Message}");
                 // The test might fail due to Graph API authentication
                 // We're just testing that the export code path is invoked
             }
-
+            Console.WriteLine(capturedOutput);
             // Assert
             Assert.NotNull(capturedOutput);
             Assert.Contains("Conditional Access Policy Exporter", capturedOutput);
@@ -570,22 +573,42 @@ namespace ConditionalAccessExporter.Tests
             Assert.Contains("Error", capturedOutput, StringComparison.OrdinalIgnoreCase);
         }
         
+
+
         [Fact]
         public async Task ConvertTerraformAsync_Success_ReturnsZero()
         {
             // This will test Issue Test Case 2.4
             // Arrange
             string? capturedOutput = null;
-            string testInputPath = "test_policies.json";
-            string testOutputPath = "terraform_output";
-            var mockFileSystem = new MockFileSystem();
-            
-            // Mock filesystem setup
-            mockFileSystem.AddFile(testInputPath, new MockFileData("{ \"policies\": [] }"));
-            mockFileSystem.AddDirectory(testOutputPath);
+            string testInputPath = Path.GetTempFileName();
+            string testOutputPath = Path.GetTempFileName();
             
             try
             {
+                // Create temporary Terraform file with valid content
+                var terraformContent = @"
+resource ""azuread_conditional_access_policy"" ""test_policy"" {
+  display_name = ""Test Policy""
+  state        = ""enabled""
+  
+  conditions {
+    applications {
+      included_applications = [""All""]
+    }
+    
+    users {
+      included_users = [""All""]
+    }
+  }
+  
+  grant_controls {
+    operator          = ""OR""
+    built_in_controls = [""mfa""]
+  }
+}";
+                await File.WriteAllTextAsync(testInputPath, terraformContent);
+                
                 // Act
                 capturedOutput = await ProgramTestHelper.CaptureConsoleOutputAsync(async () =>
                 {
@@ -594,16 +617,19 @@ namespace ConditionalAccessExporter.Tests
                     // A successful result should be zero
                     Assert.Equal(0, result);
                 });
+                
+                // Assert
+                Assert.NotNull(capturedOutput);
+                Assert.Contains("Converting Terraform", capturedOutput, StringComparison.OrdinalIgnoreCase);
             }
-            catch (Exception)
+            finally
             {
-                // The test might fail due to filesystem access
-                // This is a unit test, so we're just testing the return code path
+                // Cleanup temporary files
+                if (File.Exists(testInputPath))
+                    File.Delete(testInputPath);
+                if (File.Exists(testOutputPath))
+                    File.Delete(testOutputPath);
             }
-
-            // Assert
-            Assert.NotNull(capturedOutput);
-            Assert.Contains("Converting Terraform", capturedOutput, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
@@ -643,8 +669,8 @@ namespace ConditionalAccessExporter.Tests
             // This will test Issue Test Case 3.4
             // Arrange
             string? capturedOutput = null;
-            string testInputPath = "test_policies.json";
-            string testOutputDir = "terraform_output";
+            string testInputPath = Path.GetTempFileName();
+            string testOutputDir = Path.Combine(Path.GetTempPath(), "terraform_output_" + Guid.NewGuid().ToString("N")[..8]);
             bool generateVariables = true;
             bool generateProvider = true;
             bool separateFiles = false;
@@ -652,8 +678,38 @@ namespace ConditionalAccessExporter.Tests
             bool includeComments = true;
             string providerVersion = "~> 2.0";
             
+            // Create test data
+            var testData = new[]
+            {
+                new
+                {
+                    id = "test-policy-1",
+                    displayName = "Test Policy 1",
+                    state = "enabled",
+                    conditions = new
+                    {
+                        users = new
+                        {
+                            includeUsers = new[] { "All" }
+                        },
+                        applications = new
+                        {
+                            includeApplications = new[] { "All" }
+                        }
+                    },
+                    grantControls = new
+                    {
+                        @operator = "AND",
+                        builtInControls = new[] { "mfa" }
+                    }
+                }
+            };
+            
             try
             {
+                // Create test input file
+                await File.WriteAllTextAsync(testInputPath, JsonConvert.SerializeObject(testData, Formatting.Indented));
+                
                 // Act
                 capturedOutput = await ProgramTestHelper.CaptureConsoleOutputAsync(async () =>
                 {
@@ -675,6 +731,14 @@ namespace ConditionalAccessExporter.Tests
             {
                 // The test might fail due to filesystem access
                 // This is a unit test, so we're just testing the return code path
+            }
+            finally
+            {
+                // Clean up
+                if (File.Exists(testInputPath))
+                    File.Delete(testInputPath);
+                if (Directory.Exists(testOutputDir))
+                    Directory.Delete(testOutputDir, true);
             }
 
             // Assert
@@ -733,14 +797,43 @@ namespace ConditionalAccessExporter.Tests
             // This will test Issue Test Case 4.4
             // Arrange
             string? capturedOutput = null;
-            string testRefDir = "reference_dir";
-            string testEntraFile = "entra_export.json";
-            string testOutputDir = "compare_reports";
+            string testRefDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            string testEntraFile = Path.GetTempFileName();
+            string testOutputDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             string[] formats = new[] { "json", "html" };
             bool caseSensitive = true;
             
             try
             {
+                // Create temporary directories and files
+                Directory.CreateDirectory(testRefDir);
+                Directory.CreateDirectory(testOutputDir);
+                
+                // Create a simple Entra export JSON file
+                var entraExport = new
+                {
+                    policies = new[]
+                    {
+                        new
+                        {
+                            id = "test-policy-1",
+                            displayName = "Test Policy 1",
+                            state = "enabled"
+                        }
+                    }
+                };
+                await File.WriteAllTextAsync(testEntraFile, JsonConvert.SerializeObject(entraExport, Formatting.Indented));
+                
+                // Create a sample reference policy file
+                var referencePolicyFile = Path.Combine(testRefDir, "policy1.json");
+                var referencePolicy = new
+                {
+                    id = "test-policy-1",
+                    displayName = "Test Policy 1",
+                    state = "enabled"
+                };
+                await File.WriteAllTextAsync(referencePolicyFile, JsonConvert.SerializeObject(referencePolicy, Formatting.Indented));
+                
                 // Act
                 capturedOutput = await ProgramTestHelper.CaptureConsoleOutputAsync(async () =>
                 {
@@ -755,16 +848,28 @@ namespace ConditionalAccessExporter.Tests
                     // A successful result should be zero
                     Assert.Equal(0, result);
                 });
+                    
+                // Assert
+                Assert.NotNull(capturedOutput);
+                Assert.Contains("Conditional Access Policy Comparison", capturedOutput, StringComparison.OrdinalIgnoreCase);
             }
-            catch (Exception)
+            finally
             {
-                // The test might fail due to dependencies or filesystem access
-                // This is a unit test, so we're just testing the return code path
+                // Cleanup temporary files and directories
+                try
+                {
+                    if (File.Exists(testEntraFile))
+                        File.Delete(testEntraFile);
+                    if (Directory.Exists(testRefDir))
+                        Directory.Delete(testRefDir, true);
+                    if (Directory.Exists(testOutputDir))
+                        Directory.Delete(testOutputDir, true);
+                }
+                catch
+                {
+                    // Ignore cleanup errors
+                }
             }
-
-            // Assert
-            Assert.NotNull(capturedOutput);
-            Assert.Contains("Conditional Access Policy Comparison", capturedOutput, StringComparison.OrdinalIgnoreCase);
         }
         
         [Fact]
@@ -813,9 +918,9 @@ namespace ConditionalAccessExporter.Tests
             // This will test Issue Test Case 5.4
             // Arrange
             string? capturedOutput = null;
-            string testSourceDir = "source_dir";
-            string testReferenceDir = "reference_dir";
-            string testOutputDir = "cross_compare_reports";
+            string testSourceDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            string testReferenceDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            string testOutputDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             string[] formats = new[] { "json", "markdown" };
             string matchingStrategy = "ByName";
             double similarityThreshold = 0.8;
@@ -824,6 +929,45 @@ namespace ConditionalAccessExporter.Tests
             
             try
             {
+                // Create temporary directories
+                Directory.CreateDirectory(testSourceDir);
+                Directory.CreateDirectory(testReferenceDir);
+                Directory.CreateDirectory(testOutputDir);
+                
+                // Create a sample JSON policy file in source directory
+                var sourceJsonFile = Path.Combine(testSourceDir, "policy1.json");
+                var sourcePolicy = new
+                {
+                    id = "test-policy-1",
+                    displayName = "Test Policy 1", 
+                    state = "enabled"
+                };
+                await File.WriteAllTextAsync(sourceJsonFile, JsonConvert.SerializeObject(sourcePolicy, Formatting.Indented));
+                
+                // Create a sample Terraform policy file in reference directory
+                var referenceTfFile = Path.Combine(testReferenceDir, "policy1.tf");
+                var terraformContent = @"
+resource ""azuread_conditional_access_policy"" ""test_policy_1"" {
+  display_name = ""Test Policy 1""
+  state        = ""enabled""
+  
+  conditions {
+    applications {
+      included_applications = [""All""]
+    }
+    
+    users {
+      included_users = [""All""]
+    }
+  }
+  
+  grant_controls {
+    operator          = ""OR""
+    built_in_controls = [""mfa""]
+  }
+}";
+                await File.WriteAllTextAsync(referenceTfFile, terraformContent);
+                
                 // Act
                 capturedOutput = await ProgramTestHelper.CaptureConsoleOutputAsync(async () =>
                 {
@@ -840,16 +984,28 @@ namespace ConditionalAccessExporter.Tests
                     // A successful result should be zero
                     Assert.Equal(0, result);
                 });
+                
+                // Assert
+                Assert.NotNull(capturedOutput);
+                Assert.Contains("Cross-comparing policies", capturedOutput, StringComparison.OrdinalIgnoreCase);
             }
-            catch (Exception)
+            finally
             {
-                // The test might fail due to dependencies or filesystem access
-                // This is a unit test, so we're just testing the return code path
+                // Cleanup temporary directories
+                try
+                {
+                    if (Directory.Exists(testSourceDir))
+                        Directory.Delete(testSourceDir, true);
+                    if (Directory.Exists(testReferenceDir))
+                        Directory.Delete(testReferenceDir, true);
+                    if (Directory.Exists(testOutputDir))
+                        Directory.Delete(testOutputDir, true);
+                }
+                catch
+                {
+                    // Ignore cleanup errors
+                }
             }
-
-            // Assert
-            Assert.NotNull(capturedOutput);
-            Assert.Contains("Cross-comparing policies", capturedOutput, StringComparison.OrdinalIgnoreCase);
         }
         
         [Fact]

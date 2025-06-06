@@ -20,34 +20,36 @@ jobs:
         dotnet-version: '8.0.x'
         
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet --version && dotnet restore
       
     - name: Build
-      run: dotnet build --no-restore
-      
+      run: dotnet --version && dotnet build --no-restore
+    
     - name: Test with coverage
-      continue-on-error: true
       id: tests
-      run: "dotnet test --no-build --verbosity normal --collect:\"XPlat Code Coverage\" --logger \"console;verbosity=detailed\" --nologo"
-      # Using continue-on-error to ensure the workflow continues even if tests fail
+      env:
+        AZURE_TENANT_ID: ${{ secrets.Azure_Tenant_Id }}
+        AZURE_CLIENT_ID: ${{ secrets.Azure_Client_Id }}
+        AZURE_CLIENT_SECRET: ${{ secrets.Azure_Client_Secret }}
+      run: "dotnet --version && dotnet test --no-build --verbosity normal --collect:\"XPlat Code Coverage\" --logger \"console;verbosity=detailed\" --nologo"
       
     - name: Generate code coverage report
-      if: success() && steps.tests.outcome == 'success'
+      if: success()
       uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
       with:
-        reports: '**/coverage.opencover.xml'
+        reports: '**/coverage.cobertura.xml'
         targetdir: 'coveragereport'
         reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
         
     - name: Upload coverage report artifact
-      if: success() && steps.tests.outcome == 'success'
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: CoverageReport
         path: coveragereport
         
     - name: Publish coverage report to GitHub Pages
-      if: success() && steps.tests.outcome == 'success' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      if: success() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
       uses: JamesIves/github-pages-deploy-action@v4
       with:
         folder: coveragereport

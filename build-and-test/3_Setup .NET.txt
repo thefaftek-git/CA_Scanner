@@ -1,0 +1,16 @@
+﻿2025-06-06T18:50:18.0233819Z ##[group]Run actions/setup-dotnet@v3
+2025-06-06T18:50:18.0234565Z with:
+2025-06-06T18:50:18.0234793Z   dotnet-version: 8.0.x
+2025-06-06T18:50:18.0235036Z   cache: false
+2025-06-06T18:50:18.0235262Z ##[endgroup]
+2025-06-06T18:50:18.2208359Z [command]/home/runner/work/_actions/actions/setup-dotnet/v3/externals/install-dotnet.sh --channel 8.0
+2025-06-06T18:50:18.4565090Z dotnet-install: Attempting to download using aka.ms link https://builds.dotnet.microsoft.com/dotnet/Sdk/8.0.410/dotnet-sdk-8.0.410-linux-x64.tar.gz
+2025-06-06T18:50:19.4736926Z dotnet-install: Remote file https://builds.dotnet.microsoft.com/dotnet/Sdk/8.0.410/dotnet-sdk-8.0.410-linux-x64.tar.gz size is 216261108 bytes.
+2025-06-06T18:50:19.4738870Z dotnet-install: Extracting archive from https://builds.dotnet.microsoft.com/dotnet/Sdk/8.0.410/dotnet-sdk-8.0.410-linux-x64.tar.gz
+2025-06-06T18:50:24.0160974Z dotnet-install: Downloaded file size is 216261108 bytes.
+2025-06-06T18:50:24.0161764Z dotnet-install: The remote and local file sizes are equal.
+2025-06-06T18:50:24.2821129Z dotnet-install: Installed version is 8.0.410
+2025-06-06T18:50:24.2883820Z dotnet-install: Adding to current process PATH: `/usr/share/dotnet`. Note: This change will be visible only when sourcing script.
+2025-06-06T18:50:24.2886368Z dotnet-install: Note that the script does not resolve dependencies during installation.
+2025-06-06T18:50:24.2888430Z dotnet-install: To check the list of dependencies, go to https://learn.microsoft.com/dotnet/core/install, select your operating system and check the "Dependencies" section.
+2025-06-06T18:50:24.2889860Z dotnet-install: Installation finished successfully.
