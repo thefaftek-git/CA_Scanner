@@ -153,16 +153,10 @@ namespace ConditionalAccessExporter.Services
         private void CategorizeChangePath(string path, PolicyComparison comparison, CiCdOptions options)
         {
             // Check if this change type should be ignored
-            // Optimized: avoid Any() + Contains() for better performance with large diffs
-            bool shouldIgnore = false;
-            foreach (var ignore in options.IgnoreChangeTypes)
-            {
-                if (path.Contains(ignore, StringComparison.OrdinalIgnoreCase))
-                {
-                    shouldIgnore = true;
-                    break;
-                }
-            }
+            // Use precomputed HashSet for better performance with large diffs
+            var normalizedPath = path.ToLowerInvariant();
+            bool shouldIgnore = options.IgnoreChangeTypes.Any(ignore => 
+                normalizedPath.Contains(ignore.ToLowerInvariant()));
             
             if (shouldIgnore)
             {
@@ -192,32 +186,27 @@ namespace ConditionalAccessExporter.Services
 
         private bool IsCriticalChange(string path, CiCdOptions options)
         {
+            var normalizedPath = path.ToLowerInvariant();
+            
             // Check user-defined critical types first
-            // Optimized: avoid Any() + Contains() for better performance with large diffs
-            foreach (var critical in options.FailOnChangeTypes)
+            if (options.FailOnChangeTypes.Any(critical => 
+                normalizedPath.Contains(critical.ToLowerInvariant())))
             {
-                if (path.Contains(critical, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
+                return true;
             }
 
             // Check built-in critical types
-            foreach (var critical in CriticalChangeTypes)
+            if (CriticalChangeTypes.Any(critical => 
+                normalizedPath.Contains(critical.ToLowerInvariant())))
             {
-                if (path.Contains(critical, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
+                return true;
             }
 
             // Check if it's a known non-critical type
-            foreach (var nonCritical in NonCriticalChangeTypes)
+            if (NonCriticalChangeTypes.Any(nonCritical => 
+                normalizedPath.Contains(nonCritical.ToLowerInvariant())))
             {
-                if (path.Contains(nonCritical, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
+                return false;
             }
 
             // Default: treat unknown changes as critical for security

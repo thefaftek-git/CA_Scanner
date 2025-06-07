@@ -13,10 +13,16 @@ namespace ConditionalAccessExporter
     public static class Logger
     {
         private static bool _quietMode = false;
+        private static bool _verboseMode = false;
 
         public static void SetQuietMode(bool quietMode)
         {
             _quietMode = quietMode;
+        }
+
+        public static void SetVerboseMode(bool verboseMode)
+        {
+            _verboseMode = verboseMode;
         }
 
         public static void WriteInfo(string message)
@@ -35,7 +41,7 @@ namespace ConditionalAccessExporter
 
         public static void WriteVerbose(string message)
         {
-            if (!_quietMode)
+            if (!_quietMode && _verboseMode)
             {
                 Console.WriteLine(message);
             }
@@ -366,8 +372,8 @@ namespace ConditionalAccessExporter
 
         private static async Task<int> ExportPoliciesAsync(string outputPath)
         {
-            Console.WriteLine("Conditional Access Policy Exporter");
-            Console.WriteLine("==================================");
+            Logger.WriteInfo("Conditional Access Policy Exporter");
+            Logger.WriteInfo("==================================");
 
             try
             {
@@ -383,9 +389,9 @@ namespace ConditionalAccessExporter
                 // Write to file
                 await File.WriteAllTextAsync(outputPath, json, Encoding.UTF8);
 
-                Console.WriteLine($"Conditional Access Policies exported successfully to: {outputPath}");
-                Console.WriteLine($"File size: {new FileInfo(outputPath).Length / 1024.0:F2} KB");
-                Console.WriteLine("Export completed successfully!");
+                Logger.WriteInfo($"Conditional Access Policies exported successfully to: {outputPath}");
+                Logger.WriteInfo($"File size: {new FileInfo(outputPath).Length / 1024.0:F2} KB");
+                Logger.WriteInfo("Export completed successfully!");
                 
                 return 0;
             }
@@ -806,15 +812,15 @@ namespace ConditionalAccessExporter
                     // Minimal output for pipelines
                     if (analysis.CriticalDifferences > 0)
                     {
-                        Console.WriteLine($"CRITICAL: {analysis.CriticalDifferences} critical differences found");
+                        Logger.WriteInfo($"CRITICAL: {analysis.CriticalDifferences} critical differences found");
                     }
                     else if (analysis.TotalDifferences > 0)
                     {
-                        Console.WriteLine($"WARNING: {analysis.TotalDifferences} differences found");
+                        Logger.WriteInfo($"WARNING: {analysis.TotalDifferences} differences found");
                     }
                     else
                     {
-                        Console.WriteLine("SUCCESS: No differences found");
+                        Logger.WriteInfo("SUCCESS: No differences found");
                     }
                 }
                 else
