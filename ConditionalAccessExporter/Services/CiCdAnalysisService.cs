@@ -52,6 +52,12 @@ namespace ConditionalAccessExporter.Services
                     {
                         analysis.CriticalPolicies.Add(comparison.PolicyName);
                         analysis.CriticalDifferences += comparison.CriticalDifferenceTypes.Count;
+                        
+                        // Collect all critical change types
+                        foreach (var changeType in comparison.CriticalDifferenceTypes)
+                        {
+                            analysis.AllCriticalChangeTypes.Add(changeType);
+                        }
                     }
                     
                     analysis.NonCriticalDifferences += comparison.NonCriticalDifferenceTypes.Count;
@@ -63,6 +69,9 @@ namespace ConditionalAccessExporter.Services
                     comparison.CriticalDifferenceTypes.Add("MissingPolicy");
                     analysis.CriticalPolicies.Add(comparison.PolicyName);
                     analysis.CriticalDifferences++;
+                    
+                    // Collect the missing policy change type
+                    analysis.AllCriticalChangeTypes.Add("MissingPolicy");
                 }
             }
 
@@ -260,11 +269,11 @@ namespace ConditionalAccessExporter.Services
         public int ExitCode { get; set; }
         public string Status { get; set; } = string.Empty;
         public CiCdOptions Options { get; set; } = new();
+        public HashSet<string> AllCriticalChangeTypes { get; set; } = new();
 
         public List<string> GetAllCriticalChangeTypes()
         {
-            // This would be populated during analysis
-            return new List<string>();
+            return AllCriticalChangeTypes.ToList();
         }
     }
 }
