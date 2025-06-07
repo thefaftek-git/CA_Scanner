@@ -819,21 +819,21 @@ namespace ConditionalAccessExporter
                 }
                 else
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("Comparison Results Summary:");
-                    Console.WriteLine("==========================");
-                    Console.WriteLine($"Total policies compared: {result.Summary.TotalEntraPolicies}");
-                    Console.WriteLine($"Policies with differences: {result.Summary.PoliciesWithDifferences}");
-                    Console.WriteLine($"Critical differences: {analysis.CriticalDifferences}");
-                    Console.WriteLine($"Non-critical differences: {analysis.NonCriticalDifferences}");
+                    Logger.WriteInfo("");
+                    Logger.WriteInfo("Comparison Results Summary:");
+                    Logger.WriteInfo("==========================");
+                    Logger.WriteInfo($"Total policies compared: {result.Summary.TotalEntraPolicies}");
+                    Logger.WriteInfo($"Policies with differences: {result.Summary.PoliciesWithDifferences}");
+                    Logger.WriteInfo($"Critical differences: {analysis.CriticalDifferences}");
+                    Logger.WriteInfo($"Non-critical differences: {analysis.NonCriticalDifferences}");
                     
                     if (analysis.CriticalPolicies.Any())
                     {
-                        Console.WriteLine($"Policies with critical changes: {string.Join(", ", analysis.CriticalPolicies)}");
+                        Logger.WriteInfo($"Policies with critical changes: {string.Join(", ", analysis.CriticalPolicies)}");
                     }
                     
-                    Console.WriteLine($"Status: {analysis.Status}");
-                    Console.WriteLine("Comparison completed successfully!");
+                    Logger.WriteInfo($"Status: {analysis.Status}");
+                    Logger.WriteInfo("Comparison completed successfully!");
                 }
 
                 return analysis.ExitCode;
