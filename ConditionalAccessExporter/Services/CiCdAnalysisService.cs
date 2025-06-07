@@ -114,10 +114,18 @@ namespace ConditionalAccessExporter.Services
             {
                 var diffArray = (JArray)diff;
                 // For arrays in JsonDiffPatch, changes are typically [oldValue, newValue]
+                // Arrays with fewer than 2 elements represent edge cases (e.g., deletions, additions)
+                // and should still be categorized as changes
                 if (diffArray.Count >= 2)
                 {
                     CategorizeChangePath(path, comparison, options);
                 }
+                else if (diffArray.Count == 1)
+                {
+                    // Single element arrays typically represent additions or special diff markers
+                    CategorizeChangePath(path, comparison, options);
+                }
+                // Empty arrays are ignored as they represent no change
             }
             else
             {

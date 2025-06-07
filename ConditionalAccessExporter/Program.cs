@@ -9,6 +9,39 @@ using ConditionalAccessExporter.Services;
 
 namespace ConditionalAccessExporter
 {
+    // Simple logging helper to manage verbose versus quiet output
+    public static class Logger
+    {
+        private static bool _quietMode = false;
+
+        public static void SetQuietMode(bool quietMode)
+        {
+            _quietMode = quietMode;
+        }
+
+        public static void WriteInfo(string message)
+        {
+            if (!_quietMode)
+            {
+                Console.WriteLine(message);
+            }
+        }
+
+        public static void WriteError(string message)
+        {
+            // Errors are always written regardless of quiet mode
+            Console.WriteLine(message);
+        }
+
+        public static void WriteVerbose(string message, bool verbose = false)
+        {
+            if (!_quietMode && verbose)
+            {
+                Console.WriteLine(message);
+            }
+        }
+    }
+
     public class Program
     {
         public static async Task<int> Main(string[] args)
@@ -642,14 +675,14 @@ namespace ConditionalAccessExporter
                 // Validate reference directory is provided
                 if (string.IsNullOrEmpty(referenceDirectory))
                 {
-                    Console.WriteLine("Error: Reference directory is required but was not provided.");
+                    Logger.WriteError("Error: Reference directory is required but was not provided.");
                     return (int)ExitCode.Error;
                 }
 
                 // Validate reference directory exists
                 if (!Directory.Exists(referenceDirectory))
                 {
-                    Console.WriteLine($"Error: Reference directory '{referenceDirectory}' not found.");
+                    Logger.WriteError($"Error: Reference directory '{referenceDirectory}' not found.");
                     return (int)ExitCode.Error;
                 }
                 
@@ -666,54 +699,54 @@ namespace ConditionalAccessExporter
                     QuietMode = quiet
                 };
 
-                if (!quiet)
+                // Set logger quiet mode based on CI/CD options
+                Logger.SetQuietMode(quiet);
+
+                Logger.WriteInfo($"Reference directory: {referenceDirectory}");
+                
+                if (!string.IsNullOrEmpty(entraFile))
                 {
-                    Console.WriteLine($"Reference directory: {referenceDirectory}");
-                    
-                    if (!string.IsNullOrEmpty(entraFile))
+                    // Validate Entra file exists if specified
+                    if (!File.Exists(entraFile))
                     {
-                        // Validate Entra file exists if specified
-                        if (!File.Exists(entraFile))
-                        {
-                            Console.WriteLine($"Error: Entra file '{entraFile}' not found.");
-                            return (int)ExitCode.Error;
-                        }
-                        Console.WriteLine($"Entra file: {entraFile}");
+                        Logger.WriteError($"Error: Entra file '{entraFile}' not found.");
+                        return (int)ExitCode.Error;
                     }
-                    else
-                    {
-                        Console.WriteLine("Entra file: <fetching from live Entra ID>");
-                    }
-                    
-                    Console.WriteLine($"Output directory: {outputDirectory}");
-                    Console.WriteLine($"Report formats: {string.Join(", ", reportFormats)}");
-                    Console.WriteLine($"Matching strategy: {matchingStrategy}");
-                    Console.WriteLine($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
-                    Console.WriteLine($"Explain numeric values: {(explainValues ? "On" : "Off")}");
-                    
-                    if (exitOnDifferences)
-                    {
-                        Console.WriteLine("CI/CD Mode: Enabled");
-                        if (maxDifferences.HasValue)
-                            Console.WriteLine($"Max differences threshold: {maxDifferences.Value}");
-                        if (cicdOptions.FailOnChangeTypes.Any())
-                            Console.WriteLine($"Fail on change types: {string.Join(", ", cicdOptions.FailOnChangeTypes)}");
-                        if (cicdOptions.IgnoreChangeTypes.Any())
-                            Console.WriteLine($"Ignore change types: {string.Join(", ", cicdOptions.IgnoreChangeTypes)}");
-                    }
-                    Console.WriteLine();
-                    
-                    Console.WriteLine("Comparing policies...");
+                    Logger.WriteInfo($"Entra file: {entraFile}");
                 }
+                else
+                {
+                    Logger.WriteInfo("Entra file: <fetching from live Entra ID>");
+                }
+                    
+                Logger.WriteInfo($"Output directory: {outputDirectory}");
+                Logger.WriteInfo($"Report formats: {string.Join(", ", reportFormats)}");
+                Logger.WriteInfo($"Matching strategy: {matchingStrategy}");
+                Logger.WriteInfo($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
+                Logger.WriteInfo($"Explain numeric values: {(explainValues ? "On" : "Off")}");
+                
+                if (exitOnDifferences)
+                {
+                    Logger.WriteInfo("CI/CD Mode: Enabled");
+                    if (maxDifferences.HasValue)
+                        Logger.WriteInfo($"Max differences threshold: {maxDifferences.Value}");
+                    if (cicdOptions.FailOnChangeTypes.Any())
+                        Logger.WriteInfo($"Fail on change types: {string.Join(", ", cicdOptions.FailOnChangeTypes)}");
+                    if (cicdOptions.IgnoreChangeTypes.Any())
+                        Logger.WriteInfo($"Ignore change types: {string.Join(", ", cicdOptions.IgnoreChangeTypes)}");
+                }
+                Logger.WriteInfo("");
+                
+                Logger.WriteInfo("Comparing policies...");
                 
                 object entraExport;
 
                 if (!string.IsNullOrEmpty(entraFile))
                 {
-                    if (!quiet) Console.WriteLine($"Loading Entra policies from file: {entraFile}");
+                    Logger.WriteInfo($"Loading Entra policies from file: {entraFile}");
                     if (!File.Exists(entraFile))
                     {
-                        Console.WriteLine($"Error: Entra file '{entraFile}' not found.");
+                        Logger.WriteError($"Error: Entra file '{entraFile}' not found.");
                         return (int)ExitCode.Error;
                     }
 
