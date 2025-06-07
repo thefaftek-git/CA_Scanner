@@ -5,6 +5,13 @@ namespace ConditionalAccessExporter.Services
 {
     public class CiCdAnalysisService
     {
+        // Status constants to ensure consistency
+        public static class StatusConstants
+        {
+            public const string CriticalDriftDetected = "critical_drift_detected";
+            public const string DriftDetected = "drift_detected";
+            public const string NoDrift = "no_drift";
+        }
         // Critical change types that typically indicate security policy violations
         private static readonly HashSet<string> CriticalChangeTypes = new()
         {
@@ -37,7 +44,6 @@ namespace ConditionalAccessExporter.Services
         {
             var analysis = new CiCdAnalysisResult
             {
-                TotalDifferences = result.Summary.PoliciesWithDifferences,
                 Options = options
             };
 
@@ -80,6 +86,9 @@ namespace ConditionalAccessExporter.Services
                     analysis.AllCriticalChangeTypes.Add("MissingPolicy");
                 }
             }
+
+            // Calculate total differences as sum of critical and non-critical differences
+            analysis.TotalDifferences = analysis.CriticalDifferences + analysis.NonCriticalDifferences;
 
             // Update summary statistics
             result.Summary.CriticalDifferences = analysis.CriticalDifferences;
@@ -231,15 +240,15 @@ namespace ConditionalAccessExporter.Services
         {
             if (analysis.CriticalDifferences > 0)
             {
-                return "critical_drift_detected";
+                return StatusConstants.CriticalDriftDetected;
             }
             
             if (analysis.TotalDifferences > 0)
             {
-                return "drift_detected";
+                return StatusConstants.DriftDetected;
             }
             
-            return "no_drift";
+            return StatusConstants.NoDrift;
         }
 
         public PipelineOutput GeneratePipelineOutput(CiCdAnalysisResult analysis, ComparisonResult result)

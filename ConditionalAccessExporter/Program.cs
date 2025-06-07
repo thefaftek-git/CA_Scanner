@@ -30,7 +30,7 @@ namespace ConditionalAccessExporter
         public static void WriteError(string message)
         {
             // Errors are always written regardless of quiet mode
-            Console.WriteLine(message);
+            Console.Error.WriteLine(message);
         }
 
         public static void WriteVerbose(string message)
@@ -786,7 +786,7 @@ namespace ConditionalAccessExporter
                     
                     if (!quiet)
                     {
-                        Console.WriteLine($"Pipeline output written to: {pipelineOutputPath}");
+                        Logger.WriteInfo($"Pipeline output written to: {pipelineOutputPath}");
                     }
                     
                     // Remove from formats list as it's handled separately
@@ -866,8 +866,8 @@ namespace ConditionalAccessExporter
             var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
             var graphClient = new GraphServiceClient(credential);
 
-            Console.WriteLine("Authenticating to Microsoft Graph...");
-            Console.WriteLine("Fetching Conditional Access Policies...");
+            Logger.WriteInfo("Authenticating to Microsoft Graph...");
+            Logger.WriteInfo("Fetching Conditional Access Policies...");
 
             // Get all conditional access policies
             var policies = await graphClient.Identity.ConditionalAccess.Policies.GetAsync();
