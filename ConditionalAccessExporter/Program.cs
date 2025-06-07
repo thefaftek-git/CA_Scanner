@@ -149,6 +149,32 @@ namespace ConditionalAccessExporter
                 description: "Decode numeric values in console output with human-readable explanations",
                 getDefaultValue: () => false
             );
+            var exitOnDifferencesOption = new Option<bool>(
+                name: "--exit-on-differences",
+                description: "Return non-zero exit codes based on comparison results",
+                getDefaultValue: () => false
+            );
+            var maxDifferencesOption = new Option<int?>(
+                name: "--max-differences",
+                description: "Fail if more than specified number of policies differ"
+            );
+            var failOnOption = new Option<string[]>(
+                name: "--fail-on",
+                description: "Fail on specific types of changes (comma or space-separated)",
+                getDefaultValue: () => Array.Empty<string>()
+            );
+            failOnOption.AllowMultipleArgumentsPerToken = true;
+            var ignoreOption = new Option<string[]>(
+                name: "--ignore",
+                description: "Ignore specific types of differences (comma or space-separated)",
+                getDefaultValue: () => Array.Empty<string>()
+            );
+            ignoreOption.AllowMultipleArgumentsPerToken = true;
+            var quietOption = new Option<bool>(
+                name: "--quiet",
+                description: "Minimal output for pipeline usage",
+                getDefaultValue: () => false
+            );
 
             compareCommand.AddOption(referenceDirectoryOption);
             compareCommand.AddOption(entraFileOption);
@@ -157,15 +183,43 @@ namespace ConditionalAccessExporter
             compareCommand.AddOption(matchingStrategyOption);
             compareCommand.AddOption(caseSensitiveOption);
             compareCommand.AddOption(explainOption);
+            compareCommand.AddOption(exitOnDifferencesOption);
+            compareCommand.AddOption(maxDifferencesOption);
+            compareCommand.AddOption(failOnOption);
+            compareCommand.AddOption(ignoreOption);
+            compareCommand.AddOption(quietOption);
 
-            compareCommand.SetHandler(ComparePoliciesAsync, 
-                referenceDirectoryOption, 
-                entraFileOption, 
-                outputDirectoryOption, 
-                reportFormatsOption, 
-                matchingStrategyOption, 
-                caseSensitiveOption,
-                explainOption);
+            compareCommand.SetHandler(async (context) =>
+            {
+                var referenceDirectory = context.ParseResult.GetValueForOption(referenceDirectoryOption);
+                var entraFile = context.ParseResult.GetValueForOption(entraFileOption);
+                var outputDirectory = context.ParseResult.GetValueForOption(outputDirectoryOption);
+                var reportFormats = context.ParseResult.GetValueForOption(reportFormatsOption);
+                var matchingStrategy = context.ParseResult.GetValueForOption(matchingStrategyOption);
+                var caseSensitive = context.ParseResult.GetValueForOption(caseSensitiveOption);
+                var explainValues = context.ParseResult.GetValueForOption(explainOption);
+                var exitOnDifferences = context.ParseResult.GetValueForOption(exitOnDifferencesOption);
+                var maxDifferences = context.ParseResult.GetValueForOption(maxDifferencesOption);
+                var failOn = context.ParseResult.GetValueForOption(failOnOption);
+                var ignore = context.ParseResult.GetValueForOption(ignoreOption);
+                var quiet = context.ParseResult.GetValueForOption(quietOption);
+
+                var exitCode = await ComparePoliciesAsync(
+                    referenceDirectory!,
+                    entraFile,
+                    outputDirectory!,
+                    reportFormats!,
+                    matchingStrategy,
+                    caseSensitive,
+                    explainValues,
+                    exitOnDifferences,
+                    maxDifferences,
+                    failOn!,
+                    ignore!,
+                    quiet);
+                
+                context.ExitCode = exitCode;
+            });
 
             // Cross-format compare command
             var crossFormatCompareCommand = new Command("cross-compare", "Compare policies across different formats (JSON vs Terraform)");
@@ -573,7 +627,12 @@ namespace ConditionalAccessExporter
             string[] reportFormats,
             MatchingStrategy matchingStrategy,
             bool caseSensitive,
-            bool explainValues)
+            bool explainValues,
+            bool exitOnDifferences,
+            int? maxDifferences,
+            string[] failOn,
+            string[] ignore,
+            bool quiet)
         {
             Console.WriteLine("Conditional Access Policy Comparison");
             Console.WriteLine("====================================");
@@ -584,54 +643,78 @@ namespace ConditionalAccessExporter
                 if (string.IsNullOrEmpty(referenceDirectory))
                 {
                     Console.WriteLine("Error: Reference directory is required but was not provided.");
-                    return 1;
+                    return (int)ExitCode.Error;
                 }
 
                 // Validate reference directory exists
                 if (!Directory.Exists(referenceDirectory))
                 {
                     Console.WriteLine($"Error: Reference directory '{referenceDirectory}' not found.");
-                    return 1;
+                    return (int)ExitCode.Error;
                 }
                 
                 // Handle comma-separated formats in addition to space-separated ones
                 reportFormats = ProcessReportFormats(reportFormats);
                 
-                Console.WriteLine($"Reference directory: {referenceDirectory}");
-                
-                if (!string.IsNullOrEmpty(entraFile))
+                // Process CI/CD options
+                var cicdOptions = new CiCdOptions
                 {
-                    // Validate Entra file exists if specified
-                    if (!File.Exists(entraFile))
+                    ExitOnDifferences = exitOnDifferences,
+                    MaxDifferences = maxDifferences,
+                    FailOnChangeTypes = ProcessCommaSeparatedArray(failOn),
+                    IgnoreChangeTypes = ProcessCommaSeparatedArray(ignore),
+                    QuietMode = quiet
+                };
+
+                if (!quiet)
+                {
+                    Console.WriteLine($"Reference directory: {referenceDirectory}");
+                    
+                    if (!string.IsNullOrEmpty(entraFile))
                     {
-                        Console.WriteLine($"Error: Entra file '{entraFile}' not found.");
-                        return 1;
+                        // Validate Entra file exists if specified
+                        if (!File.Exists(entraFile))
+                        {
+                            Console.WriteLine($"Error: Entra file '{entraFile}' not found.");
+                            return (int)ExitCode.Error;
+                        }
+                        Console.WriteLine($"Entra file: {entraFile}");
                     }
-                    Console.WriteLine($"Entra file: {entraFile}");
+                    else
+                    {
+                        Console.WriteLine("Entra file: <fetching from live Entra ID>");
+                    }
+                    
+                    Console.WriteLine($"Output directory: {outputDirectory}");
+                    Console.WriteLine($"Report formats: {string.Join(", ", reportFormats)}");
+                    Console.WriteLine($"Matching strategy: {matchingStrategy}");
+                    Console.WriteLine($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
+                    Console.WriteLine($"Explain numeric values: {(explainValues ? "On" : "Off")}");
+                    
+                    if (exitOnDifferences)
+                    {
+                        Console.WriteLine("CI/CD Mode: Enabled");
+                        if (maxDifferences.HasValue)
+                            Console.WriteLine($"Max differences threshold: {maxDifferences.Value}");
+                        if (cicdOptions.FailOnChangeTypes.Any())
+                            Console.WriteLine($"Fail on change types: {string.Join(", ", cicdOptions.FailOnChangeTypes)}");
+                        if (cicdOptions.IgnoreChangeTypes.Any())
+                            Console.WriteLine($"Ignore change types: {string.Join(", ", cicdOptions.IgnoreChangeTypes)}");
+                    }
+                    Console.WriteLine();
+                    
+                    Console.WriteLine("Comparing policies...");
                 }
-                else
-                {
-                    Console.WriteLine("Entra file: <fetching from live Entra ID>");
-                }
-                
-                Console.WriteLine($"Output directory: {outputDirectory}");
-                Console.WriteLine($"Report formats: {string.Join(", ", reportFormats)}");
-                Console.WriteLine($"Matching strategy: {matchingStrategy}");
-                Console.WriteLine($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
-                Console.WriteLine($"Explain numeric values: {(explainValues ? "On" : "Off")}");
-                Console.WriteLine();
-                
-                Console.WriteLine("Comparing policies...");
                 
                 object entraExport;
 
                 if (!string.IsNullOrEmpty(entraFile))
                 {
-                    Console.WriteLine($"Loading Entra policies from file: {entraFile}");
+                    if (!quiet) Console.WriteLine($"Loading Entra policies from file: {entraFile}");
                     if (!File.Exists(entraFile))
                     {
                         Console.WriteLine($"Error: Entra file '{entraFile}' not found.");
-                        return 1;
+                        return (int)ExitCode.Error;
                     }
 
                     var fileContent = await File.ReadAllTextAsync(entraFile);
@@ -639,7 +722,7 @@ namespace ConditionalAccessExporter
                 }
                 else
                 {
-                    Console.WriteLine("Fetching live Entra policies...");
+                    if (!quiet) Console.WriteLine("Fetching live Entra policies...");
                     entraExport = await FetchEntraPoliciesAsync();
                 }
 
@@ -652,16 +735,80 @@ namespace ConditionalAccessExporter
                 var comparisonService = new PolicyComparisonService();
                 var result = await comparisonService.CompareAsync(entraExport, referenceDirectory, matchingOptions);
 
-                var reportService = new ReportGenerationService();
-                await reportService.GenerateReportsAsync(result, outputDirectory, reportFormats.ToList(), explainValues, includeJsonMetadata: true);
+                // Perform CI/CD analysis
+                var cicdAnalysisService = new CiCdAnalysisService();
+                var analysis = cicdAnalysisService.AnalyzeComparison(result, cicdOptions);
 
-                Console.WriteLine("Comparison completed successfully!");
-                return 0;
+                // Add pipeline-json format if needed
+                var finalReportFormats = reportFormats.ToList();
+                if (reportFormats.Contains("pipeline-json"))
+                {
+                    var pipelineOutput = cicdAnalysisService.GeneratePipelineOutput(analysis, result);
+                    var pipelineJson = JsonConvert.SerializeObject(pipelineOutput, Formatting.Indented);
+                    
+                    // Ensure output directory exists
+                    Directory.CreateDirectory(outputDirectory);
+                    var pipelineOutputPath = Path.Combine(outputDirectory, "pipeline-output.json");
+                    await File.WriteAllTextAsync(pipelineOutputPath, pipelineJson);
+                    
+                    if (!quiet)
+                    {
+                        Console.WriteLine($"Pipeline output written to: {pipelineOutputPath}");
+                    }
+                    
+                    // Remove from formats list as it's handled separately
+                    finalReportFormats.Remove("pipeline-json");
+                }
+
+                // Generate standard reports
+                if (finalReportFormats.Any())
+                {
+                    var reportService = new ReportGenerationService();
+                    await reportService.GenerateReportsAsync(result, outputDirectory, finalReportFormats, explainValues, includeJsonMetadata: true);
+                }
+
+                // Output results based on mode
+                if (quiet)
+                {
+                    // Minimal output for pipelines
+                    if (analysis.CriticalDifferences > 0)
+                    {
+                        Console.WriteLine($"CRITICAL: {analysis.CriticalDifferences} critical differences found");
+                    }
+                    else if (analysis.TotalDifferences > 0)
+                    {
+                        Console.WriteLine($"WARNING: {analysis.TotalDifferences} differences found");
+                    }
+                    else
+                    {
+                        Console.WriteLine("SUCCESS: No differences found");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Comparison Results Summary:");
+                    Console.WriteLine("==========================");
+                    Console.WriteLine($"Total policies compared: {result.Summary.TotalEntraPolicies}");
+                    Console.WriteLine($"Policies with differences: {result.Summary.PoliciesWithDifferences}");
+                    Console.WriteLine($"Critical differences: {analysis.CriticalDifferences}");
+                    Console.WriteLine($"Non-critical differences: {analysis.NonCriticalDifferences}");
+                    
+                    if (analysis.CriticalPolicies.Any())
+                    {
+                        Console.WriteLine($"Policies with critical changes: {string.Join(", ", analysis.CriticalPolicies)}");
+                    }
+                    
+                    Console.WriteLine($"Status: {analysis.Status}");
+                    Console.WriteLine("Comparison completed successfully!");
+                }
+
+                return analysis.ExitCode;
             }
             catch (Exception ex)
             {
                 await HandleExceptionAsync(ex);
-                return 1;
+                return (int)ExitCode.Error;
             }
         }
 
@@ -1023,6 +1170,18 @@ namespace ConditionalAccessExporter
                 .Select(v => v.Trim())
                 .Where(v => !string.IsNullOrEmpty(v))
                 .ToList();
+        }
+
+        private static List<string> ProcessCommaSeparatedArray(string[] input)
+        {
+            var result = new List<string>();
+            
+            foreach (var item in input)
+            {
+                result.AddRange(ProcessCommaSeparatedValues(item));
+            }
+            
+            return result;
         }
 
         private static async Task<int> GenerateBaselineAsync(
