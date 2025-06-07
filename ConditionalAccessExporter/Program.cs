@@ -1207,14 +1207,7 @@ namespace ConditionalAccessExporter
 
         private static List<string> ProcessCommaSeparatedArray(string[] input)
         {
-            var result = new List<string>();
-            
-            foreach (var item in input)
-            {
-                result.AddRange(ProcessCommaSeparatedValues(item));
-            }
-            
-            return result;
+            return input.SelectMany(item => ProcessCommaSeparatedValues(item)).ToList();
         }
 
         private static async Task<int> GenerateBaselineAsync(
