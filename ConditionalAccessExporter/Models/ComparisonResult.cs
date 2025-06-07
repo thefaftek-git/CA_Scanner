@@ -215,6 +215,7 @@ namespace ConditionalAccessExporter.Models
         public List<string> FailOnChangeTypes { get; set; } = new();
         public List<string> IgnoreChangeTypes { get; set; } = new();
         public bool QuietMode { get; set; }
+        public bool ExplainValues { get; set; }
     }
 
     public class PipelineOutput

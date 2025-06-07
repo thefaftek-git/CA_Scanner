@@ -155,8 +155,10 @@ namespace ConditionalAccessExporter.Services
             // Check if this change type should be ignored
             // Use precomputed HashSet for better performance with large diffs
             var normalizedPath = path.ToLowerInvariant();
-            bool shouldIgnore = options.IgnoreChangeTypes.Any(ignore => 
-                normalizedPath.Contains(ignore.ToLowerInvariant()));
+            
+            // Create a HashSet for faster lookups with case-insensitive comparison
+            var ignoreSet = new HashSet<string>(options.IgnoreChangeTypes.Select(ignore => ignore.ToLowerInvariant()));
+            bool shouldIgnore = ignoreSet.Any(ignore => normalizedPath.Contains(ignore));
             
             if (shouldIgnore)
             {
@@ -188,23 +190,25 @@ namespace ConditionalAccessExporter.Services
         {
             var normalizedPath = path.ToLowerInvariant();
             
+            // Create HashSets for faster lookups
+            var failOnSet = new HashSet<string>(options.FailOnChangeTypes.Select(critical => critical.ToLowerInvariant()));
+            var criticalSet = new HashSet<string>(CriticalChangeTypes.Select(critical => critical.ToLowerInvariant()));
+            var nonCriticalSet = new HashSet<string>(NonCriticalChangeTypes.Select(nonCritical => nonCritical.ToLowerInvariant()));
+            
             // Check user-defined critical types first
-            if (options.FailOnChangeTypes.Any(critical => 
-                normalizedPath.Contains(critical.ToLowerInvariant())))
+            if (failOnSet.Any(critical => normalizedPath.Contains(critical)))
             {
                 return true;
             }
 
             // Check built-in critical types
-            if (CriticalChangeTypes.Any(critical => 
-                normalizedPath.Contains(critical.ToLowerInvariant())))
+            if (criticalSet.Any(critical => normalizedPath.Contains(critical)))
             {
                 return true;
             }
 
             // Check if it's a known non-critical type
-            if (NonCriticalChangeTypes.Any(nonCritical => 
-                normalizedPath.Contains(nonCritical.ToLowerInvariant())))
+            if (nonCriticalSet.Any(nonCritical => normalizedPath.Contains(nonCritical)))
             {
                 return false;
             }

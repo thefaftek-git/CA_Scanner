@@ -416,7 +416,7 @@ namespace ConditionalAccessExporter
                 // Validate required input parameter
                 if (string.IsNullOrEmpty(inputPath))
                 {
-                    Console.WriteLine("Error: Input path is required but was not provided.");
+                    Logger.WriteError("Error: Input path is required but was not provided.");
                     return 1;
                 }
                 
@@ -447,7 +447,7 @@ namespace ConditionalAccessExporter
                 }
                 else
                 {
-                    Console.WriteLine($"Error: Input path '{inputPath}' not found.");
+                    Logger.WriteError($"Error: Input path '{inputPath}' not found.");
                     return 1;
                 }
 
@@ -586,7 +586,7 @@ namespace ConditionalAccessExporter
 
                 if (!File.Exists(inputPath))
                 {
-                    Console.WriteLine($"Error: Input file '{inputPath}' not found.");
+                    Logger.WriteError($"Error: Input file '{inputPath}' not found.");
                     return 1;
                 }
 
@@ -673,8 +673,8 @@ namespace ConditionalAccessExporter
             string[] ignore,
             bool quiet)
         {
-            Console.WriteLine("Conditional Access Policy Comparison");
-            Console.WriteLine("====================================");
+            Logger.WriteInfo("Conditional Access Policy Comparison");
+            Logger.WriteInfo("====================================");
 
             try
             {
@@ -702,11 +702,13 @@ namespace ConditionalAccessExporter
                     MaxDifferences = maxDifferences,
                     FailOnChangeTypes = ProcessCommaSeparatedArray(failOn),
                     IgnoreChangeTypes = ProcessCommaSeparatedArray(ignore),
-                    QuietMode = quiet
+                    QuietMode = quiet,
+                    ExplainValues = explainValues
                 };
 
                 // Set logger quiet mode based on CI/CD options
                 Logger.SetQuietMode(quiet);
+                Logger.SetVerboseMode(explainValues);
 
                 Logger.WriteInfo($"Reference directory: {referenceDirectory}");
                 
@@ -994,22 +996,22 @@ namespace ConditionalAccessExporter
             bool enableSemantic,
             double similarityThreshold)
         {
-            Console.WriteLine("Cross-Format Policy Comparison");
-            Console.WriteLine("============================");
+            Logger.WriteInfo("Cross-Format Policy Comparison");
+            Logger.WriteInfo("============================");
             
             try
             {
                 // Validate source directory exists
                 if (string.IsNullOrEmpty(sourceDirectory))
                 {
-                    Console.WriteLine("Error: Source directory is required but was not provided.");
+                    Logger.WriteError("Error: Source directory is required but was not provided.");
                     return 1;
                 }
 
                 // Validate reference directory exists
                 if (string.IsNullOrEmpty(referenceDirectory))
                 {
-                    Console.WriteLine("Error: Reference directory is required but was not provided.");
+                    Logger.WriteError("Error: Reference directory is required but was not provided.");
                     return 1;
                 }
                 
@@ -1031,14 +1033,14 @@ namespace ConditionalAccessExporter
                 // Validate source directory exists
                 if (!Directory.Exists(sourceDirectory))
                 {
-                    Console.WriteLine($"Error: Source directory '{sourceDirectory}' not found.");
+                    Logger.WriteError($"Error: Source directory '{sourceDirectory}' not found.");
                     return 1;
                 }
 
                 // Validate reference directory exists
                 if (!Directory.Exists(referenceDirectory))
                 {
-                    Console.WriteLine($"Error: Reference directory '{referenceDirectory}' not found.");
+                    Logger.WriteError($"Error: Reference directory '{referenceDirectory}' not found.");
                     return 1;
                 }
                 
@@ -1213,7 +1215,7 @@ namespace ConditionalAccessExporter
 
         private static List<string> ProcessCommaSeparatedArray(string[] input)
         {
-            return input.SelectMany(item => ProcessCommaSeparatedValues(item)).ToList();
+            return input.SelectMany(ProcessCommaSeparatedValues).ToList();
         }
 
         private static async Task<int> GenerateBaselineAsync(
