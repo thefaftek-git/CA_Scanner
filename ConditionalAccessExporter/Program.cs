@@ -228,11 +228,45 @@ namespace ConditionalAccessExporter
                 enableSemanticOption,
                 similarityThresholdOption);
 
+            // Baseline command
+            var baselineCommand = new Command("baseline", "Generate baseline reference policies from current tenant");
+            var baselineOutputDirOption = new Option<string>(
+                name: "--output-dir",
+                description: "Directory to save baseline reference files",
+                getDefaultValue: () => "reference-policies"
+            );
+            var anonymizeOption = new Option<bool>(
+                name: "--anonymize",
+                description: "Remove tenant-specific identifiers (IDs, timestamps, tenant references)",
+                getDefaultValue: () => false
+            );
+            var filterEnabledOnlyOption = new Option<bool>(
+                name: "--filter-enabled-only",
+                description: "Export only enabled policies",
+                getDefaultValue: () => false
+            );
+            var policyNamesOption = new Option<string[]>(
+                name: "--policy-names",
+                description: "Export specific policies by name (space or comma-separated)"
+            );
+            policyNamesOption.AllowMultipleArgumentsPerToken = true;
+
+            baselineCommand.AddOption(baselineOutputDirOption);
+            baselineCommand.AddOption(anonymizeOption);
+            baselineCommand.AddOption(filterEnabledOnlyOption);
+            baselineCommand.AddOption(policyNamesOption);
+            baselineCommand.SetHandler(GenerateBaselineAsync,
+                baselineOutputDirOption,
+                anonymizeOption,
+                filterEnabledOnlyOption,
+                policyNamesOption);
+
             rootCommand.AddCommand(exportCommand);
             rootCommand.AddCommand(terraformCommand);
             rootCommand.AddCommand(jsonToTerraformCommand);
             rootCommand.AddCommand(compareCommand);
             rootCommand.AddCommand(crossFormatCompareCommand);
+            rootCommand.AddCommand(baselineCommand);
 
             // If no arguments provided, default to export for backward compatibility
             if (args.Length == 0)
@@ -968,9 +1002,8 @@ namespace ConditionalAccessExporter
                 if (format.Contains(','))
                 {
                     // Split comma-separated values
-                    var splitFormats = format.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                        .Select(f => f.Trim().ToLowerInvariant())
-                        .Where(f => !string.IsNullOrEmpty(f));
+                    var splitFormats = ProcessCommaSeparatedValues(format)
+                        .Select(f => f.ToLowerInvariant());
                     processedFormats.AddRange(splitFormats);
                 }
                 else
@@ -979,6 +1012,60 @@ namespace ConditionalAccessExporter
                 }
             }
             return processedFormats.Distinct().ToArray();
+        }
+
+        private static List<string> ProcessCommaSeparatedValues(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return new List<string>();
+
+            return value.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(v => v.Trim())
+                .Where(v => !string.IsNullOrEmpty(v))
+                .ToList();
+        }
+
+        private static async Task<int> GenerateBaselineAsync(
+            string outputDirectory,
+            bool anonymize,
+            bool filterEnabledOnly,
+            string[] policyNames)
+        {
+            try
+            {
+                // Handle comma-separated policy names in addition to space-separated ones
+                var processedPolicyNames = new List<string>();
+                if (policyNames != null && policyNames.Any())
+                {
+                    foreach (var name in policyNames)
+                    {
+                        if (name.Contains(','))
+                        {
+                            processedPolicyNames.AddRange(ProcessCommaSeparatedValues(name));
+                        }
+                        else
+                        {
+                            processedPolicyNames.Add(name.Trim());
+                        }
+                    }
+                }
+
+                var options = new BaselineGenerationOptions
+                {
+                    OutputDirectory = outputDirectory,
+                    Anonymize = anonymize,
+                    FilterEnabledOnly = filterEnabledOnly,
+                    PolicyNames = processedPolicyNames.Any() ? processedPolicyNames : null
+                };
+
+                var baselineService = new BaselineGenerationService();
+                return await baselineService.GenerateBaselineAsync(options);
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(ex);
+                return 1;
+            }
         }
 
         private static async Task HandleExceptionAsync(Exception ex)
