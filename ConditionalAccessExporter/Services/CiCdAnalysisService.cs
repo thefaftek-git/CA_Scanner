@@ -61,6 +61,12 @@ namespace ConditionalAccessExporter.Services
                     }
                     
                     analysis.NonCriticalDifferences += comparison.NonCriticalDifferenceTypes.Count;
+                    
+                    // Collect all non-critical change types
+                    foreach (var changeType in comparison.NonCriticalDifferenceTypes)
+                    {
+                        analysis.AllNonCriticalChangeTypes.Add(changeType);
+                    }
                 }
                 else if (comparison.Status == ComparisonStatus.EntraOnly || comparison.Status == ComparisonStatus.ReferenceOnly)
                 {
@@ -79,6 +85,7 @@ namespace ConditionalAccessExporter.Services
             result.Summary.CriticalDifferences = analysis.CriticalDifferences;
             result.Summary.NonCriticalDifferences = analysis.NonCriticalDifferences;
             result.Summary.CriticalChangeTypes = analysis.GetAllCriticalChangeTypes();
+            result.Summary.NonCriticalChangeTypes = analysis.GetAllNonCriticalChangeTypes();
 
             // Determine exit code and status
             analysis.ExitCode = DetermineExitCode(analysis, options);
@@ -278,10 +285,16 @@ namespace ConditionalAccessExporter.Services
         public string Status { get; set; } = string.Empty;
         public CiCdOptions Options { get; set; } = new();
         public HashSet<string> AllCriticalChangeTypes { get; set; } = new();
+        public HashSet<string> AllNonCriticalChangeTypes { get; set; } = new();
 
         public List<string> GetAllCriticalChangeTypes()
         {
             return AllCriticalChangeTypes.ToList();
+        }
+
+        public List<string> GetAllNonCriticalChangeTypes()
+        {
+            return AllNonCriticalChangeTypes.ToList();
         }
     }
 }

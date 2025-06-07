@@ -33,9 +33,9 @@ namespace ConditionalAccessExporter
             Console.WriteLine(message);
         }
 
-        public static void WriteVerbose(string message, bool verbose = false)
+        public static void WriteVerbose(string message)
         {
-            if (!_quietMode && verbose)
+            if (!_quietMode)
             {
                 Console.WriteLine(message);
             }
@@ -755,7 +755,7 @@ namespace ConditionalAccessExporter
                 }
                 else
                 {
-                    if (!quiet) Console.WriteLine("Fetching live Entra policies...");
+                    Logger.WriteInfo("Fetching live Entra policies...");
                     entraExport = await FetchEntraPoliciesAsync();
                 }
 
