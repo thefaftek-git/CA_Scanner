@@ -110,7 +110,12 @@ namespace ConditionalAccessExporter.Tests
                     reportFormats,
                     matchingStrategy,
                     caseSensitive,
-                    explainValues
+                    explainValues,
+                    false, // exitOnDifferences
+                    null,  // maxDifferences
+                    new string[0], // failOn
+                    new string[0], // ignore
+                    false  // quiet
                 });
             return result;
         }

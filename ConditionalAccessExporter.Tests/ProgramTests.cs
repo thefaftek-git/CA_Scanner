@@ -897,8 +897,8 @@ resource ""azuread_conditional_access_policy"" ""test_policy"" {
                         Models.MatchingStrategy.ById, 
                         caseSensitive);
                     
-                    // A failure result should be one
-                    Assert.Equal(1, result);
+                    // A failure result should be error code 3 (ExitCode.Error)
+                    Assert.Equal(3, result);
                 });
             }
             catch (Exception)
