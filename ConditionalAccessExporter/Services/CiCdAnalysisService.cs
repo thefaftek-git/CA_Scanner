@@ -47,12 +47,18 @@ namespace ConditionalAccessExporter.Services
                 Options = options
             };
 
+            // Precompute normalized change type sets for better performance with large diffs
+            var normalizedIgnoreSet = new HashSet<string>(options.IgnoreChangeTypes.Select(ignore => ignore.ToLowerInvariant()));
+            var normalizedFailOnSet = new HashSet<string>(options.FailOnChangeTypes.Select(critical => critical.ToLowerInvariant()));
+            var normalizedCriticalSet = new HashSet<string>(CriticalChangeTypes.Select(critical => critical.ToLowerInvariant()));
+            var normalizedNonCriticalSet = new HashSet<string>(NonCriticalChangeTypes.Select(nonCritical => nonCritical.ToLowerInvariant()));
+
             // Analyze each policy comparison
             foreach (var comparison in result.PolicyComparisons)
             {
                 if (comparison.Status == ComparisonStatus.Different && comparison.Differences != null)
                 {
-                    AnalyzePolicyDifferences(comparison, options);
+                    AnalyzePolicyDifferences(comparison, options, normalizedIgnoreSet, normalizedFailOnSet, normalizedCriticalSet, normalizedNonCriticalSet);
                     
                     if (comparison.HasCriticalDifferences)
                     {
@@ -103,17 +109,21 @@ namespace ConditionalAccessExporter.Services
             return analysis;
         }
 
-        private void AnalyzePolicyDifferences(PolicyComparison comparison, CiCdOptions options)
+        private void AnalyzePolicyDifferences(PolicyComparison comparison, CiCdOptions options, 
+            HashSet<string> normalizedIgnoreSet, HashSet<string> normalizedFailOnSet, 
+            HashSet<string> normalizedCriticalSet, HashSet<string> normalizedNonCriticalSet)
         {
             if (comparison.Differences == null) return;
 
             var differences = comparison.Differences as JToken;
             if (differences == null) return;
 
-            CategorizeDifferences(differences, "", comparison, options);
+            CategorizeDifferences(differences, "", comparison, options, normalizedIgnoreSet, normalizedFailOnSet, normalizedCriticalSet, normalizedNonCriticalSet);
         }
 
-        private void CategorizeDifferences(JToken diff, string path, PolicyComparison comparison, CiCdOptions options)
+        private void CategorizeDifferences(JToken diff, string path, PolicyComparison comparison, CiCdOptions options,
+            HashSet<string> normalizedIgnoreSet, HashSet<string> normalizedFailOnSet, 
+            HashSet<string> normalizedCriticalSet, HashSet<string> normalizedNonCriticalSet)
         {
             if (diff == null) return;
 
@@ -123,7 +133,7 @@ namespace ConditionalAccessExporter.Services
                 foreach (var property in diffObj.Properties())
                 {
                     var currentPath = string.IsNullOrEmpty(path) ? property.Name : $"{path}.{property.Name}";
-                    CategorizeDifferences(property.Value, currentPath, comparison, options);
+                    CategorizeDifferences(property.Value, currentPath, comparison, options, normalizedIgnoreSet, normalizedFailOnSet, normalizedCriticalSet, normalizedNonCriticalSet);
                 }
             }
             else if (diff.Type == JTokenType.Array)
@@ -134,31 +144,29 @@ namespace ConditionalAccessExporter.Services
                 // and should still be categorized as changes
                 if (diffArray.Count >= 2)
                 {
-                    CategorizeChangePath(path, comparison, options);
+                    CategorizeChangePath(path, comparison, options, normalizedIgnoreSet, normalizedFailOnSet, normalizedCriticalSet, normalizedNonCriticalSet);
                 }
                 else if (diffArray.Count == 1)
                 {
                     // Single element arrays typically represent additions or special diff markers
-                    CategorizeChangePath(path, comparison, options);
+                    CategorizeChangePath(path, comparison, options, normalizedIgnoreSet, normalizedFailOnSet, normalizedCriticalSet, normalizedNonCriticalSet);
                 }
                 // Empty arrays are ignored as they represent no change
             }
             else
             {
                 // Direct value change
-                CategorizeChangePath(path, comparison, options);
+                CategorizeChangePath(path, comparison, options, normalizedIgnoreSet, normalizedFailOnSet, normalizedCriticalSet, normalizedNonCriticalSet);
             }
         }
 
-        private void CategorizeChangePath(string path, PolicyComparison comparison, CiCdOptions options)
+        private void CategorizeChangePath(string path, PolicyComparison comparison, CiCdOptions options,
+            HashSet<string> normalizedIgnoreSet, HashSet<string> normalizedFailOnSet, 
+            HashSet<string> normalizedCriticalSet, HashSet<string> normalizedNonCriticalSet)
         {
-            // Check if this change type should be ignored
-            // Use precomputed HashSet for better performance with large diffs
+            // Check if this change type should be ignored using precomputed sets
             var normalizedPath = path.ToLowerInvariant();
-            
-            // Create a HashSet for faster lookups with case-insensitive comparison
-            var ignoreSet = new HashSet<string>(options.IgnoreChangeTypes.Select(ignore => ignore.ToLowerInvariant()));
-            bool shouldIgnore = ignoreSet.Any(ignore => normalizedPath.Contains(ignore));
+            bool shouldIgnore = normalizedIgnoreSet.Any(ignore => normalizedPath.Contains(ignore));
             
             if (shouldIgnore)
             {
@@ -166,8 +174,8 @@ namespace ConditionalAccessExporter.Services
                 return;
             }
 
-            // Check if this is a critical change type
-            bool isCritical = IsCriticalChange(path, options);
+            // Check if this is a critical change type using precomputed sets
+            bool isCritical = IsCriticalChange(path, normalizedPath, normalizedFailOnSet, normalizedCriticalSet, normalizedNonCriticalSet);
             
             if (isCritical)
             {
@@ -186,29 +194,23 @@ namespace ConditionalAccessExporter.Services
             }
         }
 
-        private bool IsCriticalChange(string path, CiCdOptions options)
+        private bool IsCriticalChange(string path, string normalizedPath, 
+            HashSet<string> normalizedFailOnSet, HashSet<string> normalizedCriticalSet, HashSet<string> normalizedNonCriticalSet)
         {
-            var normalizedPath = path.ToLowerInvariant();
-            
-            // Create HashSets for faster lookups
-            var failOnSet = new HashSet<string>(options.FailOnChangeTypes.Select(critical => critical.ToLowerInvariant()));
-            var criticalSet = new HashSet<string>(CriticalChangeTypes.Select(critical => critical.ToLowerInvariant()));
-            var nonCriticalSet = new HashSet<string>(NonCriticalChangeTypes.Select(nonCritical => nonCritical.ToLowerInvariant()));
-            
-            // Check user-defined critical types first
-            if (failOnSet.Any(critical => normalizedPath.Contains(critical)))
+            // Check user-defined critical types first using precomputed sets
+            if (normalizedFailOnSet.Any(critical => normalizedPath.Contains(critical)))
             {
                 return true;
             }
 
-            // Check built-in critical types
-            if (criticalSet.Any(critical => normalizedPath.Contains(critical)))
+            // Check built-in critical types using precomputed sets
+            if (normalizedCriticalSet.Any(critical => normalizedPath.Contains(critical)))
             {
                 return true;
             }
 
-            // Check if it's a known non-critical type
-            if (nonCriticalSet.Any(nonCritical => normalizedPath.Contains(nonCritical)))
+            // Check if it's a known non-critical type using precomputed sets
+            if (normalizedNonCriticalSet.Any(nonCritical => normalizedPath.Contains(nonCritical)))
             {
                 return false;
             }
