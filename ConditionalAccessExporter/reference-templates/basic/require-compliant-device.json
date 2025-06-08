@@ -1,0 +1,52 @@
+
+{
+  "DisplayName": "Require compliant device",
+  "State": "Enabled",
+  "Conditions": {
+    "Applications": {
+      "IncludeApplications": ["All"],
+      "ExcludeApplications": [],
+      "IncludeUserActions": [],
+      "IncludeAuthenticationContextClassReferences": []
+    },
+    "Users": {
+      "IncludeUsers": ["All"],
+      "ExcludeUsers": [
+        "{{EMERGENCY_ACCESS_ACCOUNT_1}}",
+        "{{EMERGENCY_ACCESS_ACCOUNT_2}}"
+      ],
+      "IncludeGroups": [],
+      "ExcludeGroups": [],
+      "IncludeRoles": [],
+      "ExcludeRoles": []
+    },
+    "ClientAppTypes": ["All"],
+    "Platforms": {
+      "IncludePlatforms": ["android", "iOS", "windows", "macOS"],
+      "ExcludePlatforms": []
+    },
+    "Locations": {
+      "IncludeLocations": [],
+      "ExcludeLocations": []
+    },
+    "SignInRiskLevels": [],
+    "UserRiskLevels": [],
+    "ClientApplications": {
+      "IncludeServicePrincipals": [],
+      "ExcludeServicePrincipals": []
+    }
+  },
+  "GrantControls": {
+    "Operator": "OR",
+    "BuiltInControls": ["compliantDevice", "domainJoinedDevice"],
+    "CustomAuthenticationFactors": [],
+    "TermsOfUse": []
+  },
+  "SessionControls": {
+    "ApplicationEnforcedRestrictions": null,
+    "CloudAppSecurity": null,
+    "PersistentBrowser": null,
+    "SignInFrequency": null
+  }
+}
+

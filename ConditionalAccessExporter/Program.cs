@@ -321,6 +321,44 @@ namespace ConditionalAccessExporter
                 enableSemanticOption,
                 similarityThresholdOption);
 
+            // Templates command
+            var templatesCommand = new Command("templates", "Manage reference policy templates");
+            var listTemplatesOption = new Option<bool>(
+                name: "--list",
+                description: "List all available templates",
+                getDefaultValue: () => false
+            );
+            var createTemplateOption = new Option<string>(
+                name: "--create",
+                description: "Create a specific template (e.g., basic/require-mfa-all-users)"
+            );
+            var createBaselineTemplatesOption = new Option<bool>(
+                name: "--create-baseline",
+                description: "Create a baseline set of common templates",
+                getDefaultValue: () => false
+            );
+            var templateOutputDirOption = new Option<string>(
+                name: "--output-dir",
+                description: "Output directory for generated templates",
+                getDefaultValue: () => "generated-policies"
+            );
+            var validateTemplateOption = new Option<string>(
+                name: "--validate",
+                description: "Validate a template file"
+            );
+
+            templatesCommand.AddOption(listTemplatesOption);
+            templatesCommand.AddOption(createTemplateOption);
+            templatesCommand.AddOption(createBaselineTemplatesOption);
+            templatesCommand.AddOption(templateOutputDirOption);
+            templatesCommand.AddOption(validateTemplateOption);
+            templatesCommand.SetHandler(ManageTemplatesAsync,
+                listTemplatesOption,
+                createTemplateOption,
+                createBaselineTemplatesOption,
+                templateOutputDirOption,
+                validateTemplateOption);
+
             // Baseline command
             var baselineCommand = new Command("baseline", "Generate baseline reference policies from current tenant");
             var baselineOutputDirOption = new Option<string>(
@@ -359,6 +397,7 @@ namespace ConditionalAccessExporter
             rootCommand.AddCommand(jsonToTerraformCommand);
             rootCommand.AddCommand(compareCommand);
             rootCommand.AddCommand(crossFormatCompareCommand);
+            rootCommand.AddCommand(templatesCommand);
             rootCommand.AddCommand(baselineCommand);
 
             // If no arguments provided, default to export for backward compatibility
@@ -1253,6 +1292,142 @@ namespace ConditionalAccessExporter
 
                 var baselineService = new BaselineGenerationService();
                 return await baselineService.GenerateBaselineAsync(options);
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(ex);
+                return 1;
+            }
+        }
+
+        private static async Task<int> ManageTemplatesAsync(
+            bool listTemplates,
+            string createTemplate,
+            bool createBaseline,
+            string outputDirectory,
+            string validateTemplate)
+        {
+            try
+            {
+                var templateService = new TemplateService();
+
+                if (listTemplates)
+                {
+                    Logger.WriteInfo("Available Reference Policy Templates");
+                    Logger.WriteInfo("===================================");
+                    
+                    var templates = await templateService.ListAvailableTemplatesAsync();
+                    
+                    foreach (var category in templates.GroupBy(t => t.Category))
+                    {
+                        Logger.WriteInfo($"\n{category.Key.ToUpper()} POLICIES:");
+                        foreach (var template in category)
+                        {
+                            Logger.WriteInfo($"  - {template.Name}: {template.Description}");
+                        }
+                    }
+                    
+                    Logger.WriteInfo($"\nTotal templates available: {templates.Count}");
+                    return 0;
+                }
+
+                if (!string.IsNullOrEmpty(validateTemplate))
+                {
+                    Logger.WriteInfo("Template Validation");
+                    Logger.WriteInfo("==================");
+                    
+                    var validationResult = await templateService.ValidateTemplateAsync(validateTemplate);
+                    
+                    if (validationResult.IsValid)
+                    {
+                        Logger.WriteInfo($"✓ Template '{validateTemplate}' is valid");
+                        return 0;
+                    }
+                    else
+                    {
+                        Logger.WriteError($"✗ Template '{validateTemplate}' is invalid:");
+                        foreach (var error in validationResult.Errors)
+                        {
+                            Logger.WriteError($"  - {error}");
+                        }
+                        return 1;
+                    }
+                }
+
+                if (createBaseline)
+                {
+                    Logger.WriteInfo("Creating Baseline Template Set");
+                    Logger.WriteInfo("=============================");
+                    
+                    var result = await templateService.CreateBaselineSetAsync(outputDirectory);
+                    
+                    Logger.WriteInfo($"✓ Created {result.CreatedFiles.Count} baseline templates in '{outputDirectory}'");
+                    foreach (var file in result.CreatedFiles)
+                    {
+                        Logger.WriteInfo($"  - {Path.GetFileName(file)}");
+                    }
+                    
+                    if (result.Warnings.Any())
+                    {
+                        Logger.WriteInfo("\nWarnings:");
+                        foreach (var warning in result.Warnings)
+                        {
+                            Logger.WriteInfo($"  ! {warning}");
+                        }
+                    }
+                    
+                    return 0;
+                }
+
+                if (!string.IsNullOrEmpty(createTemplate))
+                {
+                    Logger.WriteInfo("Creating Template");
+                    Logger.WriteInfo("================");
+                    
+                    var result = await templateService.CreateTemplateAsync(createTemplate, outputDirectory);
+                    
+                    if (result.Success)
+                    {
+                        Logger.WriteInfo($"✓ Template '{createTemplate}' created successfully");
+                        Logger.WriteInfo($"  Output file: {result.OutputPath}");
+                        
+                        if (result.Warnings.Any())
+                        {
+                            Logger.WriteInfo("\nWarnings:");
+                            foreach (var warning in result.Warnings)
+                            {
+                                Logger.WriteInfo($"  ! {warning}");
+                            }
+                        }
+                        
+                        return 0;
+                    }
+                    else
+                    {
+                        Logger.WriteError($"✗ Failed to create template '{createTemplate}':");
+                        foreach (var error in result.Errors)
+                        {
+                            Logger.WriteError($"  - {error}");
+                        }
+                        return 1;
+                    }
+                }
+
+                // If no specific action is requested, show help
+                Logger.WriteInfo("Template Management Commands");
+                Logger.WriteInfo("===========================");
+                Logger.WriteInfo("--list                 List all available templates");
+                Logger.WriteInfo("--create <template>    Create a specific template");
+                Logger.WriteInfo("--create-baseline      Create a baseline set of templates");
+                Logger.WriteInfo("--validate <file>      Validate a template file");
+                Logger.WriteInfo("--output-dir <dir>     Specify output directory");
+                Logger.WriteInfo("");
+                Logger.WriteInfo("Examples:");
+                Logger.WriteInfo("  dotnet run templates --list");
+                Logger.WriteInfo("  dotnet run templates --create basic/require-mfa-all-users");
+                Logger.WriteInfo("  dotnet run templates --create-baseline --output-dir ./policies");
+                
+                return 0;
             }
             catch (Exception ex)
             {
