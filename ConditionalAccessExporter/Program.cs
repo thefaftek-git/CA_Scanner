@@ -9,6 +9,45 @@ using ConditionalAccessExporter.Services;
 
 namespace ConditionalAccessExporter
 {
+    // Simple logging helper to manage verbose versus quiet output
+    public static class Logger
+    {
+        private static bool _quietMode = false;
+        private static bool _verboseMode = false;
+
+        public static void SetQuietMode(bool quietMode)
+        {
+            _quietMode = quietMode;
+        }
+
+        public static void SetVerboseMode(bool verboseMode)
+        {
+            _verboseMode = verboseMode;
+        }
+
+        public static void WriteInfo(string message)
+        {
+            if (!_quietMode)
+            {
+                Console.WriteLine(message);
+            }
+        }
+
+        public static void WriteError(string message)
+        {
+            // Errors are always written regardless of quiet mode
+            Console.Error.WriteLine(message);
+        }
+
+        public static void WriteVerbose(string message)
+        {
+            if (!_quietMode && _verboseMode)
+            {
+                Console.WriteLine(message);
+            }
+        }
+    }
+
     public class Program
     {
         public static async Task<int> Main(string[] args)
@@ -149,6 +188,32 @@ namespace ConditionalAccessExporter
                 description: "Decode numeric values in console output with human-readable explanations",
                 getDefaultValue: () => false
             );
+            var exitOnDifferencesOption = new Option<bool>(
+                name: "--exit-on-differences",
+                description: "Return non-zero exit codes based on comparison results",
+                getDefaultValue: () => false
+            );
+            var maxDifferencesOption = new Option<int?>(
+                name: "--max-differences",
+                description: "Fail if more than specified number of policies differ"
+            );
+            var failOnOption = new Option<string[]>(
+                name: "--fail-on",
+                description: "Fail on specific types of changes (comma or space-separated)",
+                getDefaultValue: () => Array.Empty<string>()
+            );
+            failOnOption.AllowMultipleArgumentsPerToken = true;
+            var ignoreOption = new Option<string[]>(
+                name: "--ignore",
+                description: "Ignore specific types of differences (comma or space-separated)",
+                getDefaultValue: () => Array.Empty<string>()
+            );
+            ignoreOption.AllowMultipleArgumentsPerToken = true;
+            var quietOption = new Option<bool>(
+                name: "--quiet",
+                description: "Minimal output for pipeline usage",
+                getDefaultValue: () => false
+            );
 
             compareCommand.AddOption(referenceDirectoryOption);
             compareCommand.AddOption(entraFileOption);
@@ -157,15 +222,43 @@ namespace ConditionalAccessExporter
             compareCommand.AddOption(matchingStrategyOption);
             compareCommand.AddOption(caseSensitiveOption);
             compareCommand.AddOption(explainOption);
+            compareCommand.AddOption(exitOnDifferencesOption);
+            compareCommand.AddOption(maxDifferencesOption);
+            compareCommand.AddOption(failOnOption);
+            compareCommand.AddOption(ignoreOption);
+            compareCommand.AddOption(quietOption);
 
-            compareCommand.SetHandler(ComparePoliciesAsync, 
-                referenceDirectoryOption, 
-                entraFileOption, 
-                outputDirectoryOption, 
-                reportFormatsOption, 
-                matchingStrategyOption, 
-                caseSensitiveOption,
-                explainOption);
+            compareCommand.SetHandler(async (context) =>
+            {
+                var referenceDirectory = context.ParseResult.GetValueForOption(referenceDirectoryOption);
+                var entraFile = context.ParseResult.GetValueForOption(entraFileOption);
+                var outputDirectory = context.ParseResult.GetValueForOption(outputDirectoryOption);
+                var reportFormats = context.ParseResult.GetValueForOption(reportFormatsOption);
+                var matchingStrategy = context.ParseResult.GetValueForOption(matchingStrategyOption);
+                var caseSensitive = context.ParseResult.GetValueForOption(caseSensitiveOption);
+                var explainValues = context.ParseResult.GetValueForOption(explainOption);
+                var exitOnDifferences = context.ParseResult.GetValueForOption(exitOnDifferencesOption);
+                var maxDifferences = context.ParseResult.GetValueForOption(maxDifferencesOption);
+                var failOn = context.ParseResult.GetValueForOption(failOnOption);
+                var ignore = context.ParseResult.GetValueForOption(ignoreOption);
+                var quiet = context.ParseResult.GetValueForOption(quietOption);
+
+                var exitCode = await ComparePoliciesAsync(
+                    referenceDirectory!,
+                    entraFile,
+                    outputDirectory!,
+                    reportFormats!,
+                    matchingStrategy,
+                    caseSensitive,
+                    explainValues,
+                    exitOnDifferences,
+                    maxDifferences,
+                    failOn!,
+                    ignore!,
+                    quiet);
+                
+                context.ExitCode = exitCode;
+            });
 
             // Cross-format compare command
             var crossFormatCompareCommand = new Command("cross-compare", "Compare policies across different formats (JSON vs Terraform)");
@@ -279,8 +372,8 @@ namespace ConditionalAccessExporter
 
         private static async Task<int> ExportPoliciesAsync(string outputPath)
         {
-            Console.WriteLine("Conditional Access Policy Exporter");
-            Console.WriteLine("==================================");
+            Logger.WriteInfo("Conditional Access Policy Exporter");
+            Logger.WriteInfo("==================================");
 
             try
             {
@@ -296,9 +389,9 @@ namespace ConditionalAccessExporter
                 // Write to file
                 await File.WriteAllTextAsync(outputPath, json, Encoding.UTF8);
 
-                Console.WriteLine($"Conditional Access Policies exported successfully to: {outputPath}");
-                Console.WriteLine($"File size: {new FileInfo(outputPath).Length / 1024.0:F2} KB");
-                Console.WriteLine("Export completed successfully!");
+                Logger.WriteInfo($"Conditional Access Policies exported successfully to: {outputPath}");
+                Logger.WriteInfo($"File size: {new FileInfo(outputPath).Length / 1024.0:F2} KB");
+                Logger.WriteInfo("Export completed successfully!");
                 
                 return 0;
             }
@@ -315,33 +408,33 @@ namespace ConditionalAccessExporter
             bool validate,
             bool verbose)
         {
-            Console.WriteLine("Terraform to JSON Conversion");
-            Console.WriteLine("============================");
+            Logger.WriteInfo("Terraform to JSON Conversion");
+            Logger.WriteInfo("============================");
 
             try
             {
                 // Validate required input parameter
                 if (string.IsNullOrEmpty(inputPath))
                 {
-                    Console.WriteLine("Error: Input path is required but was not provided.");
+                    Logger.WriteError("Error: Input path is required but was not provided.");
                     return 1;
                 }
                 
-                Console.WriteLine("Converting Terraform policies...");
+                Logger.WriteInfo("Converting Terraform policies...");
 
 // Removed redundant null-or-empty check for inputPath
                 
                 var parsingService = new TerraformParsingService();
                 var conversionService = new TerraformConversionService();
 
-                Console.WriteLine($"Input path: {inputPath}");
-                Console.WriteLine($"Output path: {outputPath}");
-                Console.WriteLine($"Validation: {(validate ? "Enabled" : "Disabled")}");
-                Console.WriteLine($"Verbose logging: {(verbose ? "Enabled" : "Disabled")}");
-                Console.WriteLine();
+                Logger.WriteInfo($"Input path: {inputPath}");
+                Logger.WriteInfo($"Output path: {outputPath}");
+                Logger.WriteInfo($"Validation: {(validate ? "Enabled" : "Disabled")}");
+                Logger.WriteInfo($"Verbose logging: {(verbose ? "Enabled" : "Disabled")}");
+                Logger.WriteInfo("");
 
                 // Parse Terraform files
-                Console.WriteLine("Parsing Terraform files...");
+                Logger.WriteInfo("Parsing Terraform files...");
                 TerraformParseResult parseResult;
 
                 if (File.Exists(inputPath))
@@ -354,76 +447,76 @@ namespace ConditionalAccessExporter
                 }
                 else
                 {
-                    Console.WriteLine($"Error: Input path '{inputPath}' not found.");
+                    Logger.WriteError($"Error: Input path '{inputPath}' not found.");
                     return 1;
                 }
 
                 if (parseResult.Errors.Any())
                 {
-                    Console.WriteLine("Parsing errors encountered:");
+                    Logger.WriteInfo("Parsing errors encountered:");
                     foreach (var error in parseResult.Errors)
                     {
-                        Console.WriteLine($"  - {error}");
+                        Logger.WriteInfo($"  - {error}");
                     }
                     return 1;
                 }
 
                 if (parseResult.Warnings.Any() && verbose)
                 {
-                    Console.WriteLine("Parsing warnings:");
+                    Logger.WriteInfo("Parsing warnings:");
                     foreach (var warning in parseResult.Warnings)
                     {
-                        Console.WriteLine($"  - {warning}");
+                        Logger.WriteInfo($"  - {warning}");
                     }
                 }
 
-                Console.WriteLine($"Found {parseResult.Policies.Count} conditional access policies");
-                Console.WriteLine($"Found {parseResult.Variables.Count} variables");
-                Console.WriteLine($"Found {parseResult.Locals.Count} locals");
-                Console.WriteLine($"Found {parseResult.DataSources.Count} data sources");
-                Console.WriteLine();
+                Logger.WriteInfo($"Found {parseResult.Policies.Count} conditional access policies");
+                Logger.WriteInfo($"Found {parseResult.Variables.Count} variables");
+                Logger.WriteInfo($"Found {parseResult.Locals.Count} locals");
+                Logger.WriteInfo($"Found {parseResult.DataSources.Count} data sources");
+                Logger.WriteInfo("");
 
                 if (!parseResult.Policies.Any())
                 {
-                    Console.WriteLine("No conditional access policies found to convert.");
+                    Logger.WriteInfo("No conditional access policies found to convert.");
                     return 0;
                 }
 
                 // Convert to Graph JSON format
-                Console.WriteLine("Converting to Microsoft Graph JSON format...");
+                Logger.WriteInfo("Converting to Microsoft Graph JSON format...");
                 var conversionResult = await conversionService.ConvertToGraphJsonAsync(parseResult);
 
                 if (conversionResult.Errors.Any())
                 {
-                    Console.WriteLine("Conversion errors encountered:");
+                    Logger.WriteInfo("Conversion errors encountered:");
                     foreach (var error in conversionResult.Errors)
                     {
-                        Console.WriteLine($"  - {error}");
+                        Logger.WriteInfo($"  - {error}");
                     }
                 }
 
                 if (conversionResult.Warnings.Any() && verbose)
                 {
-                    Console.WriteLine("Conversion warnings:");
+                    Logger.WriteInfo("Conversion warnings:");
                     foreach (var warning in conversionResult.Warnings)
                     {
-                        Console.WriteLine($"  - {warning}");
+                        Logger.WriteInfo($"  - {warning}");
                     }
                 }
 
                 if (verbose && conversionResult.ConversionLog.Any())
                 {
-                    Console.WriteLine("Conversion log:");
+                    Logger.WriteInfo("Conversion log:");
                     foreach (var log in conversionResult.ConversionLog)
                     {
-                        Console.WriteLine($"  - {log}");
+                        Logger.WriteInfo($"  - {log}");
                     }
                 }
 
                 // Validate if requested
                 if (validate)
                 {
-                    Console.WriteLine("Validating converted policies...");
+                    Logger.WriteInfo("Validating converted policies...");
                     // Additional validation could be implemented here
                 }
 
@@ -436,14 +529,14 @@ namespace ConditionalAccessExporter
 
                 await File.WriteAllTextAsync(outputPath, json, Encoding.UTF8);
 
-                Console.WriteLine();
-                Console.WriteLine("Conversion Summary:");
-                Console.WriteLine("==================");
-                Console.WriteLine($"Successful conversions: {conversionResult.SuccessfulConversions}");
-                Console.WriteLine($"Failed conversions: {conversionResult.FailedConversions}");
-                Console.WriteLine($"Output file: {outputPath}");
-                Console.WriteLine($"File size: {new FileInfo(outputPath).Length / 1024.0:F2} KB");
-                Console.WriteLine("Terraform conversion completed successfully!");
+                Logger.WriteInfo("");
+                Logger.WriteInfo("Conversion Summary:");
+                Logger.WriteInfo("==================");
+                Logger.WriteInfo($"Successful conversions: {conversionResult.SuccessfulConversions}");
+                Logger.WriteInfo($"Failed conversions: {conversionResult.FailedConversions}");
+                Logger.WriteInfo($"Output file: {outputPath}");
+                Logger.WriteInfo($"File size: {new FileInfo(outputPath).Length / 1024.0:F2} KB");
+                Logger.WriteInfo("Terraform conversion completed successfully!");
 
                 // Return failure code if any conversions failed
                 return conversionResult.FailedConversions > 0 ? 1 : 0;
@@ -465,35 +558,35 @@ namespace ConditionalAccessExporter
             bool includeComments,
             string providerVersion)
         {
-            Console.WriteLine("JSON to Terraform Conversion");
-            Console.WriteLine("============================");
+            Logger.WriteInfo("JSON to Terraform Conversion");
+            Logger.WriteInfo("============================");
 
             try
             {
                 // Validate required input parameter
                 if (string.IsNullOrEmpty(inputPath))
                 {
-                    Console.WriteLine("Error: Input file is required but was not provided.");
+                    Logger.WriteError("Error: Input file is required but was not provided.");
                     return 1;
                 }
                 
-                Console.WriteLine($"Input file: {inputPath}");
-                Console.WriteLine($"Output directory: {outputDirectory}");
-                Console.WriteLine($"Generate variables: {(generateVariables ? "Yes" : "No")}");
-                Console.WriteLine($"Generate provider: {(generateProvider ? "Yes" : "No")}");
-                Console.WriteLine($"Separate files: {(separateFiles ? "Yes" : "No")}");
-                Console.WriteLine($"Generate module: {(generateModule ? "Yes" : "No")}");
-                Console.WriteLine($"Include comments: {(includeComments ? "Yes" : "No")}");
-                Console.WriteLine($"Provider version: {providerVersion}");
-                Console.WriteLine();
+                Logger.WriteInfo($"Input file: {inputPath}");
+                Logger.WriteInfo($"Output directory: {outputDirectory}");
+                Logger.WriteInfo($"Generate variables: {(generateVariables ? "Yes" : "No")}");
+                Logger.WriteInfo($"Generate provider: {(generateProvider ? "Yes" : "No")}");
+                Logger.WriteInfo($"Separate files: {(separateFiles ? "Yes" : "No")}");
+                Logger.WriteInfo($"Generate module: {(generateModule ? "Yes" : "No")}");
+                Logger.WriteInfo($"Include comments: {(includeComments ? "Yes" : "No")}");
+                Logger.WriteInfo($"Provider version: {providerVersion}");
+                Logger.WriteInfo("");
                 
-                Console.WriteLine("Converting JSON to Terraform HCL...");
+                Logger.WriteInfo("Converting JSON to Terraform HCL...");
                 
                 var jsonToTerraformService = new JsonToTerraformService();
 
                 if (!File.Exists(inputPath))
                 {
-                    Console.WriteLine($"Error: Input file '{inputPath}' not found.");
+                    Logger.WriteError($"Error: Input file '{inputPath}' not found.");
                     return 1;
                 }
 
@@ -512,50 +605,50 @@ namespace ConditionalAccessExporter
 
                 if (result.Errors.Any())
                 {
-                    Console.WriteLine("Conversion errors encountered:");
+                    Logger.WriteInfo("Conversion errors encountered:");
                     foreach (var error in result.Errors)
                     {
-                        Console.WriteLine($"  - {error}");
+                        Logger.WriteInfo($"  - {error}");
                     }
                     return 1;
                 }
 
                 if (result.Warnings.Any())
                 {
-                    Console.WriteLine("Conversion warnings:");
+                    Logger.WriteInfo("Conversion warnings:");
                     foreach (var warning in result.Warnings)
                     {
-                        Console.WriteLine($"  - {warning}");
+                        Logger.WriteInfo($"  - {warning}");
                     }
                 }
 
                 if (result.ConversionLog.Any())
                 {
-                    Console.WriteLine("Conversion log:");
+                    Logger.WriteInfo("Conversion log:");
                     foreach (var log in result.ConversionLog)
                     {
-                        Console.WriteLine($"  - {log}");
+                        Logger.WriteInfo($"  - {log}");
                     }
                 }
 
-                Console.WriteLine();
-                Console.WriteLine("Conversion Summary:");
-                Console.WriteLine("==================");
-                Console.WriteLine($"Successful conversions: {result.SuccessfulConversions}");
-                Console.WriteLine($"Failed conversions: {result.FailedConversions}");
-                Console.WriteLine($"Output directory: {result.OutputPath}");
-                Console.WriteLine($"Generated files: {result.GeneratedFiles.Count}");
+                Logger.WriteInfo("");
+                Logger.WriteInfo("Conversion Summary:");
+                Logger.WriteInfo("==================");
+                Logger.WriteInfo($"Successful conversions: {result.SuccessfulConversions}");
+                Logger.WriteInfo($"Failed conversions: {result.FailedConversions}");
+                Logger.WriteInfo($"Output directory: {result.OutputPath}");
+                Logger.WriteInfo($"Generated files: {result.GeneratedFiles.Count}");
                 
                 if (result.GeneratedFiles.Any())
                 {
-                    Console.WriteLine("Generated files:");
+                    Logger.WriteInfo("Generated files:");
                     foreach (var file in result.GeneratedFiles)
                     {
-                        Console.WriteLine($"  - {Path.GetFileName(file)}");
+                        Logger.WriteInfo($"  - {Path.GetFileName(file)}");
                     }
                 }
 
-                Console.WriteLine("JSON to Terraform conversion completed successfully!");
+                Logger.WriteInfo("JSON to Terraform conversion completed successfully!");
 
                 return result.FailedConversions > 0 ? 1 : 0;
             }
@@ -573,65 +666,96 @@ namespace ConditionalAccessExporter
             string[] reportFormats,
             MatchingStrategy matchingStrategy,
             bool caseSensitive,
-            bool explainValues)
+            bool explainValues,
+            bool exitOnDifferences,
+            int? maxDifferences,
+            string[] failOn,
+            string[] ignore,
+            bool quiet)
         {
-            Console.WriteLine("Conditional Access Policy Comparison");
-            Console.WriteLine("====================================");
+            Logger.WriteInfo("Conditional Access Policy Comparison");
+            Logger.WriteInfo("====================================");
 
             try
             {
                 // Validate reference directory is provided
                 if (string.IsNullOrEmpty(referenceDirectory))
                 {
-                    Console.WriteLine("Error: Reference directory is required but was not provided.");
-                    return 1;
+                    Logger.WriteError("Error: Reference directory is required but was not provided.");
+                    return (int)ExitCode.Error;
                 }
 
                 // Validate reference directory exists
                 if (!Directory.Exists(referenceDirectory))
                 {
-                    Console.WriteLine($"Error: Reference directory '{referenceDirectory}' not found.");
-                    return 1;
+                    Logger.WriteError($"Error: Reference directory '{referenceDirectory}' not found.");
+                    return (int)ExitCode.Error;
                 }
                 
                 // Handle comma-separated formats in addition to space-separated ones
                 reportFormats = ProcessReportFormats(reportFormats);
                 
-                Console.WriteLine($"Reference directory: {referenceDirectory}");
+                // Process CI/CD options
+                var cicdOptions = new CiCdOptions
+                {
+                    ExitOnDifferences = exitOnDifferences,
+                    MaxDifferences = maxDifferences,
+                    FailOnChangeTypes = ProcessCommaSeparatedArray(failOn),
+                    IgnoreChangeTypes = ProcessCommaSeparatedArray(ignore),
+                    QuietMode = quiet,
+                    ExplainValues = explainValues
+                };
+
+                // Set logger quiet mode based on CI/CD options
+                Logger.SetQuietMode(quiet);
+                Logger.SetVerboseMode(explainValues);
+
+                Logger.WriteInfo($"Reference directory: {referenceDirectory}");
                 
                 if (!string.IsNullOrEmpty(entraFile))
                 {
                     // Validate Entra file exists if specified
                     if (!File.Exists(entraFile))
                     {
-                        Console.WriteLine($"Error: Entra file '{entraFile}' not found.");
-                        return 1;
+                        Logger.WriteError($"Error: Entra file '{entraFile}' not found.");
+                        return (int)ExitCode.Error;
                     }
-                    Console.WriteLine($"Entra file: {entraFile}");
+                    Logger.WriteInfo($"Entra file: {entraFile}");
                 }
                 else
                 {
-                    Console.WriteLine("Entra file: <fetching from live Entra ID>");
+                    Logger.WriteInfo("Entra file: <fetching from live Entra ID>");
                 }
+                    
+                Logger.WriteInfo($"Output directory: {outputDirectory}");
+                Logger.WriteInfo($"Report formats: {string.Join(", ", reportFormats)}");
+                Logger.WriteInfo($"Matching strategy: {matchingStrategy}");
+                Logger.WriteInfo($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
+                Logger.WriteInfo($"Explain numeric values: {(explainValues ? "On" : "Off")}");
                 
-                Console.WriteLine($"Output directory: {outputDirectory}");
-                Console.WriteLine($"Report formats: {string.Join(", ", reportFormats)}");
-                Console.WriteLine($"Matching strategy: {matchingStrategy}");
-                Console.WriteLine($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
-                Console.WriteLine($"Explain numeric values: {(explainValues ? "On" : "Off")}");
-                Console.WriteLine();
+                if (exitOnDifferences)
+                {
+                    Logger.WriteInfo("CI/CD Mode: Enabled");
+                    if (maxDifferences.HasValue)
+                        Logger.WriteInfo($"Max differences threshold: {maxDifferences.Value}");
+                    if (cicdOptions.FailOnChangeTypes.Any())
+                        Logger.WriteInfo($"Fail on change types: {string.Join(", ", cicdOptions.FailOnChangeTypes)}");
+                    if (cicdOptions.IgnoreChangeTypes.Any())
+                        Logger.WriteInfo($"Ignore change types: {string.Join(", ", cicdOptions.IgnoreChangeTypes)}");
+                }
+                Logger.WriteInfo("");
                 
-                Console.WriteLine("Comparing policies...");
+                Logger.WriteInfo("Comparing policies...");
                 
                 object entraExport;
 
                 if (!string.IsNullOrEmpty(entraFile))
                 {
-                    Console.WriteLine($"Loading Entra policies from file: {entraFile}");
+                    Logger.WriteInfo($"Loading Entra policies from file: {entraFile}");
                     if (!File.Exists(entraFile))
                     {
-                        Console.WriteLine($"Error: Entra file '{entraFile}' not found.");
-                        return 1;
+                        Logger.WriteError($"Error: Entra file '{entraFile}' not found.");
+                        return (int)ExitCode.Error;
                     }
 
                     var fileContent = await File.ReadAllTextAsync(entraFile);
@@ -639,7 +763,7 @@ namespace ConditionalAccessExporter
                 }
                 else
                 {
-                    Console.WriteLine("Fetching live Entra policies...");
+                    Logger.WriteInfo("Fetching live Entra policies...");
                     entraExport = await FetchEntraPoliciesAsync();
                 }
 
@@ -652,16 +776,80 @@ namespace ConditionalAccessExporter
                 var comparisonService = new PolicyComparisonService();
                 var result = await comparisonService.CompareAsync(entraExport, referenceDirectory, matchingOptions);
 
-                var reportService = new ReportGenerationService();
-                await reportService.GenerateReportsAsync(result, outputDirectory, reportFormats.ToList(), explainValues, includeJsonMetadata: true);
+                // Perform CI/CD analysis
+                var cicdAnalysisService = new CiCdAnalysisService();
+                var analysis = cicdAnalysisService.AnalyzeComparison(result, cicdOptions);
 
-                Console.WriteLine("Comparison completed successfully!");
-                return 0;
+                // Add pipeline-json format if needed
+                var finalReportFormats = reportFormats.ToList();
+                if (reportFormats.Contains("pipeline-json"))
+                {
+                    var pipelineOutput = cicdAnalysisService.GeneratePipelineOutput(analysis, result);
+                    var pipelineJson = JsonConvert.SerializeObject(pipelineOutput, Formatting.Indented);
+                    
+                    // Ensure output directory exists
+                    Directory.CreateDirectory(outputDirectory);
+                    var pipelineOutputPath = Path.Combine(outputDirectory, "pipeline-output.json");
+                    await File.WriteAllTextAsync(pipelineOutputPath, pipelineJson);
+                    
+                    if (!quiet)
+                    {
+                        Logger.WriteInfo($"Pipeline output written to: {pipelineOutputPath}");
+                    }
+                    
+                    // Remove from formats list as it's handled separately
+                    finalReportFormats.Remove("pipeline-json");
+                }
+
+                // Generate standard reports
+                if (finalReportFormats.Any())
+                {
+                    var reportService = new ReportGenerationService();
+                    await reportService.GenerateReportsAsync(result, outputDirectory, finalReportFormats, explainValues, includeJsonMetadata: true);
+                }
+
+                // Output results based on mode
+                if (quiet)
+                {
+                    // Minimal output for pipelines
+                    if (analysis.CriticalDifferences > 0)
+                    {
+                        Logger.WriteInfo($"CRITICAL: {analysis.CriticalDifferences} critical differences found");
+                    }
+                    else if (analysis.TotalDifferences > 0)
+                    {
+                        Logger.WriteInfo($"WARNING: {analysis.TotalDifferences} differences found");
+                    }
+                    else
+                    {
+                        Logger.WriteInfo("SUCCESS: No differences found");
+                    }
+                }
+                else
+                {
+                    Logger.WriteInfo("");
+                    Logger.WriteInfo("Comparison Results Summary:");
+                    Logger.WriteInfo("==========================");
+                    Logger.WriteInfo($"Total policies compared: {result.Summary.TotalEntraPolicies}");
+                    Logger.WriteInfo($"Policies with differences: {result.Summary.PoliciesWithDifferences}");
+                    Logger.WriteInfo($"Critical differences: {analysis.CriticalDifferences}");
+                    Logger.WriteInfo($"Non-critical differences: {analysis.NonCriticalDifferences}");
+                    
+                    if (analysis.CriticalPolicies.Any())
+                    {
+                        Logger.WriteInfo($"Policies with critical changes: {string.Join(", ", analysis.CriticalPolicies)}");
+                    }
+                    
+                    Logger.WriteInfo($"Status: {analysis.Status}");
+                    Logger.WriteInfo("Comparison completed successfully!");
+                }
+
+                return analysis.ExitCode;
             }
             catch (Exception ex)
             {
                 await HandleExceptionAsync(ex);
-                return 1;
+                return (int)ExitCode.Error;
             }
         }
 
@@ -677,29 +865,29 @@ namespace ConditionalAccessExporter
                 throw new InvalidOperationException("Missing required environment variables. Please ensure AZURE_TENANT_ID, AZURE_CLIENT_ID, and AZURE_CLIENT_SECRET are set.");
             }
 
-            Console.WriteLine($"Tenant ID: {tenantId}");
-            Console.WriteLine($"Client ID: {clientId}");
-            Console.WriteLine("Client Secret: [HIDDEN]");
-            Console.WriteLine();
+            Logger.WriteInfo($"Tenant ID: {tenantId}");
+            Logger.WriteInfo($"Client ID: {clientId}");
+            Logger.WriteInfo("Client Secret: [HIDDEN]");
+            Logger.WriteInfo("");
 
             // Create the Graph client with client credentials
             var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
             var graphClient = new GraphServiceClient(credential);
 
-            Console.WriteLine("Authenticating to Microsoft Graph...");
-            Console.WriteLine("Fetching Conditional Access Policies...");
+            Logger.WriteInfo("Authenticating to Microsoft Graph...");
+            Logger.WriteInfo("Fetching Conditional Access Policies...");
 
             // Get all conditional access policies
             var policies = await graphClient.Identity.ConditionalAccess.Policies.GetAsync();
 
             if (policies?.Value == null || !policies.Value.Any())
             {
-                Console.WriteLine("No Conditional Access Policies found.");
+                Logger.WriteInfo("No Conditional Access Policies found.");
                 return new { ExportedAt = DateTime.UtcNow, TenantId = tenantId, PoliciesCount = 0, Policies = new List<object>() };
             }
 
-            Console.WriteLine($"Found {policies.Value.Count} Conditional Access Policies");
-            Console.WriteLine();
+            Logger.WriteInfo($"Found {policies.Value.Count} Conditional Access Policies");
+            Logger.WriteInfo("");
 
             // Create a simplified representation of the policies for JSON export
             var exportData = new
@@ -787,13 +975,13 @@ namespace ConditionalAccessExporter
             };
 
             // Print summary
-            Console.WriteLine("Policy Summary:");
-            Console.WriteLine("================");
+            Logger.WriteInfo("Policy Summary:");
+            Logger.WriteInfo("================");
             foreach (var policy in policies.Value)
             {
-                Console.WriteLine($"- {policy.DisplayName} (State: {policy.State})");
+                Logger.WriteInfo($"- {policy.DisplayName} (State: {policy.State})");
             }
-            Console.WriteLine();
+            Logger.WriteInfo("");
 
             return exportData;
         }
@@ -808,51 +996,51 @@ namespace ConditionalAccessExporter
             bool enableSemantic,
             double similarityThreshold)
         {
-            Console.WriteLine("Cross-Format Policy Comparison");
-            Console.WriteLine("============================");
+            Logger.WriteInfo("Cross-Format Policy Comparison");
+            Logger.WriteInfo("============================");
             
             try
             {
                 // Validate source directory exists
                 if (string.IsNullOrEmpty(sourceDirectory))
                 {
-                    Console.WriteLine("Error: Source directory is required but was not provided.");
+                    Logger.WriteError("Error: Source directory is required but was not provided.");
                     return 1;
                 }
 
                 // Validate reference directory exists
                 if (string.IsNullOrEmpty(referenceDirectory))
                 {
-                    Console.WriteLine("Error: Reference directory is required but was not provided.");
+                    Logger.WriteError("Error: Reference directory is required but was not provided.");
                     return 1;
                 }
                 
                 // Handle comma-separated formats in addition to space-separated ones
                 reportFormats = ProcessReportFormats(reportFormats);
                 
-                Console.WriteLine($"Source directory: {sourceDirectory}");
-                Console.WriteLine($"Reference directory: {referenceDirectory}");
-                Console.WriteLine($"Output directory: {outputDirectory}");
-                Console.WriteLine($"Report formats: {string.Join(", ", reportFormats)}");
-                Console.WriteLine($"Matching strategy: {matchingStrategy}");
-                Console.WriteLine($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
-                Console.WriteLine($"Semantic comparison: {(enableSemantic ? "Enabled" : "Disabled")}");
-                Console.WriteLine($"Similarity threshold: {similarityThreshold}");
-                Console.WriteLine();
+                Logger.WriteInfo($"Source directory: {sourceDirectory}");
+                Logger.WriteInfo($"Reference directory: {referenceDirectory}");
+                Logger.WriteInfo($"Output directory: {outputDirectory}");
+                Logger.WriteInfo($"Report formats: {string.Join(", ", reportFormats)}");
+                Logger.WriteInfo($"Matching strategy: {matchingStrategy}");
+                Logger.WriteInfo($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
+                Logger.WriteInfo($"Semantic comparison: {(enableSemantic ? "Enabled" : "Disabled")}");
+                Logger.WriteInfo($"Similarity threshold: {similarityThreshold}");
+                Logger.WriteInfo("");
                 
-                Console.WriteLine("Cross-comparing policies...");
+                Logger.WriteInfo("Cross-comparing policies...");
 
                 // Validate source directory exists
                 if (!Directory.Exists(sourceDirectory))
                 {
-                    Console.WriteLine($"Error: Source directory '{sourceDirectory}' not found.");
+                    Logger.WriteError($"Error: Source directory '{sourceDirectory}' not found.");
                     return 1;
                 }
 
                 // Validate reference directory exists
                 if (!Directory.Exists(referenceDirectory))
                 {
-                    Console.WriteLine($"Error: Reference directory '{referenceDirectory}' not found.");
+                    Logger.WriteError($"Error: Reference directory '{referenceDirectory}' not found.");
                     return 1;
                 }
                 
@@ -872,7 +1060,7 @@ namespace ConditionalAccessExporter
                     terraformConversionService);
                 var reportService = new CrossFormatReportGenerationService();
 
-                Console.WriteLine("Services initialized successfully.");
+                Logger.WriteInfo("Services initialized successfully.");
                 
                 // Configure matching options
                 var matchingOptions = new CrossFormatMatchingOptions
@@ -883,7 +1071,7 @@ namespace ConditionalAccessExporter
                     SemanticSimilarityThreshold = similarityThreshold
                 };
                 
-                Console.WriteLine("Starting cross-format comparison...");
+                Logger.WriteInfo("Starting cross-format comparison...");
                 
                 try
                 {
@@ -896,7 +1084,7 @@ namespace ConditionalAccessExporter
                         try
                         {
                             var reportPath = Path.Combine(outputDirectory, $"cross_comparison_report.{format.ToLower()}");
-                            Console.WriteLine($"Generating {format} report: {reportPath}");
+                            Logger.WriteInfo($"Generating {format} report: {reportPath}");
                             // Convert string format to ReportFormat enum
                             ReportFormat reportFormat;
                             switch (format.ToLowerInvariant())
@@ -915,34 +1103,34 @@ namespace ConditionalAccessExporter
                                     reportFormat = ReportFormat.Csv;
                                     break;
                                 default:
-                                    Console.WriteLine($"Warning: Unknown report format '{format}' ignored.");
+                                    Logger.WriteInfo($"Warning: Unknown report format '{format}' ignored.");
                                     continue;
                             }
                             await reportService.GenerateReportAsync(comparisonResult, outputDirectory, reportFormat);
                         }
                         catch (Exception reportEx)
                         {
-                            Console.WriteLine($"Error generating {format} report: {reportEx.Message}");
+                            Logger.WriteInfo($"Error generating {format} report: {reportEx.Message}");
                         }
                     }
                     
                     // Print summary
-                    Console.WriteLine();
-                    Console.WriteLine("Comparison Complete");
-                    Console.WriteLine("==================");
-                    Console.WriteLine($"Total source policies: {comparisonResult.Summary.TotalSourcePolicies}");
-                    Console.WriteLine($"Total reference policies: {comparisonResult.Summary.TotalReferencePolicies}");
-                    Console.WriteLine($"Matching policies: {comparisonResult.Summary.MatchingPolicies}");
-                    Console.WriteLine($"Semantically equivalent policies: {comparisonResult.Summary.SemanticallyEquivalentPolicies}");
-                    Console.WriteLine($"Different policies: {comparisonResult.Summary.PoliciesWithDifferences}");
-                    Console.WriteLine($"Source-only policies: {comparisonResult.Summary.SourceOnlyPolicies}");
-                    Console.WriteLine($"Reference-only policies: {comparisonResult.Summary.ReferenceOnlyPolicies}");
+                    Logger.WriteInfo("");
+                    Logger.WriteInfo("Comparison Complete");
+                    Logger.WriteInfo("==================");
+                    Logger.WriteInfo($"Total source policies: {comparisonResult.Summary.TotalSourcePolicies}");
+                    Logger.WriteInfo($"Total reference policies: {comparisonResult.Summary.TotalReferencePolicies}");
+                    Logger.WriteInfo($"Matching policies: {comparisonResult.Summary.MatchingPolicies}");
+                    Logger.WriteInfo($"Semantically equivalent policies: {comparisonResult.Summary.SemanticallyEquivalentPolicies}");
+                    Logger.WriteInfo($"Different policies: {comparisonResult.Summary.PoliciesWithDifferences}");
+                    Logger.WriteInfo($"Source-only policies: {comparisonResult.Summary.SourceOnlyPolicies}");
+                    Logger.WriteInfo($"Reference-only policies: {comparisonResult.Summary.ReferenceOnlyPolicies}");
                     
                     return 0;
                 }
                 catch (Exception serviceEx)
                 {
-                    Console.WriteLine($"Error during cross-format comparison: {serviceEx.Message}");
+                    Logger.WriteInfo($"Error during cross-format comparison: {serviceEx.Message}");
                     return 1;
                 }
             }
@@ -955,43 +1143,43 @@ namespace ConditionalAccessExporter
 
         private static void DisplayCrossFormatComparisonSummary(CrossFormatComparisonResult result)
         {
-            Console.WriteLine();
-            Console.WriteLine("Cross-Format Comparison Summary");
-            Console.WriteLine("===============================");
-            Console.WriteLine($"Source Format: {result.SourceFormat}");
-            Console.WriteLine($"Reference Format: {result.ReferenceFormat}");
-            Console.WriteLine($"Total Source Policies: {result.Summary.TotalSourcePolicies}");
-            Console.WriteLine($"Total Reference Policies: {result.Summary.TotalReferencePolicies}");
-            Console.WriteLine($"Identical Policies: {result.Summary.MatchingPolicies}");
-            Console.WriteLine($"Semantically Equivalent: {result.Summary.SemanticallyEquivalentPolicies}");
-            Console.WriteLine($"Policies with Differences: {result.Summary.PoliciesWithDifferences}");
-            Console.WriteLine($"Source-Only Policies: {result.Summary.SourceOnlyPolicies}");
-            Console.WriteLine($"Reference-Only Policies: {result.Summary.ReferenceOnlyPolicies}");
-            Console.WriteLine();
+            Logger.WriteInfo("");
+            Logger.WriteInfo("Cross-Format Comparison Summary");
+            Logger.WriteInfo("===============================");
+            Logger.WriteInfo($"Source Format: {result.SourceFormat}");
+            Logger.WriteInfo($"Reference Format: {result.ReferenceFormat}");
+            Logger.WriteInfo($"Total Source Policies: {result.Summary.TotalSourcePolicies}");
+            Logger.WriteInfo($"Total Reference Policies: {result.Summary.TotalReferencePolicies}");
+            Logger.WriteInfo($"Identical Policies: {result.Summary.MatchingPolicies}");
+            Logger.WriteInfo($"Semantically Equivalent: {result.Summary.SemanticallyEquivalentPolicies}");
+            Logger.WriteInfo($"Policies with Differences: {result.Summary.PoliciesWithDifferences}");
+            Logger.WriteInfo($"Source-Only Policies: {result.Summary.SourceOnlyPolicies}");
+            Logger.WriteInfo($"Reference-Only Policies: {result.Summary.ReferenceOnlyPolicies}");
+            Logger.WriteInfo("");
 
             // Display policy-by-policy results
-            Console.WriteLine("Policy Comparison Details");
-            Console.WriteLine("=========================");
+            Logger.WriteInfo("Policy Comparison Details");
+            Logger.WriteInfo("=========================");
             
             var groupedComparisons = result.PolicyComparisons.GroupBy(c => c.Status);
             
             foreach (var group in groupedComparisons)
             {
-                Console.WriteLine($"\n{group.Key} ({group.Count()}):");
+                Logger.WriteInfo($"\n{group.Key} ({group.Count()}):");
                 foreach (var comparison in group.Take(10)) // Limit to first 10 for console display
                 {
-                    Console.WriteLine($"  - {comparison.PolicyName}");
+                    Logger.WriteInfo($"  - {comparison.PolicyName}");
                     if (comparison.ConversionSuggestions?.Any() == true)
                     {
-                        Console.WriteLine($"    Suggestions: {string.Join("; ", comparison.ConversionSuggestions.Take(2))}");
+                        Logger.WriteInfo($"    Suggestions: {string.Join("; ", comparison.ConversionSuggestions.Take(2))}");
                     }
                 }
                 if (group.Count() > 10)
                 {
-                    Console.WriteLine($"    ... and {group.Count() - 10} more policies");
+                    Logger.WriteInfo($"    ... and {group.Count() - 10} more policies");
                 }
             }
-            Console.WriteLine();
+            Logger.WriteInfo("");
         }
 
         private static string[] ProcessReportFormats(string[] reportFormats)
@@ -1023,6 +1211,11 @@ namespace ConditionalAccessExporter
                 .Select(v => v.Trim())
                 .Where(v => !string.IsNullOrEmpty(v))
                 .ToList();
+        }
+
+        private static List<string> ProcessCommaSeparatedArray(string[] input)
+        {
+            return input.SelectMany(ProcessCommaSeparatedValues).ToList();
         }
 
         private static async Task<int> GenerateBaselineAsync(
@@ -1070,29 +1263,29 @@ namespace ConditionalAccessExporter
 
         private static async Task HandleExceptionAsync(Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Logger.WriteInfo($"Error: {ex.Message}");
             
             if (ex.Message.Contains("required scopes are missing"))
             {
-                Console.WriteLine();
-                Console.WriteLine("PERMISSION REQUIRED:");
-                Console.WriteLine("===================");
-                Console.WriteLine("The application registration needs Microsoft Graph API permissions to read Conditional Access Policies.");
-                Console.WriteLine("Required permissions (Application permissions):");
-                Console.WriteLine("- Policy.Read.All");
-                Console.WriteLine("- OR Policy.ReadWrite.ConditionalAccess");
-                Console.WriteLine();
-                Console.WriteLine("To add these permissions:");
-                Console.WriteLine("1. Go to Azure Portal -> App Registrations");
-                Console.WriteLine("2. Find your app registration");
-                Console.WriteLine("3. Go to 'API permissions'");
-                Console.WriteLine("4. Click 'Add a permission' -> Microsoft Graph -> Application permissions");
-                Console.WriteLine("5. Search for and add 'Policy.Read.All'");
-                Console.WriteLine("6. Click 'Grant admin consent'");
-                Console.WriteLine();
+                Logger.WriteInfo("");
+                Logger.WriteInfo("PERMISSION REQUIRED:");
+                Logger.WriteInfo("===================");
+                Logger.WriteInfo("The application registration needs Microsoft Graph API permissions to read Conditional Access Policies.");
+                Logger.WriteInfo("Required permissions (Application permissions):");
+                Logger.WriteInfo("- Policy.Read.All");
+                Logger.WriteInfo("- OR Policy.ReadWrite.ConditionalAccess");
+                Logger.WriteInfo("");
+                Logger.WriteInfo("To add these permissions:");
+                Logger.WriteInfo("1. Go to Azure Portal -> App Registrations");
+                Logger.WriteInfo("2. Find your app registration");
+                Logger.WriteInfo("3. Go to 'API permissions'");
+                Logger.WriteInfo("4. Click 'Add a permission' -> Microsoft Graph -> Application permissions");
+                Logger.WriteInfo("5. Search for and add 'Policy.Read.All'");
+                Logger.WriteInfo("6. Click 'Grant admin consent'");
+                Logger.WriteInfo("");
             }
             
-            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            Logger.WriteInfo($"Stack trace: {ex.StackTrace}");
         }
     }
 }

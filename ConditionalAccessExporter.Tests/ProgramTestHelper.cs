@@ -110,7 +110,12 @@ namespace ConditionalAccessExporter.Tests
                     reportFormats,
                     matchingStrategy,
                     caseSensitive,
-                    explainValues
+                    explainValues,
+                    false, // exitOnDifferences
+                    null,  // maxDifferences
+                    new string[0], // failOn
+                    new string[0], // ignore
+                    false  // quiet
                 });
             return result;
         }
@@ -190,8 +195,10 @@ namespace ConditionalAccessExporter.Tests
         private static async Task<string> CaptureConsoleOutputInternal(Func<Task> action)
         {
             var originalOutput = Console.Out;
+            var originalError = Console.Error;
             using var stringWriter = new StringWriter();
             Console.SetOut(stringWriter);
+            Console.SetError(stringWriter); // Also capture stderr
             
             try
             {
@@ -200,14 +207,15 @@ namespace ConditionalAccessExporter.Tests
             catch (Exception ex)
             {
                 // Log the exception details for debugging purposes
-                Console.Error.WriteLine($"Exception occurred: {ex.Message}");
-                Console.Error.WriteLine(ex.StackTrace);
+                stringWriter.WriteLine($"Exception occurred: {ex.Message}");
+                stringWriter.WriteLine(ex.StackTrace);
                 // Even if an exception occurs, we still want to return any captured output
                 // The tests are checking for console output, not success/failure
             }
             finally
             {
                 Console.SetOut(originalOutput);
+                Console.SetError(originalError); // Restore stderr
             }
             
             return stringWriter.ToString();

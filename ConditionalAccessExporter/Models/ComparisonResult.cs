@@ -19,6 +19,10 @@ namespace ConditionalAccessExporter.Models
         public int PoliciesWithDifferences { get; set; }
         public int TotalEntraPolicies { get; set; }
         public int TotalReferencePolicies { get; set; }
+        public int CriticalDifferences { get; set; }
+        public int NonCriticalDifferences { get; set; }
+        public List<string> CriticalChangeTypes { get; set; } = new();
+        public List<string> NonCriticalChangeTypes { get; set; } = new();
     }
 
     public class PolicyComparison
@@ -30,6 +34,10 @@ namespace ConditionalAccessExporter.Models
         public object? EntraPolicy { get; set; }
         public object? ReferencePolicy { get; set; }
         public object? Differences { get; set; }
+        public bool HasCriticalDifferences { get; set; }
+        public List<string> CriticalDifferenceTypes { get; set; } = new();
+        public List<string> NonCriticalDifferenceTypes { get; set; } = new();
+        public List<string> IgnoredDifferenceTypes { get; set; } = new();
     }
 
     public enum ComparisonStatus
@@ -197,5 +205,38 @@ namespace ConditionalAccessExporter.Models
         public List<string> Differences { get; set; } = new();
         public double SimilarityScore { get; set; }
         public List<string> SemanticInsights { get; set; } = new();
+    }
+
+    // CI/CD Integration Models
+    public class CiCdOptions
+    {
+        public bool ExitOnDifferences { get; set; }
+        public int? MaxDifferences { get; set; }
+        public List<string> FailOnChangeTypes { get; set; } = new();
+        public List<string> IgnoreChangeTypes { get; set; } = new();
+        public bool QuietMode { get; set; } // Suppresses output when enabled
+        public bool ExplainValues { get; set; }
+    }
+
+    public class PipelineOutput
+    {
+        public string Status { get; set; } = string.Empty;
+        public int ExitCode { get; set; }
+        public int DifferencesCount { get; set; }
+        public int CriticalChanges { get; set; }
+        public int NonCriticalChanges { get; set; }
+        public DateTime ComparedAt { get; set; }
+        public string TenantId { get; set; } = string.Empty;
+        public List<string> CriticalChangeTypes { get; set; } = new();
+        public List<string> PolicyNames { get; set; } = new();
+        public string Message { get; set; } = string.Empty;
+    }
+
+    public enum ExitCode
+    {
+        Success = 0,              // No differences found
+        DifferencesFound = 1,     // Differences found (policy drift detected)
+        CriticalDifferences = 2,  // Critical differences (security policy violations)
+        Error = 3                 // Error (authentication, file not found, etc.)
     }
 }
