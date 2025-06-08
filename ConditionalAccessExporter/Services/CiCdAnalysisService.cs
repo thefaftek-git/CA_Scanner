@@ -181,7 +181,7 @@ namespace ConditionalAccessExporter.Services
         {
             // Check if this change type should be ignored using precomputed sets
             var normalizedPath = path.ToLowerInvariant();
-            bool shouldIgnore = normalizedIgnoreSet.Any(ignore => normalizedPath.Contains(ignore));
+            bool shouldIgnore = normalizedIgnoreSet.Any(ignore => IsPathMatch(normalizedPath, ignore));
             
             if (shouldIgnore)
             {
@@ -189,6 +189,9 @@ namespace ConditionalAccessExporter.Services
                 // Debug logging for ignored changes
                 if (options.ExplainValues)
                 {
+                    // Note: Using Console.WriteLine directly here since this is debug output
+                    // and Logger.WriteVerbose would require Logger reference. In production,
+                    // consider injecting a logging abstraction for better testability.
                     Console.WriteLine($"[DEBUG] Ignored change path: {path} (policy: {comparison.PolicyName})");
                 }
                 return;
@@ -206,6 +209,9 @@ namespace ConditionalAccessExporter.Services
                     // Debug logging for critical changes
                     if (options.ExplainValues)
                     {
+                        // Note: Using Console.WriteLine directly here since this is debug output
+                        // and Logger.WriteVerbose would require Logger reference. In production,
+                        // consider injecting a logging abstraction for better testability.
                         Console.WriteLine($"[DEBUG] Critical change path: {path} (policy: {comparison.PolicyName})");
                     }
                 }
@@ -218,6 +224,9 @@ namespace ConditionalAccessExporter.Services
                     // Debug logging for non-critical changes
                     if (options.ExplainValues)
                     {
+                        // Note: Using Console.WriteLine directly here since this is debug output
+                        // and Logger.WriteVerbose would require Logger reference. In production,
+                        // consider injecting a logging abstraction for better testability.
                         Console.WriteLine($"[DEBUG] Non-critical change path: {path} (policy: {comparison.PolicyName})");
                     }
                 }
@@ -228,25 +237,54 @@ namespace ConditionalAccessExporter.Services
             HashSet<string> normalizedFailOnSet, HashSet<string> normalizedCriticalSet, HashSet<string> normalizedNonCriticalSet)
         {
             // Check user-defined critical types first using precomputed sets
-            if (normalizedFailOnSet.Any(critical => normalizedPath.Contains(critical)))
+            // Use more precise matching to avoid unintended matches with similar names
+            if (normalizedFailOnSet.Any(critical => IsPathMatch(normalizedPath, critical)))
             {
                 return true;
             }
 
             // Check built-in critical types using precomputed sets
-            if (normalizedCriticalSet.Any(critical => normalizedPath.Contains(critical)))
+            if (normalizedCriticalSet.Any(critical => IsPathMatch(normalizedPath, critical)))
             {
                 return true;
             }
 
             // Check if it's a known non-critical type using precomputed sets
-            if (normalizedNonCriticalSet.Any(nonCritical => normalizedPath.Contains(nonCritical)))
+            if (normalizedNonCriticalSet.Any(nonCritical => IsPathMatch(normalizedPath, nonCritical)))
             {
                 return false;
             }
 
             // Default: treat unknown changes as critical for security
             return true;
+        }
+
+        /// <summary>
+        /// More precise path matching to avoid unintended matches with similar names
+        /// </summary>
+        private bool IsPathMatch(string path, string pattern)
+        {
+            // Exact match
+            if (path.Equals(pattern, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // Pattern is a substring that matches a complete path segment
+            // This prevents partial matches like "Application" matching "Applications"
+            if (path.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+            {
+                // Check if the pattern appears as a complete segment (word boundary)
+                int index = path.IndexOf(pattern, StringComparison.OrdinalIgnoreCase);
+                if (index >= 0)
+                {
+                    bool validStart = index == 0 || path[index - 1] == '.';
+                    bool validEnd = index + pattern.Length == path.Length || path[index + pattern.Length] == '.';
+                    return validStart && validEnd;
+                }
+            }
+
+            return false;
         }
 
         private int DetermineExitCode(CiCdAnalysisResult analysis, CiCdOptions options)
