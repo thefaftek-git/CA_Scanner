@@ -126,8 +126,14 @@ namespace ConditionalAccessExporter.Services
                     var json = JsonConvert.SerializeObject(comparison.Differences);
                     differences = JToken.Parse(json);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    // Log the exception details to aid debugging
+                    if (!options.QuietMode)
+                    {
+                        Logger.WriteError($"Error parsing Differences object for policy '{comparison.PolicyName}': {ex.Message}");
+                        Logger.WriteVerbose($"Stack trace: {ex.StackTrace}");
+                    }
                     // If all else fails, skip this comparison gracefully
                     return;
                 }
