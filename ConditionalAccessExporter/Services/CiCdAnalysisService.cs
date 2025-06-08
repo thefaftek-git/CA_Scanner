@@ -12,6 +12,7 @@ namespace ConditionalAccessExporter.Services
             public const string CriticalDriftDetected = "critical_drift_detected";
             public const string DriftDetected = "drift_detected";
             public const string NoDrift = "no_drift";
+            public const string MissingPolicy = "MissingPolicy";
         }
         // Critical change types that typically indicate security policy violations
         private static readonly HashSet<string> CriticalChangeTypes = new()
@@ -85,12 +86,12 @@ namespace ConditionalAccessExporter.Services
                 {
                     // Consider missing policies as critical
                     comparison.HasCriticalDifferences = true;
-                    comparison.CriticalDifferenceTypes.Add("MissingPolicy");
+                    comparison.CriticalDifferenceTypes.Add(StatusConstants.MissingPolicy);
                     analysis.CriticalPolicies.Add(comparison.PolicyName);
                     analysis.CriticalDifferences++;
                     
                     // Collect the missing policy change type
-                    analysis.AllCriticalChangeTypes.Add("MissingPolicy");
+                    analysis.AllCriticalChangeTypes.Add(StatusConstants.MissingPolicy);
                 }
             }
 
