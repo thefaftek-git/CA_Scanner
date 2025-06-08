@@ -187,12 +187,9 @@ namespace ConditionalAccessExporter.Services
             {
                 comparison.IgnoredDifferenceTypes.Add(path);
                 // Debug logging for ignored changes
-                if (options.ExplainValues)
+                if (options.ExplainValues && !options.QuietMode)
                 {
-                    // Note: Using Console.WriteLine directly here since this is debug output
-                    // and Logger.WriteVerbose would require Logger reference. In production,
-                    // consider injecting a logging abstraction for better testability.
-                    Console.WriteLine($"[DEBUG] Ignored change path: {path} (policy: {comparison.PolicyName})");
+                    Logger.WriteVerbose($"[DEBUG] Ignored change path: {path} (policy: {comparison.PolicyName})");
                 }
                 return;
             }
@@ -207,12 +204,9 @@ namespace ConditionalAccessExporter.Services
                 {
                     comparison.CriticalDifferenceTypes.Add(path);
                     // Debug logging for critical changes
-                    if (options.ExplainValues)
+                    if (options.ExplainValues && !options.QuietMode)
                     {
-                        // Note: Using Console.WriteLine directly here since this is debug output
-                        // and Logger.WriteVerbose would require Logger reference. In production,
-                        // consider injecting a logging abstraction for better testability.
-                        Console.WriteLine($"[DEBUG] Critical change path: {path} (policy: {comparison.PolicyName})");
+                        Logger.WriteVerbose($"[DEBUG] Critical change path: {path} (policy: {comparison.PolicyName})");
                     }
                 }
             }
@@ -222,12 +216,9 @@ namespace ConditionalAccessExporter.Services
                 {
                     comparison.NonCriticalDifferenceTypes.Add(path);
                     // Debug logging for non-critical changes
-                    if (options.ExplainValues)
+                    if (options.ExplainValues && !options.QuietMode)
                     {
-                        // Note: Using Console.WriteLine directly here since this is debug output
-                        // and Logger.WriteVerbose would require Logger reference. In production,
-                        // consider injecting a logging abstraction for better testability.
-                        Console.WriteLine($"[DEBUG] Non-critical change path: {path} (policy: {comparison.PolicyName})");
+                        Logger.WriteVerbose($"[DEBUG] Non-critical change path: {path} (policy: {comparison.PolicyName})");
                     }
                 }
             }
