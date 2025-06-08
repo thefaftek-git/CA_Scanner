@@ -214,7 +214,7 @@ namespace ConditionalAccessExporter.Models
         public int? MaxDifferences { get; set; }
         public List<string> FailOnChangeTypes { get; set; } = new();
         public List<string> IgnoreChangeTypes { get; set; } = new();
-        public bool QuietMode { get; set; }
+        public bool QuietMode { get; set; } // Suppresses output when enabled
         public bool ExplainValues { get; set; }
     }
 
