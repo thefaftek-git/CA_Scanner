@@ -209,6 +209,8 @@ namespace ConditionalAccessExporter.Services
                         Logger.WriteVerbose($"[DEBUG] Critical change path: {path} (policy: {comparison.PolicyName})");
                     }
                 }
+                // Add to global critical change types for summary
+                analysis.AllCriticalChangeTypes.Add(path);
             }
             else
             {
@@ -221,6 +223,8 @@ namespace ConditionalAccessExporter.Services
                         Logger.WriteVerbose($"[DEBUG] Non-critical change path: {path} (policy: {comparison.PolicyName})");
                     }
                 }
+                // Add to global non-critical change types for summary
+                analysis.AllNonCriticalChangeTypes.Add(path);
             }
         }
 
