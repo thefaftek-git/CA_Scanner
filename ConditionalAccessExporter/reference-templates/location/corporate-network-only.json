@@ -1,3 +1,15 @@
+
+
+
+
+
+
+
+
+
+
+
+
 {
   "DisplayName": "Allow access only from corporate network",
   "State": "Enabled",
@@ -28,11 +40,11 @@
       "ExcludePlatforms": []
     },
     "Locations": {
-      "IncludeLocations": [
+      "IncludeLocations": ["All"],
+      "ExcludeLocations": [
         "{{CORPORATE_OFFICE_LOCATION_ID}}",
         "{{DATACENTER_LOCATION_ID}}"
-      ],
-      "ExcludeLocations": []
+      ]
     },
     "SignInRiskLevels": [],
     "UserRiskLevels": [],
@@ -54,3 +66,14 @@
     "SignInFrequency": null
   }
 }
+
+
+
+
+
+
+
+
+
+
+
