@@ -115,8 +115,22 @@ namespace ConditionalAccessExporter.Services
         {
             if (comparison.Differences == null) return;
 
+            // Improved error handling for the Differences object casting
             var differences = comparison.Differences as JToken;
-            if (differences == null) return;
+            if (differences == null)
+            {
+                // Fallback: try to handle if Differences is a different type
+                try
+                {
+                    var json = JsonConvert.SerializeObject(comparison.Differences);
+                    differences = JToken.Parse(json);
+                }
+                catch
+                {
+                    // If all else fails, skip this comparison gracefully
+                    return;
+                }
+            }
 
             CategorizeDifferences(differences, "", comparison, options, normalizedIgnoreSet, normalizedFailOnSet, normalizedCriticalSet, normalizedNonCriticalSet);
         }
@@ -171,6 +185,11 @@ namespace ConditionalAccessExporter.Services
             if (shouldIgnore)
             {
                 comparison.IgnoredDifferenceTypes.Add(path);
+                // Debug logging for ignored changes
+                if (options.ExplainValues)
+                {
+                    Console.WriteLine($"[DEBUG] Ignored change path: {path} (policy: {comparison.PolicyName})");
+                }
                 return;
             }
 
@@ -183,6 +202,11 @@ namespace ConditionalAccessExporter.Services
                 if (!comparison.CriticalDifferenceTypes.Contains(path))
                 {
                     comparison.CriticalDifferenceTypes.Add(path);
+                    // Debug logging for critical changes
+                    if (options.ExplainValues)
+                    {
+                        Console.WriteLine($"[DEBUG] Critical change path: {path} (policy: {comparison.PolicyName})");
+                    }
                 }
             }
             else
@@ -190,6 +214,11 @@ namespace ConditionalAccessExporter.Services
                 if (!comparison.NonCriticalDifferenceTypes.Contains(path))
                 {
                     comparison.NonCriticalDifferenceTypes.Add(path);
+                    // Debug logging for non-critical changes
+                    if (options.ExplainValues)
+                    {
+                        Console.WriteLine($"[DEBUG] Non-critical change path: {path} (policy: {comparison.PolicyName})");
+                    }
                 }
             }
         }
