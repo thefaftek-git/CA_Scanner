@@ -266,6 +266,7 @@ namespace ConditionalAccessExporter.Models
         public ValidationWarningType Type { get; set; }
         public string Message { get; set; } = string.Empty;
         public string Field { get; set; } = string.Empty;
+        public int? LineNumber { get; set; }
         public string Suggestion { get; set; } = string.Empty;
     }
 
@@ -299,6 +300,7 @@ namespace ConditionalAccessExporter.Models
         public int TotalFiles { get; set; }
         public int ValidFiles { get; set; }
         public int InvalidFiles { get; set; }
+        public int FilesWithWarnings => FileResults.Count(f => f.Warnings.Any());
         public DateTime ValidatedAt { get; set; } = DateTime.UtcNow;
         public List<string> PreflightErrors { get; set; } = new();
     }

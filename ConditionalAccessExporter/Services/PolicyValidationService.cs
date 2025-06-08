@@ -119,7 +119,7 @@ namespace ConditionalAccessExporter.Services
                 catch (JsonReaderException ex)
                 {
                     result.IsValid = false;
-                    result.Errors.Add(new ValidationError
+                    result.Errors.Add(new Models.ValidationError
                     {
                         Type = ValidationErrorType.JsonSyntaxError,
                         Message = $"Invalid JSON syntax: {ex.Message}",
@@ -137,7 +137,7 @@ namespace ConditionalAccessExporter.Services
                     result.IsValid = false;
                     foreach (var error in schemaErrors)
                     {
-                        result.Errors.Add(new ValidationError
+                        result.Errors.Add(new Models.ValidationError
                         {
                             Type = ValidationErrorType.JsonSchemaViolation,
                             Message = error,
@@ -159,7 +159,7 @@ namespace ConditionalAccessExporter.Services
             catch (IOException ex)
             {
                 result.IsValid = false;
-                result.Errors.Add(new ValidationError
+                result.Errors.Add(new Models.ValidationError
                 {
                     Type = ValidationErrorType.FileAccessError,
                     Message = $"Error reading file: {ex.Message}",
@@ -169,7 +169,7 @@ namespace ConditionalAccessExporter.Services
             catch (Exception ex) // Catch-all for unexpected errors during validation
             {
                 result.IsValid = false;
-                result.Errors.Add(new ValidationError
+                result.Errors.Add(new Models.ValidationError
                 {
                     Type = ValidationErrorType.JsonSchemaViolation, // Generic error type for now
                     Message = $"An unexpected error occurred during validation: {ex.Message}",
@@ -186,7 +186,7 @@ namespace ConditionalAccessExporter.Services
             if (string.IsNullOrWhiteSpace(displayName))
             {
                 result.IsValid = false;
-                result.Errors.Add(new ValidationError
+                result.Errors.Add(new Models.ValidationError
                 {
                     Type = ValidationErrorType.RequiredFieldMissing,
                     Field = "displayName",
@@ -203,7 +203,7 @@ namespace ConditionalAccessExporter.Services
             if (state != null && !validStates.Contains(state))
             {
                  result.IsValid = false;
-                 result.Errors.Add(new ValidationError
+                 result.Errors.Add(new Models.ValidationError
                  {
                      Type = ValidationErrorType.InvalidFieldValue,
                      Field = "state",
@@ -224,7 +224,7 @@ namespace ConditionalAccessExporter.Services
                 if (userId != "All" && userId != "GuestsOrExternalUsers" && !guidRegex.IsMatch(userId))
                 {
                     result.IsValid = false;
-                    result.Errors.Add(new ValidationError
+                    result.Errors.Add(new Models.ValidationError
                     {
                         Type = ValidationErrorType.InvalidGuid,
                         Field = "conditions.users.includeUsers",
