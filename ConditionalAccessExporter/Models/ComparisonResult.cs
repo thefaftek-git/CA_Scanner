@@ -280,7 +280,8 @@ namespace ConditionalAccessExporter.Models
         InvalidEnum,
         JsonSchemaViolation,
         FileAccessError,
-        SecurityIssue
+        SecurityIssue,
+        UnexpectedError
     }
 
     public enum ValidationWarningType

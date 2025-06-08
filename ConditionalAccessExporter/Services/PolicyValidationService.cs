@@ -171,7 +171,7 @@ namespace ConditionalAccessExporter.Services
                 result.IsValid = false;
                 result.Errors.Add(new Models.ValidationError
                 {
-                    Type = ValidationErrorType.JsonSchemaViolation, // Generic error type for now
+                    Type = ValidationErrorType.UnexpectedError,
                     Message = $"An unexpected error occurred during validation: {ex.Message}",
                     Suggestion = "Review the policy for any obvious issues or report this error."
                 });
