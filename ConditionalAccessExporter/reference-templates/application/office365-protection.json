@@ -1,0 +1,66 @@
+
+
+
+
+
+
+{
+  "DisplayName": "Office 365 access protection",
+  "State": "Enabled",
+  "Conditions": {
+    "Applications": {
+      "IncludeApplications": ["Office365"],
+      "ExcludeApplications": [],
+      "IncludeUserActions": [],
+      "IncludeAuthenticationContextClassReferences": []
+    },
+    "Users": {
+      "IncludeUsers": ["All"],
+      "ExcludeUsers": [
+        "{{EMERGENCY_ACCESS_ACCOUNT_1}}",
+        "{{EMERGENCY_ACCESS_ACCOUNT_2}}"
+      ],
+      "IncludeGroups": [],
+      "ExcludeGroups": [],
+      "IncludeRoles": [],
+      "ExcludeRoles": []
+    },
+    "ClientAppTypes": ["All"],
+    "Platforms": {
+      "IncludePlatforms": [],
+      "ExcludePlatforms": []
+    },
+    "Locations": {
+      "IncludeLocations": [],
+      "ExcludeLocations": []
+    },
+    "SignInRiskLevels": [],
+    "UserRiskLevels": [],
+    "ClientApplications": {
+      "IncludeServicePrincipals": [],
+      "ExcludeServicePrincipals": []
+    }
+  },
+  "GrantControls": {
+    "Operator": "OR",
+    "BuiltInControls": ["mfa", "compliantDevice", "domainJoinedDevice", "approvedApplication"],
+    "CustomAuthenticationFactors": [],
+    "TermsOfUse": []
+  },
+  "SessionControls": {
+    "ApplicationEnforcedRestrictions": {
+      "IsEnabled": true
+    },
+    "CloudAppSecurity": {
+      "IsEnabled": true,
+      "CloudAppSecurityType": "monitorOnly"
+    },
+    "PersistentBrowser": null,
+    "SignInFrequency": null
+  }
+}
+
+
+
+
+

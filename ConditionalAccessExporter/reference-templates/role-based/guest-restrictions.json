@@ -1,0 +1,62 @@
+
+
+
+{
+  "DisplayName": "Guest user restrictions",
+  "State": "Enabled",
+  "Conditions": {
+    "Applications": {
+      "IncludeApplications": ["All"],
+      "ExcludeApplications": [],
+      "IncludeUserActions": [],
+      "IncludeAuthenticationContextClassReferences": []
+    },
+    "Users": {
+      "IncludeUsers": ["GuestsOrExternalUsers"],
+      "ExcludeUsers": [],
+      "IncludeGroups": [],
+      "ExcludeGroups": [],
+      "IncludeRoles": [],
+      "ExcludeRoles": []
+    },
+    "ClientAppTypes": ["All"],
+    "Platforms": {
+      "IncludePlatforms": [],
+      "ExcludePlatforms": []
+    },
+    "Locations": {
+      "IncludeLocations": [],
+      "ExcludeLocations": ["{{TRUSTED_LOCATION_ID}}"]
+    },
+    "SignInRiskLevels": [],
+    "UserRiskLevels": [],
+    "ClientApplications": {
+      "IncludeServicePrincipals": [],
+      "ExcludeServicePrincipals": []
+    }
+  },
+  "GrantControls": {
+    "Operator": "AND",
+    "BuiltInControls": ["mfa", "compliantDevice"],
+    "CustomAuthenticationFactors": [],
+    "TermsOfUse": ["{{TERMS_OF_USE_ID}}"]
+  },
+  "SessionControls": {
+    "ApplicationEnforcedRestrictions": null,
+    "CloudAppSecurity": {
+      "IsEnabled": true,
+      "CloudAppSecurityType": "blockDownloads"
+    },
+    "PersistentBrowser": {
+      "IsEnabled": true,
+      "Mode": "never"
+    },
+    "SignInFrequency": {
+      "Value": 1,
+      "Type": "days",
+      "IsEnabled": true
+    }
+  }
+}
+
+
