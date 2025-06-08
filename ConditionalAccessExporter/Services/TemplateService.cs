@@ -145,6 +145,7 @@ namespace ConditionalAccessExporter.Services
                         success = false;
                         result.Errors.AddRange(templateResult.Errors);
                     }
+                    result.Warnings.AddRange(templateResult.Warnings);
                 }
 
                 result.Success = success;
