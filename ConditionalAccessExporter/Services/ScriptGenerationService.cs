@@ -1,13 +1,36 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using ConditionalAccessExporter.Models;
 
 namespace ConditionalAccessExporter.Services
 {
     public class ScriptGenerationService
     {
+        public async Task<ScriptGenerationResult> GenerateScriptAsync(PolicyRemediation remediation, RemediationFormat format, RemediationOptions options)
+        {
+            var result = new ScriptGenerationResult
+            {
+                Format = format,
+                FilePath = GetScriptPath(remediation, format, options.OutputDirectory)
+            };
+
+            result.Script = format switch
+            {
+                RemediationFormat.PowerShell => GeneratePowerShellScript(remediation),
+                RemediationFormat.AzureCLI => GenerateAzureCliScript(remediation),
+                RemediationFormat.Terraform => GenerateTerraformScript(remediation),
+                RemediationFormat.RestAPI => GenerateRestApiScript(remediation),
+                RemediationFormat.ManualInstructions => GenerateManualInstructions(remediation),
+                _ => throw new ArgumentException($"Unsupported format: {format}")
+            };
+
+            return result;
+        }
+
         public string GeneratePowerShellScript(PolicyRemediation remediation)
         {
             var script = new StringBuilder();
@@ -20,10 +43,10 @@ namespace ConditionalAccessExporter.Services
             script.AppendLine("Connect-MgGraph -Scopes \"Policy.ReadWrite.ConditionalAccess\"");
             script.AppendLine();
             
-            foreach (var action in remediation.Actions)
+            foreach (var step in remediation.Steps)
             {
-                script.AppendLine($"# {action.Description}");
-                script.AppendLine(GeneratePowerShellForAction(action, remediation.PolicyId));
+                script.AppendLine($"# {step.Description}");
+                script.AppendLine(GeneratePowerShellForStep(step, remediation));
                 script.AppendLine();
             }
             
@@ -43,10 +66,10 @@ namespace ConditionalAccessExporter.Services
             script.AppendLine("az login");
             script.AppendLine();
             
-            foreach (var action in remediation.Actions)
+            foreach (var step in remediation.Steps)
             {
-                script.AppendLine($"# {action.Description}");
-                script.AppendLine(GenerateAzureCliForAction(action, remediation.PolicyId));
+                script.AppendLine($"# {step.Description}");
+                script.AppendLine(GenerateAzureCliForStep(step, remediation));
                 script.AppendLine();
             }
             
@@ -71,141 +94,133 @@ namespace ConditionalAccessExporter.Services
             script.AppendLine("}");
             script.AppendLine();
             
-            foreach (var action in remediation.Actions)
+            foreach (var step in remediation.Steps)
             {
-                script.AppendLine($"# {action.Description}");
-                script.AppendLine(GenerateTerraformForAction(action, remediation.PolicyId));
+                script.AppendLine($"# {step.Description}");
+                script.AppendLine(GenerateTerraformForStep(step, remediation));
                 script.AppendLine();
             }
             
             return script.ToString();
         }
         
-        private string GeneratePowerShellForAction(RemediationAction action, string policyId)
+        private string GeneratePowerShellForStep(RemediationStep step, PolicyRemediation remediation)
         {
-            return action.ActionType switch
+            return remediation.Action switch
             {
-                RemediationActionType.EnablePolicy => $"Update-MgIdentityConditionalAccessPolicy -ConditionalAccessPolicyId \"{policyId}\" -State enabled",
-                RemediationActionType.DisablePolicy => $"Update-MgIdentityConditionalAccessPolicy -ConditionalAccessPolicyId \"{policyId}\" -State disabled",
-                RemediationActionType.UpdateConfiguration => GeneratePowerShellConfigUpdate(action, policyId),
-                RemediationActionType.AddCondition => GeneratePowerShellAddCondition(action, policyId),
-                RemediationActionType.RemoveCondition => GeneratePowerShellRemoveCondition(action, policyId),
-                _ => $"# TODO: Implement action type {action.ActionType}"
+                RemediationAction.Create => $"New-MgIdentityConditionalAccessPolicy -DisplayName \"{remediation.PolicyName}\" # {step.Description}",
+                RemediationAction.Update => $"Update-MgIdentityConditionalAccessPolicy -ConditionalAccessPolicyId \"{remediation.PolicyId}\" # {step.Description}",
+                RemediationAction.Delete => $"Remove-MgIdentityConditionalAccessPolicy -ConditionalAccessPolicyId \"{remediation.PolicyId}\" # {step.Description}",
+                RemediationAction.NoAction => $"# No action required: {step.Description}",
+                _ => $"# TODO: Implement action type {remediation.Action}"
             };
         }
         
-        private string GenerateAzureCliForAction(RemediationAction action, string policyId)
+        private string GenerateAzureCliForStep(RemediationStep step, PolicyRemediation remediation)
         {
-            return action.ActionType switch
+            return remediation.Action switch
             {
-                RemediationActionType.EnablePolicy => $"az ad policy conditional-access update --id \"{policyId}\" --state enabled",
-                RemediationActionType.DisablePolicy => $"az ad policy conditional-access update --id \"{policyId}\" --state disabled",
-                RemediationActionType.UpdateConfiguration => GenerateAzureCliConfigUpdate(action, policyId),
-                RemediationActionType.AddCondition => GenerateAzureCliAddCondition(action, policyId),
-                RemediationActionType.RemoveCondition => GenerateAzureCliRemoveCondition(action, policyId),
-                _ => $"# TODO: Implement action type {action.ActionType}"
+                RemediationAction.Create => $"az ad policy conditional-access create --display-name \"{remediation.PolicyName}\" # {step.Description}",
+                RemediationAction.Update => $"az ad policy conditional-access update --id \"{remediation.PolicyId}\" # {step.Description}",
+                RemediationAction.Delete => $"az ad policy conditional-access delete --id \"{remediation.PolicyId}\" # {step.Description}",
+                RemediationAction.NoAction => $"# No action required: {step.Description}",
+                _ => $"# TODO: Implement action type {remediation.Action}"
             };
         }
         
-        private string GenerateTerraformForAction(RemediationAction action, string policyId)
+        private string GenerateTerraformForStep(RemediationStep step, PolicyRemediation remediation)
         {
-            return action.ActionType switch
+            return remediation.Action switch
             {
-                RemediationActionType.EnablePolicy => GenerateTerraformEnablePolicy(policyId),
-                RemediationActionType.DisablePolicy => GenerateTerraformDisablePolicy(policyId),
-                RemediationActionType.UpdateConfiguration => GenerateTerraformConfigUpdate(action, policyId),
-                RemediationActionType.AddCondition => GenerateTerraformAddCondition(action, policyId),
-                RemediationActionType.RemoveCondition => GenerateTerraformRemoveCondition(action, policyId),
-                _ => $"# TODO: Implement action type {action.ActionType}"
+                RemediationAction.Create => GenerateTerraformCreatePolicy(remediation.PolicyId, remediation.PolicyName),
+                RemediationAction.Update => GenerateTerraformUpdatePolicy(remediation.PolicyId, remediation.PolicyName),
+                RemediationAction.Delete => $"# Remove resource: azuread_conditional_access_policy.policy_{remediation.PolicyId.Replace("-", "_")}",
+                RemediationAction.NoAction => $"# No action required: {step.Description}",
+                _ => $"# TODO: Implement action type {remediation.Action}"
             };
         }
         
-        private string GeneratePowerShellConfigUpdate(RemediationAction action, string policyId)
-        {
-            var updates = action.Parameters.Select(p => $"-{p.Key} {FormatPowerShellValue(p.Value)}");
-            return $"Update-MgIdentityConditionalAccessPolicy -ConditionalAccessPolicyId \"{policyId}\" {string.Join(" ", updates)}";
-        }
-        
-        private string GenerateAzureCliConfigUpdate(RemediationAction action, string policyId)
-        {
-            var updates = action.Parameters.Select(p => $"--{p.Key.ToLower()} \"{p.Value}\"");
-            return $"az ad policy conditional-access update --id \"{policyId}\" {string.Join(" ", updates)}";
-        }
-        
-        private string GenerateTerraformEnablePolicy(string policyId)
+        private string GenerateTerraformCreatePolicy(string policyId, string policyName)
         {
             return $@"resource ""azuread_conditional_access_policy"" ""policy_{policyId.Replace("-", "_")}"" {{
-  display_name = ""Updated Policy""
+  display_name = ""{policyName}""
   state        = ""enabled""
 }}";
         }
         
-        private string GenerateTerraformDisablePolicy(string policyId)
+        private string GenerateTerraformUpdatePolicy(string policyId, string policyName)
         {
             return $@"resource ""azuread_conditional_access_policy"" ""policy_{policyId.Replace("-", "_")}"" {{
-  display_name = ""Updated Policy""
-  state        = ""disabled""
+  display_name = ""{policyName}""
+  state        = ""enabled""
 }}";
         }
         
-        private string GenerateTerraformConfigUpdate(RemediationAction action, string policyId)
+        public string GenerateRestApiScript(PolicyRemediation remediation)
         {
-            var config = new StringBuilder();
-            config.AppendLine($@"resource ""azuread_conditional_access_policy"" ""policy_{policyId.Replace("-", "_")}"" {{");
+            var script = new StringBuilder();
+            script.AppendLine("# REST API calls for Conditional Access Policy remediation");
+            script.AppendLine($"# Policy: {remediation.PolicyName}");
+            script.AppendLine($"# Risk Level: {remediation.RiskLevel}");
+            script.AppendLine();
             
-            foreach (var param in action.Parameters)
+            foreach (var step in remediation.Steps)
             {
-                config.AppendLine($"  {param.Key.ToLower()} = {FormatTerraformValue(param.Value)}");
+                script.AppendLine($"# {step.Description}");
+                script.AppendLine(GenerateRestApiForStep(step, remediation));
+                script.AppendLine();
             }
             
-            config.AppendLine("}");
-            return config.ToString();
+            return script.ToString();
         }
         
-        private string GeneratePowerShellAddCondition(RemediationAction action, string policyId)
+        public string GenerateManualInstructions(PolicyRemediation remediation)
         {
-            return $"# Add condition: {string.Join(", ", action.Parameters.Select(p => $"{p.Key}={p.Value}"))}";
+            var instructions = new StringBuilder();
+            instructions.AppendLine("# Manual Instructions for Conditional Access Policy remediation");
+            instructions.AppendLine($"Policy: {remediation.PolicyName}");
+            instructions.AppendLine($"Risk Level: {remediation.RiskLevel}");
+            instructions.AppendLine();
+            
+            foreach (var step in remediation.Steps)
+            {
+                instructions.AppendLine($"{step.Order}. {step.Description}");
+                if (!string.IsNullOrEmpty(step.Action))
+                {
+                    instructions.AppendLine($"   Action: {step.Action}");
+                }
+                instructions.AppendLine();
+            }
+            
+            return instructions.ToString();
         }
         
-        private string GenerateAzureCliAddCondition(RemediationAction action, string policyId)
+        private string GenerateRestApiForStep(RemediationStep step, PolicyRemediation remediation)
         {
-            return $"# Add condition: {string.Join(", ", action.Parameters.Select(p => $"{p.Key}={p.Value}"))}";
+            return remediation.Action switch
+            {
+                RemediationAction.Create => $"POST https://graph.microsoft.com/v1.0/identity/conditionalAccess/policies # {step.Description}",
+                RemediationAction.Update => $"PATCH https://graph.microsoft.com/v1.0/identity/conditionalAccess/policies/{remediation.PolicyId} # {step.Description}",
+                RemediationAction.Delete => $"DELETE https://graph.microsoft.com/v1.0/identity/conditionalAccess/policies/{remediation.PolicyId} # {step.Description}",
+                RemediationAction.NoAction => $"# No API call required: {step.Description}",
+                _ => $"# TODO: Implement REST API for {remediation.Action}"
+            };
         }
         
-        private string GenerateTerraformAddCondition(RemediationAction action, string policyId)
+        private string GetScriptPath(PolicyRemediation remediation, RemediationFormat format, string outputDirectory)
         {
-            return $"# Add condition: {string.Join(", ", action.Parameters.Select(p => $"{p.Key}={p.Value}"))}";
-        }
-        
-        private string GeneratePowerShellRemoveCondition(RemediationAction action, string policyId)
-        {
-            return $"# Remove condition: {string.Join(", ", action.Parameters.Select(p => $"{p.Key}={p.Value}"))}";
-        }
-        
-        private string GenerateAzureCliRemoveCondition(RemediationAction action, string policyId)
-        {
-            return $"# Remove condition: {string.Join(", ", action.Parameters.Select(p => $"{p.Key}={p.Value}"))}";
-        }
-        
-        private string GenerateTerraformRemoveCondition(RemediationAction action, string policyId)
-        {
-            return $"# Remove condition: {string.Join(", ", action.Parameters.Select(p => $"{p.Key}={p.Value}"))}";
-        }
-        
-        private string FormatPowerShellValue(string value)
-        {
-            if (value.Contains(" ") || value.Contains("\""))
-                return $"\"{value.Replace("\"", "\\\"")}\"";
-            return value;
-        }
-        
-        private string FormatTerraformValue(string value)
-        {
-            if (bool.TryParse(value, out bool boolValue))
-                return boolValue.ToString().ToLower();
-            if (int.TryParse(value, out _))
-                return value;
-            return $"\"{value}\"";
+            var extension = format switch
+            {
+                RemediationFormat.PowerShell => ".ps1",
+                RemediationFormat.AzureCLI => ".sh",
+                RemediationFormat.Terraform => ".tf",
+                RemediationFormat.RestAPI => ".http",
+                RemediationFormat.ManualInstructions => ".md",
+                _ => ".txt"
+            };
+            
+            var fileName = $"{remediation.PolicyName.Replace(" ", "_")}_{format}{extension}";
+            return Path.Combine(outputDirectory, fileName);
         }
     }
 }

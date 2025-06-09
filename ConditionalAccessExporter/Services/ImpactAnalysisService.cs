@@ -79,7 +79,8 @@ namespace ConditionalAccessExporter.Services
                     }
                     else if (userId.Equals("GuestsOrExternalUsers", StringComparison.OrdinalIgnoreCase))
                     {
-                        affectedUserCount += await GetGuestUserCountAsync() ?? 100;
+                        var guestCount = await GetGuestUserCountAsync();
+                        affectedUserCount += guestCount;
                         impact.AffectedUserGroups.Add("Guest and external users");
                     }
                     else
@@ -175,7 +176,7 @@ namespace ConditionalAccessExporter.Services
                 }
             }
 
-            if (userConditions?.IncludeUsers?.Contains("All", StringComparison.OrdinalIgnoreCase) == true)
+            if (userConditions?.IncludeUsers?.Any(u => u.Equals("All", StringComparison.OrdinalIgnoreCase)) == true)
             {
                 impact.WillBlockAdminAccess = true;
                 impact.PotentialAccessIssues.Add("Applies to all users including administrators");
@@ -280,7 +281,7 @@ namespace ConditionalAccessExporter.Services
 
             try
             {
-                var json = JsonConvert.SerializeString(policy);
+                var json = JsonConvert.SerializeObject(policy);
                 var policyObj = JObject.Parse(json);
                 var appConditions = policyObj["conditions"]?["applications"];
 
@@ -339,7 +340,7 @@ namespace ConditionalAccessExporter.Services
                     requestConfiguration.QueryParameters.Top = 1;
                     requestConfiguration.Headers.Add("ConsistencyLevel", "eventual");
                 });
-                return users?.OdataCount;
+                return (int?)users?.OdataCount;
             }
             catch
             {
@@ -361,7 +362,7 @@ namespace ConditionalAccessExporter.Services
                     requestConfiguration.QueryParameters.Top = 1;
                     requestConfiguration.Headers.Add("ConsistencyLevel", "eventual");
                 });
-                return users?.OdataCount ?? 100;
+                return (int)(users?.OdataCount ?? 100);
             }
             catch
             {
@@ -382,7 +383,7 @@ namespace ConditionalAccessExporter.Services
                     requestConfiguration.QueryParameters.Top = 1;
                     requestConfiguration.Headers.Add("ConsistencyLevel", "eventual");
                 });
-                return members?.OdataCount ?? 50;
+                return (int)(members?.OdataCount ?? 50);
             }
             catch
             {

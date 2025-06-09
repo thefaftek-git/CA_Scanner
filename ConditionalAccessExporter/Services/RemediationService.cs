@@ -117,27 +117,27 @@ namespace ConditionalAccessExporter.Services
             };
         }
 
-        private RiskLevel AssessRiskLevel(PolicyComparison comparison)
+        private Models.RiskLevel AssessRiskLevel(PolicyComparison comparison)
         {
             if (comparison.HasCriticalDifferences)
-                return RiskLevel.Critical;
+                return Models.RiskLevel.Critical;
 
             if (comparison.Status == ComparisonStatus.EntraOnly)
-                return RiskLevel.High; // Deleting policies is high risk
+                return Models.RiskLevel.High; // Deleting policies is high risk
 
             if (comparison.Status == ComparisonStatus.ReferenceOnly)
-                return RiskLevel.Medium; // Creating new policies is medium risk
+                return Models.RiskLevel.Medium; // Creating new policies is medium risk
 
             // For updates, analyze the specific differences
             return AssessUpdateRiskLevel(comparison.Differences);
         }
 
-        private RiskLevel AssessUpdateRiskLevel(object? differences)
+        private Models.RiskLevel AssessUpdateRiskLevel(object? differences)
         {
             if (differences == null)
-                return RiskLevel.Low;
+                return Models.RiskLevel.Low;
 
-            var maxRisk = RiskLevel.Low;
+            var maxRisk = Models.RiskLevel.Low;
             var diffJson = JsonConvert.SerializeObject(differences);
             var diffObject = JObject.Parse(diffJson);
 
@@ -149,7 +149,7 @@ namespace ConditionalAccessExporter.Services
                 var fieldRisk = _riskConfig.FieldRiskLevels
                     .Where(kvp => fieldPath.Contains(kvp.Key.ToLowerInvariant()))
                     .Select(kvp => kvp.Value)
-                    .DefaultIfEmpty(RiskLevel.Low)
+                    .DefaultIfEmpty(Models.RiskLevel.Low)
                     .Max();
 
                 if (fieldRisk > maxRisk)
@@ -200,7 +200,7 @@ namespace ConditionalAccessExporter.Services
                 Description = actionDescription,
                 Action = GetActionCommand(remediation.Action),
                 RequiresElevatedPermissions = true,
-                RequiresUserConfirmation = remediation.RiskLevel >= RiskLevel.High
+                RequiresUserConfirmation = remediation.RiskLevel >= Models.RiskLevel.High
             });
 
             // Verification step
@@ -231,7 +231,7 @@ namespace ConditionalAccessExporter.Services
         {
             var warnings = new List<string>();
 
-            if (remediation.RiskLevel >= RiskLevel.High)
+            if (remediation.RiskLevel >= Models.RiskLevel.High)
             {
                 warnings.Add($"HIGH RISK: This change has {remediation.RiskLevel} risk level");
             }
@@ -261,7 +261,7 @@ namespace ConditionalAccessExporter.Services
             prerequisites.Add("Azure AD Premium P1 or P2 license");
             prerequisites.Add("Conditional Access Administrator role or higher");
 
-            if (remediation.RiskLevel >= RiskLevel.High)
+            if (remediation.RiskLevel >= Models.RiskLevel.High)
             {
                 prerequisites.Add("Security Administrator approval");
             }
@@ -280,10 +280,10 @@ namespace ConditionalAccessExporter.Services
             return new RemediationSummary
             {
                 TotalPoliciesNeedingRemediation = remediations.Count,
-                LowRiskChanges = remediations.Count(r => r.RiskLevel == RiskLevel.Low),
-                MediumRiskChanges = remediations.Count(r => r.RiskLevel == RiskLevel.Medium),
-                HighRiskChanges = remediations.Count(r => r.RiskLevel == RiskLevel.High),
-                CriticalRiskChanges = remediations.Count(r => r.RiskLevel == RiskLevel.Critical),
+                LowRiskChanges = remediations.Count(r => r.RiskLevel == Models.RiskLevel.Low),
+                MediumRiskChanges = remediations.Count(r => r.RiskLevel == Models.RiskLevel.Medium),
+                HighRiskChanges = remediations.Count(r => r.RiskLevel == Models.RiskLevel.High),
+                CriticalRiskChanges = remediations.Count(r => r.RiskLevel == Models.RiskLevel.Critical),
                 EstimatedAffectedUsers = remediations.Sum(r => r.Impact.EstimatedAffectedUsers),
                 EstimatedAffectedSessions = remediations.Sum(r => r.Impact.EstimatedAffectedSessions)
             };
@@ -299,6 +299,28 @@ namespace ConditionalAccessExporter.Services
                     remediation.GeneratedScripts[format] = script.Script;
                 }
             }
+        }
+
+        public async Task<RemediationResult> AnalyzePolicyAsync(ConditionalAccessPolicy policy)
+        {
+            var result = new RemediationResult
+            {
+                TenantId = "current", // TODO: Get actual tenant ID
+                GeneratedAt = DateTime.UtcNow
+            };
+
+            // For now, create a placeholder remediation
+            // TODO: Implement actual policy analysis logic
+            var remediation = new PolicyRemediation
+            {
+                PolicyId = policy.Id ?? "unknown",
+                PolicyName = policy.DisplayName ?? "Unnamed Policy",
+                Action = RemediationAction.NoAction,
+                RiskLevel = ConditionalAccessExporter.Models.RiskLevel.Low
+            };
+
+            result.PolicyRemediations.Add(remediation);
+            return result;
         }
 
         private async Task<BackupInfo> GenerateBackupAsync(string outputDirectory)
