@@ -1894,7 +1894,8 @@ namespace ConditionalAccessExporter
                 _ => "ps1"
             };
 
-            var fileName = $"remediate-{remediation.PolicyName.Replace(" ", "-").Replace("/", "-")}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.{extension}";
+            var sanitizedPolicyName = SanitizeFileName(remediation.PolicyName);
+            var fileName = $"remediate-{sanitizedPolicyName}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.{extension}";
             var scriptPath = Path.Combine(outputDir, fileName);
 
             if (dryRun)
@@ -1930,6 +1931,39 @@ namespace ConditionalAccessExporter
             }
             
             Logger.WriteInfo($"Stack trace: {ex.StackTrace}");
+        }
+        
+        private static string SanitizeFileName(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+                return "unnamed";
+                
+            // Get invalid characters for file names
+            var invalidChars = Path.GetInvalidFileNameChars();
+            
+            // Replace invalid characters with underscores
+            var sanitized = new StringBuilder();
+            foreach (char c in fileName)
+            {
+                if (invalidChars.Contains(c))
+                    sanitized.Append('_');
+                else
+                    sanitized.Append(c);
+            }
+            
+            // Replace multiple consecutive underscores with single underscore
+            var result = sanitized.ToString();
+            while (result.Contains("__"))
+                result = result.Replace("__", "_");
+                
+            // Trim underscores from start and end
+            result = result.Trim('_');
+            
+            // Ensure we have a valid filename
+            if (string.IsNullOrWhiteSpace(result))
+                return "unnamed";
+                
+            return result;
         }
     }
 }

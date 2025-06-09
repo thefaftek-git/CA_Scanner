@@ -142,13 +142,15 @@ namespace ConditionalAccessExporter.Services
         
         private string GenerateTerraformCreatePolicy(string policyId, string policyName)
         {
-            return $@"resource ""azuread_conditional_access_policy"" ""policy_{policyId.Replace("-", "_")}"" {{
-  display_name = ""{policyName}""
-  state        = ""enabled""
-}}";
+            return GenerateTerraformPolicy(policyId, policyName);
         }
         
         private string GenerateTerraformUpdatePolicy(string policyId, string policyName)
+        {
+            return GenerateTerraformPolicy(policyId, policyName);
+        }
+        
+        private string GenerateTerraformPolicy(string policyId, string policyName)
         {
             return $@"resource ""azuread_conditional_access_policy"" ""policy_{policyId.Replace("-", "_")}"" {{
   display_name = ""{policyName}""
@@ -219,8 +221,42 @@ namespace ConditionalAccessExporter.Services
                 _ => ".txt"
             };
             
-            var fileName = $"{remediation.PolicyName.Replace(" ", "_")}_{format}{extension}";
+            var sanitizedPolicyName = SanitizeFileName(remediation.PolicyName);
+            var fileName = $"{sanitizedPolicyName}_{format}{extension}";
             return Path.Combine(outputDirectory, fileName);
+        }
+        
+        private static string SanitizeFileName(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+                return "unnamed";
+                
+            // Get invalid characters for file names
+            var invalidChars = Path.GetInvalidFileNameChars();
+            
+            // Replace invalid characters with underscores
+            var sanitized = new StringBuilder();
+            foreach (char c in fileName)
+            {
+                if (invalidChars.Contains(c))
+                    sanitized.Append('_');
+                else
+                    sanitized.Append(c);
+            }
+            
+            // Replace multiple consecutive underscores with single underscore
+            var result = sanitized.ToString();
+            while (result.Contains("__"))
+                result = result.Replace("__", "_");
+                
+            // Trim underscores from start and end
+            result = result.Trim('_');
+            
+            // Ensure we have a valid filename
+            if (string.IsNullOrWhiteSpace(result))
+                return "unnamed";
+                
+            return result;
         }
     }
 }
