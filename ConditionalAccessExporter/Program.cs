@@ -825,7 +825,7 @@ namespace ConditionalAccessExporter
                 {
                     // TODO: Implement auto-fix functionality in future versions
                     // This is a placeholder for automatic correction of common validation issues
-                    Logger.WriteWarning("Auto-fix is enabled but not yet implemented.");
+                    Logger.WriteError("Auto-fix is enabled but not yet implemented.");
                     Logger.WriteInfo("Future versions will support automatic fixing of common issues such as:");
                     Logger.WriteInfo("- Formatting JSON files");
                     Logger.WriteInfo("- Correcting GUID formats");
