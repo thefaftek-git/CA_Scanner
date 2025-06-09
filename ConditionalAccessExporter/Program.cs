@@ -431,6 +431,67 @@ namespace ConditionalAccessExporter
                 filterEnabledOnlyOption,
                 policyNamesOption);
 
+            // Remediate command
+            var remediateCommand = new Command("remediate", "Analyze and remediate Conditional Access policies");
+            var analysisOnlyOption = new Option<bool>(
+                name: "--analysis-only",
+                description: "Perform analysis only without generating remediation scripts",
+                getDefaultValue: () => false
+            );
+            var interactiveOption = new Option<bool>(
+                name: "--interactive",
+                description: "Run in interactive mode for guided remediation",
+                getDefaultValue: () => false
+            );
+            var riskLevelFilterOption = new Option<string>(
+                name: "--risk-level",
+                description: "Filter remediations by risk level (Low, Medium, High, Critical)",
+                getDefaultValue: () => "All"
+            );
+            var scriptFormatOption = new Option<string>(
+                name: "--script-format",
+                description: "Script format to generate (PowerShell, AzureCLI, Terraform)",
+                getDefaultValue: () => "PowerShell"
+            );
+            var remediateOutputDirOption = new Option<string>(
+                name: "--output-dir",
+                description: "Output directory for remediation reports and scripts",
+                getDefaultValue: () => "remediation-output"
+            );
+            var includeImpactAnalysisOption = new Option<bool>(
+                name: "--include-impact",
+                description: "Include impact analysis in the remediation report",
+                getDefaultValue: () => true
+            );
+            var dryRunOption = new Option<bool>(
+                name: "--dry-run",
+                description: "Generate scripts without executing any changes",
+                getDefaultValue: () => true
+            );
+            var backupPoliciesOption = new Option<bool>(
+                name: "--backup",
+                description: "Create backup of existing policies before remediation",
+                getDefaultValue: () => true
+            );
+
+            remediateCommand.AddOption(analysisOnlyOption);
+            remediateCommand.AddOption(interactiveOption);
+            remediateCommand.AddOption(riskLevelFilterOption);
+            remediateCommand.AddOption(scriptFormatOption);
+            remediateCommand.AddOption(remediateOutputDirOption);
+            remediateCommand.AddOption(includeImpactAnalysisOption);
+            remediateCommand.AddOption(dryRunOption);
+            remediateCommand.AddOption(backupPoliciesOption);
+            remediateCommand.SetHandler(RemediatePoliciesAsync,
+                analysisOnlyOption,
+                interactiveOption,
+                riskLevelFilterOption,
+                scriptFormatOption,
+                remediateOutputDirOption,
+                includeImpactAnalysisOption,
+                dryRunOption,
+                backupPoliciesOption);
+
             rootCommand.AddCommand(exportCommand);
             rootCommand.AddCommand(terraformCommand);
             rootCommand.AddCommand(jsonToTerraformCommand);
@@ -439,6 +500,7 @@ namespace ConditionalAccessExporter
             rootCommand.AddCommand(validateCommand);
             rootCommand.AddCommand(templatesCommand);
             rootCommand.AddCommand(baselineCommand);
+            rootCommand.AddCommand(remediateCommand);
 
             // If no arguments provided, default to export for backward compatibility
             if (args.Length == 0)
@@ -1588,6 +1650,245 @@ namespace ConditionalAccessExporter
                 await HandleExceptionAsync(ex);
                 return 1;
             }
+        }
+
+        private static async Task<int> RemediatePoliciesAsync(
+            bool analysisOnly,
+            bool interactive,
+            string riskLevel,
+            string scriptFormat,
+            string outputDir,
+            bool includeImpactAnalysis,
+            bool dryRun,
+            bool backup)
+        {
+            try
+            {
+                Logger.WriteInfo("Starting Conditional Access Policy remediation analysis...");
+
+                // Create output directory
+                Directory.CreateDirectory(outputDir);
+
+                // Initialize services
+                var graphServiceClient = CreateGraphServiceClient();
+                var remediationService = new RemediationService();
+                var impactAnalysisService = new ImpactAnalysisService();
+                var scriptGenerationService = new ScriptGenerationService();
+
+                // Fetch current policies
+                Logger.WriteInfo("Fetching current Conditional Access policies...");
+                var policiesResult = await FetchEntraPoliciesAsync();
+                var policies = JsonConvert.DeserializeObject<List<ConditionalAccessPolicy>>(JsonConvert.SerializeObject(policiesResult));
+
+                if (policies == null || !policies.Any())
+                {
+                    Logger.WriteInfo("No policies found to analyze.");
+                    return 0;
+                }
+
+                Logger.WriteInfo($"Found {policies.Count} policies to analyze.");
+
+                // Generate remediation analysis
+                var remediationResults = new List<RemediationResult>();
+                
+                foreach (var policy in policies)
+                {
+                    var result = await remediationService.AnalyzePolicyAsync(policy);
+                    if (result.Remediations.Any())
+                    {
+                        remediationResults.Add(result);
+                    }
+                }
+
+                // Filter by risk level if specified
+                if (!string.Equals(riskLevel, "All", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (Enum.TryParse<RiskLevel>(riskLevel, true, out var riskLevelFilter))
+                    {
+                        remediationResults = remediationResults.Where(r => 
+                            r.Remediations.Any(rem => rem.RiskLevel == riskLevelFilter)).ToList();
+                    }
+                }
+
+                if (!remediationResults.Any())
+                {
+                    Logger.WriteInfo("No remediations found based on the specified criteria.");
+                    return 0;
+                }
+
+                Logger.WriteInfo($"Found {remediationResults.Count} policies requiring remediation.");
+
+                // Generate impact analysis if requested
+                if (includeImpactAnalysis)
+                {
+                    Logger.WriteInfo("Performing impact analysis...");
+                    foreach (var result in remediationResults)
+                    {
+                        foreach (var remediation in result.Remediations)
+                        {
+                            var impact = await impactAnalysisService.AnalyzeRemediationImpactAsync(remediation);
+                            remediation.ImpactAnalysis = impact;
+                        }
+                    }
+                }
+
+                // Interactive mode
+                if (interactive)
+                {
+                    await RunInteractiveRemediationAsync(remediationResults, scriptGenerationService, scriptFormat, outputDir, dryRun, backup);
+                    return 0;
+                }
+
+                // Analysis only mode
+                if (analysisOnly)
+                {
+                    await GenerateAnalysisReportAsync(remediationResults, outputDir);
+                    Logger.WriteInfo($"Analysis report generated in: {outputDir}");
+                    return 0;
+                }
+
+                // Generate remediation scripts
+                Logger.WriteInfo($"Generating {scriptFormat} remediation scripts...");
+                await GenerateRemediationScriptsAsync(remediationResults, scriptGenerationService, scriptFormat, outputDir, dryRun, backup);
+
+                Logger.WriteInfo($"Remediation analysis and scripts generated successfully in: {outputDir}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(ex);
+                return 1;
+            }
+        }
+
+        private static async Task RunInteractiveRemediationAsync(
+            List<RemediationResult> remediationResults,
+            ScriptGenerationService scriptService,
+            string scriptFormat,
+            string outputDir,
+            bool dryRun,
+            bool backup)
+        {
+            Logger.WriteInfo("\n=== Interactive Remediation Mode ===");
+            Logger.WriteInfo("Review each policy remediation and choose actions:");
+
+            foreach (var result in remediationResults)
+            {
+                Logger.WriteInfo($"\nPolicy: {result.PolicyName}");
+                Logger.WriteInfo($"Found {result.Remediations.Count} potential remediations:");
+
+                for (int i = 0; i < result.Remediations.Count; i++)
+                {
+                    var remediation = result.Remediations[i];
+                    Logger.WriteInfo($"\n{i + 1}. Risk Level: {remediation.RiskLevel}");
+                    Logger.WriteInfo($"   Issue: {remediation.Issue}");
+                    Logger.WriteInfo($"   Recommendation: {remediation.Recommendation}");
+                    
+                    if (remediation.ImpactAnalysis != null)
+                    {
+                        Logger.WriteInfo($"   Estimated Impact: {remediation.ImpactAnalysis.EstimatedUserImpact} users");
+                        Logger.WriteInfo($"   Business Impact: {remediation.ImpactAnalysis.BusinessCriticalityLevel}");
+                    }
+
+                    Console.Write($"   Apply this remediation? (y/n/s=skip all for this policy): ");
+                    var choice = Console.ReadLine()?.ToLower();
+                    
+                    if (choice == "s")
+                        break;
+                    
+                    if (choice == "y")
+                    {
+                        await GenerateSingleRemediationScript(remediation, scriptService, scriptFormat, outputDir, dryRun);
+                        Logger.WriteInfo("   ✓ Remediation script generated");
+                    }
+                }
+            }
+        }
+
+        private static async Task GenerateAnalysisReportAsync(List<RemediationResult> results, string outputDir)
+        {
+            var report = new
+            {
+                GeneratedAt = DateTime.UtcNow,
+                TotalPolicies = results.Count,
+                TotalRemediations = results.Sum(r => r.Remediations.Count),
+                RiskSummary = results
+                    .SelectMany(r => r.Remediations)
+                    .GroupBy(r => r.RiskLevel)
+                    .ToDictionary(g => g.Key.ToString(), g => g.Count()),
+                PolicyAnalysis = results.Select(r => new
+                {
+                    r.PolicyName,
+                    r.PolicyId,
+                    RemediationCount = r.Remediations.Count,
+                    Remediations = r.Remediations.Select(rem => new
+                    {
+                        rem.Issue,
+                        rem.Recommendation,
+                        RiskLevel = rem.RiskLevel.ToString(),
+                        ActionCount = rem.Actions.Count,
+                        ImpactAnalysis = rem.ImpactAnalysis != null ? new
+                        {
+                            rem.ImpactAnalysis.EstimatedUserImpact,
+                            BusinessCriticality = rem.ImpactAnalysis.BusinessCriticalityLevel.ToString()
+                        } : null
+                    })
+                })
+            };
+
+            var reportPath = Path.Combine(outputDir, $"remediation-analysis-{DateTime.UtcNow:yyyyMMdd-HHmmss}.json");
+            await File.WriteAllTextAsync(reportPath, JsonConvert.SerializeObject(report, Formatting.Indented));
+        }
+
+        private static async Task GenerateRemediationScriptsAsync(
+            List<RemediationResult> results,
+            ScriptGenerationService scriptService,
+            string scriptFormat,
+            string outputDir,
+            bool dryRun,
+            bool backup)
+        {
+            foreach (var result in results)
+            {
+                foreach (var remediation in result.Remediations)
+                {
+                    await GenerateSingleRemediationScript(remediation, scriptService, scriptFormat, outputDir, dryRun);
+                }
+            }
+        }
+
+        private static async Task GenerateSingleRemediationScript(
+            PolicyRemediation remediation,
+            ScriptGenerationService scriptService,
+            string scriptFormat,
+            string outputDir,
+            bool dryRun)
+        {
+            string script = scriptFormat.ToLower() switch
+            {
+                "powershell" => scriptService.GeneratePowerShellScript(remediation),
+                "azurecli" => scriptService.GenerateAzureCliScript(remediation),
+                "terraform" => scriptService.GenerateTerraformScript(remediation),
+                _ => scriptService.GeneratePowerShellScript(remediation)
+            };
+
+            var extension = scriptFormat.ToLower() switch
+            {
+                "powershell" => "ps1",
+                "azurecli" => "sh",
+                "terraform" => "tf",
+                _ => "ps1"
+            };
+
+            var fileName = $"remediate-{remediation.PolicyName.Replace(" ", "-").Replace("/", "-")}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.{extension}";
+            var scriptPath = Path.Combine(outputDir, fileName);
+
+            if (dryRun)
+            {
+                script = $"# DRY RUN MODE - NO CHANGES WILL BE APPLIED\n# Remove this comment and the exit statement to execute\nexit 0\n\n{script}";
+            }
+
+            await File.WriteAllTextAsync(scriptPath, script);
         }
 
         private static async Task HandleExceptionAsync(Exception ex)
