@@ -239,4 +239,78 @@ namespace ConditionalAccessExporter.Models
         CriticalDifferences = 2,  // Critical differences (security policy violations)
         Error = 3                 // Error (authentication, file not found, etc.)
     }
+
+    // Policy Validation Models
+    public class ValidationResult
+    {
+        public bool IsValid { get; set; }
+        public List<ValidationError> Errors { get; set; } = new();
+        public List<ValidationWarning> Warnings { get; set; } = new();
+        public string FilePath { get; set; } = string.Empty;
+        public string FileName { get; set; } = string.Empty;
+        public DateTime ValidatedAt { get; set; } = DateTime.UtcNow;
+    }
+
+    public class ValidationError
+    {
+        public ValidationErrorType Type { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string Field { get; set; } = string.Empty;
+        public int? LineNumber { get; set; }
+        public int? ColumnNumber { get; set; }
+        public string Suggestion { get; set; } = string.Empty;
+    }
+
+    public class ValidationWarning
+    {
+        public ValidationWarningType Type { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string Field { get; set; } = string.Empty;
+        public int? LineNumber { get; set; }
+        public string Suggestion { get; set; } = string.Empty;
+    }
+
+    public enum ValidationErrorType
+    {
+        JsonSyntaxError,
+        RequiredFieldMissing,
+        InvalidFieldType,
+        InvalidFieldValue,
+        InvalidGuid,
+        InvalidEnum,
+        JsonSchemaViolation,
+        FileAccessError,
+        SecurityIssue,
+        UnexpectedError
+    }
+
+    public enum ValidationWarningType
+    {
+        BestPracticeViolation,
+        SecurityRecommendation,
+        PerformanceWarning,
+        DeprecatedField,
+        UnknownField
+    }
+
+    public class DirectoryValidationResult
+    {
+        public bool IsValid { get; set; }
+        public List<ValidationResult> FileResults { get; set; } = new();
+        public string DirectoryPath { get; set; } = string.Empty;
+        public int TotalFiles { get; set; }
+        public int ValidFiles { get; set; }
+        public int InvalidFiles { get; set; }
+        public int FilesWithWarnings => FileResults.Count(f => f.Warnings.Any());
+        public DateTime ValidatedAt { get; set; } = DateTime.UtcNow;
+        public List<string> PreflightErrors { get; set; } = new();
+    }
+
+    public class PreflightCheck
+    {
+        public string Name { get; set; } = string.Empty;
+        public bool Passed { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string Suggestion { get; set; } = string.Empty;
+    }
 }

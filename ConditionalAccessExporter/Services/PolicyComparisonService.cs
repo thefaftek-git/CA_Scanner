@@ -9,6 +9,7 @@ namespace ConditionalAccessExporter.Services
     public class PolicyComparisonService
     {
         private readonly JsonDiffPatch _jsonDiffPatch;
+        private readonly PolicyValidationService _validationService;
         
         private static readonly string[] DateFormats = 
         {
@@ -23,15 +24,23 @@ namespace ConditionalAccessExporter.Services
         private const int MinDateStringLength = 8;   // Minimum reasonable date string length (e.g., "01/01/24")
         private const int MaxDateStringLength = 30;  // Maximum reasonable date string length (e.g., "2024-01-01T12:00:00.000Z")
 
-        public PolicyComparisonService()
+        public PolicyComparisonService(PolicyValidationService? validationService = null)
         {
             _jsonDiffPatch = new JsonDiffPatch();
+            _validationService = validationService ?? new PolicyValidationService();
+        }
+
+        public async Task<DirectoryValidationResult> ValidateReferenceDirectoryAsync(string referenceDirectory)
+        {
+            Console.WriteLine($"Validating reference directory: {referenceDirectory}");
+            return await _validationService.ValidateDirectoryAsync(referenceDirectory);
         }
 
         public async Task<ComparisonResult> CompareAsync(
             object entraExport, 
             string referenceDirectory, 
-            MatchingOptions matchingOptions)
+            MatchingOptions matchingOptions,
+            bool skipValidation = false)
         {
             Console.WriteLine($"Starting comparison with reference directory: {referenceDirectory}");
             
@@ -47,6 +56,35 @@ namespace ConditionalAccessExporter.Services
             result.Summary.TotalEntraPolicies = entraData.Policies.Count;
 
             Console.WriteLine($"Found {entraData.Policies.Count} policies in Entra export");
+
+            // Validate reference files before loading (unless skipped)
+            if (!skipValidation)
+            {
+                Logger.WriteInfo("Validating reference files...");
+                var validationResult = await ValidateReferenceDirectoryAsync(referenceDirectory);
+                if (!validationResult.IsValid)
+                {
+                    Logger.WriteError($"Reference file validation failed. Found {validationResult.InvalidFiles} invalid files out of {validationResult.TotalFiles}.");
+                    // You could throw an exception here or continue with warnings
+                    foreach (var fileResult in validationResult.FileResults.Where(f => !f.IsValid))
+                    {
+                        Logger.WriteError($"  ✗ {fileResult.FileName}: {fileResult.Errors.Count} errors");
+                        foreach (var error in fileResult.Errors)
+                        {
+                            var location = error.LineNumber.HasValue ? $" (line {error.LineNumber})" : "";
+                            Logger.WriteError($"    - {error.Message}{location}");
+                            if (!string.IsNullOrEmpty(error.Suggestion))
+                            {
+                                Logger.WriteInfo($"      Suggestion: {error.Suggestion}");
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Logger.WriteInfo($"✓ All {validationResult.ValidFiles} reference files are valid");
+                }
+            }
 
             // Load reference files
             var referencePolicies = await LoadReferencePoliciesAsync(referenceDirectory);
@@ -192,7 +230,7 @@ namespace ConditionalAccessExporter.Services
 
             if (!Directory.Exists(directory))
             {
-                Console.WriteLine($"Warning: Reference directory '{directory}' does not exist");
+                Logger.WriteError($"Reference directory '{directory}' does not exist");
                 return policies;
             }
 
@@ -216,9 +254,21 @@ namespace ConditionalAccessExporter.Services
                         };
                     }
                 }
+                catch (JsonReaderException ex)
+                {
+                    Logger.WriteError($"Failed to load reference file '{Path.GetFileName(file)}': Invalid JSON syntax at line {ex.LineNumber}, position {ex.LinePosition}");
+                    Logger.WriteError($"  Error: {ex.Message}");
+                    Logger.WriteInfo($"  Suggestion: Check the JSON structure for missing commas, brackets, or quotes.");
+                }
+                catch (IOException ex)
+                {
+                    Logger.WriteError($"Failed to read reference file '{Path.GetFileName(file)}': {ex.Message}");
+                    Logger.WriteInfo($"  Suggestion: Ensure the file exists and the application has read permissions.");
+                }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Warning: Failed to load reference file '{file}': {ex.Message}");
+                    Logger.WriteError($"Failed to load reference file '{Path.GetFileName(file)}': {ex.Message}");
+                    Logger.WriteInfo($"  Suggestion: Review the file for any obvious issues.");
                 }
             }
 

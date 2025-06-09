@@ -214,6 +214,11 @@ namespace ConditionalAccessExporter
                 description: "Minimal output for pipeline usage",
                 getDefaultValue: () => false
             );
+            var skipValidationOption = new Option<bool>(
+                name: "--skip-validation",
+                description: "Skip validation of reference files before comparison",
+                getDefaultValue: () => false
+            );
 
             compareCommand.AddOption(referenceDirectoryOption);
             compareCommand.AddOption(entraFileOption);
@@ -227,6 +232,7 @@ namespace ConditionalAccessExporter
             compareCommand.AddOption(failOnOption);
             compareCommand.AddOption(ignoreOption);
             compareCommand.AddOption(quietOption);
+            compareCommand.AddOption(skipValidationOption);
 
             compareCommand.SetHandler(async (context) =>
             {
@@ -242,6 +248,7 @@ namespace ConditionalAccessExporter
                 var failOn = context.ParseResult.GetValueForOption(failOnOption);
                 var ignore = context.ParseResult.GetValueForOption(ignoreOption);
                 var quiet = context.ParseResult.GetValueForOption(quietOption);
+                var skipValidation = context.ParseResult.GetValueForOption(skipValidationOption);
 
                 var exitCode = await ComparePoliciesAsync(
                     referenceDirectory!,
@@ -255,7 +262,8 @@ namespace ConditionalAccessExporter
                     maxDifferences,
                     failOn!,
                     ignore!,
-                    quiet);
+                    quiet,
+                    skipValidation);
                 
                 context.ExitCode = exitCode;
             });
@@ -320,6 +328,37 @@ namespace ConditionalAccessExporter
                 crossCaseSensitiveOption,
                 enableSemanticOption,
                 similarityThresholdOption);
+
+            // Validate command
+            var validateCommand = new Command("validate", "Validate reference policy files");
+            var validateReferenceDirectoryOption = new Option<string>(
+                name: "--reference-dir",
+                description: "Directory containing reference JSON files to validate"
+            ) { IsRequired = true };
+            var validateVerboseOption = new Option<bool>(
+                name: "--verbose",
+                description: "Show detailed validation output including warnings",
+                getDefaultValue: () => false
+            );
+            var validateAutoFixOption = new Option<bool>(
+                name: "--auto-fix",
+                description: "Attempt to automatically fix common issues",
+                getDefaultValue: () => false
+            );
+            var validateOutputOption = new Option<string>(
+                name: "--output",
+                description: "Output validation results to a JSON file"
+            );
+
+            validateCommand.AddOption(validateReferenceDirectoryOption);
+            validateCommand.AddOption(validateVerboseOption);
+            validateCommand.AddOption(validateAutoFixOption);
+            validateCommand.AddOption(validateOutputOption);
+            validateCommand.SetHandler(ValidatePoliciesAsync,
+                validateReferenceDirectoryOption,
+                validateVerboseOption,
+                validateAutoFixOption,
+                validateOutputOption);
 
             // Templates command
             var templatesCommand = new Command("templates", "Manage reference policy templates");
@@ -397,6 +436,7 @@ namespace ConditionalAccessExporter
             rootCommand.AddCommand(jsonToTerraformCommand);
             rootCommand.AddCommand(compareCommand);
             rootCommand.AddCommand(crossFormatCompareCommand);
+            rootCommand.AddCommand(validateCommand);
             rootCommand.AddCommand(templatesCommand);
             rootCommand.AddCommand(baselineCommand);
 
@@ -698,6 +738,119 @@ namespace ConditionalAccessExporter
             }
         }
 
+        private static async Task<int> ValidatePoliciesAsync(
+            string referenceDirectory,
+            bool verbose,
+            bool autoFix,
+            string? outputPath)
+        {
+            try
+            {
+                Logger.WriteInfo("===================");
+                Logger.WriteInfo("CA Scanner - Policy Validation");
+                Logger.WriteInfo("===================");
+                Logger.WriteInfo("");
+
+                // Perform pre-flight checks
+                Logger.WriteInfo("Performing pre-flight checks...");
+                var validationService = new PolicyValidationService();
+
+                // Check if reference directory exists
+                if (!Directory.Exists(referenceDirectory))
+                {
+                    Logger.WriteError($"Reference directory '{referenceDirectory}' does not exist.");
+                    return 1;
+                }
+
+                // Validate directory
+                Logger.WriteInfo($"Validating reference directory: {referenceDirectory}");
+                var validationResult = await validationService.ValidateDirectoryAsync(referenceDirectory);
+
+                // Display results
+                Logger.WriteInfo("");
+                Logger.WriteInfo("Validation Results:");
+                Logger.WriteInfo("==================");
+                Logger.WriteInfo($"Total files scanned: {validationResult.TotalFiles}");
+                Logger.WriteInfo($"Valid files: {validationResult.ValidFiles}");
+                Logger.WriteInfo($"Invalid files: {validationResult.InvalidFiles}");
+                Logger.WriteInfo($"Files with warnings: {validationResult.FilesWithWarnings}");
+                Logger.WriteInfo("");
+
+                if (validationResult.IsValid)
+                {
+                    Logger.WriteInfo("✓ All files passed validation!");
+                }
+                else
+                {
+                    Logger.WriteError($"✗ Validation failed with {validationResult.InvalidFiles} invalid files");
+                }
+
+                // Display detailed results for invalid files
+                foreach (var fileResult in validationResult.FileResults.Where(f => !f.IsValid))
+                {
+                    Logger.WriteError($"✗ {fileResult.FileName}:");
+                    foreach (var error in fileResult.Errors)
+                    {
+                        var location = error.LineNumber.HasValue ? $" (line {error.LineNumber})" : "";
+                        Logger.WriteError($"  - {error.Message}{location}");
+                        if (!string.IsNullOrEmpty(error.Suggestion))
+                        {
+                            Logger.WriteInfo($"    Suggestion: {error.Suggestion}");
+                        }
+                    }
+                    Logger.WriteInfo("");
+                }
+
+                // Display warnings if verbose mode is enabled
+                if (verbose)
+                {
+                    foreach (var fileResult in validationResult.FileResults.Where(f => f.Warnings.Any()))
+                    {
+                        Logger.WriteInfo($"⚠ {fileResult.FileName} has warnings:");
+                        foreach (var warning in fileResult.Warnings)
+                        {
+                            var location = warning.LineNumber.HasValue ? $" (line {warning.LineNumber})" : "";
+                            Logger.WriteInfo($"  - {warning.Message}{location}");
+                            if (!string.IsNullOrEmpty(warning.Suggestion))
+                            {
+                                Logger.WriteInfo($"    Suggestion: {warning.Suggestion}");
+                            }
+                        }
+                        Logger.WriteInfo("");
+                    }
+                }
+
+                // Auto-fix if requested
+                if (autoFix && validationResult.InvalidFiles > 0)
+                {
+                    // TODO: Implement auto-fix functionality in future versions
+                    // This is a placeholder for automatic correction of common validation issues
+                    Logger.WriteError("Auto-fix is enabled but not yet implemented.");
+                    Logger.WriteInfo("Future versions will support automatic fixing of common issues such as:");
+                    Logger.WriteInfo("- Formatting JSON files");
+                    Logger.WriteInfo("- Correcting GUID formats");
+                    Logger.WriteInfo("- Fixing common schema violations");
+                    Logger.WriteInfo("For now, please review and fix the validation errors manually.");
+                }
+
+                // Save results to file if requested
+                if (!string.IsNullOrEmpty(outputPath))
+                {
+                    var json = JsonConvert.SerializeObject(validationResult, Formatting.Indented);
+                    await File.WriteAllTextAsync(outputPath, json);
+                    Logger.WriteInfo($"Validation results saved to: {outputPath}");
+                }
+
+                Logger.WriteInfo("Policy validation completed!");
+                return validationResult.IsValid ? 0 : 1;
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(ex);
+                return 1;
+            }
+        }
+
         private static async Task<int> ComparePoliciesAsync(
             string referenceDirectory,
             string? entraFile,
@@ -710,7 +863,8 @@ namespace ConditionalAccessExporter
             int? maxDifferences,
             string[] failOn,
             string[] ignore,
-            bool quiet)
+            bool quiet,
+            bool skipValidation = false)
         {
             Logger.WriteInfo("Conditional Access Policy Comparison");
             Logger.WriteInfo("====================================");
@@ -813,7 +967,7 @@ namespace ConditionalAccessExporter
                 };
 
                 var comparisonService = new PolicyComparisonService();
-                var result = await comparisonService.CompareAsync(entraExport, referenceDirectory, matchingOptions);
+                var result = await comparisonService.CompareAsync(entraExport, referenceDirectory, matchingOptions, skipValidation);
 
                 // Perform CI/CD analysis
                 var cicdAnalysisService = new CiCdAnalysisService();

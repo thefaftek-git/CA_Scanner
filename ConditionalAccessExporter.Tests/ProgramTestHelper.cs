@@ -115,7 +115,8 @@ namespace ConditionalAccessExporter.Tests
                     null,  // maxDifferences
                     new string[0], // failOn
                     new string[0], // ignore
-                    false  // quiet
+                    false, // quiet
+                    false  // skipValidation
                 });
             return result;
         }
