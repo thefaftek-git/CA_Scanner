@@ -1653,6 +1653,20 @@ namespace ConditionalAccessExporter
             }
         }
 
+        /// <summary>
+        /// Orchestrates the Conditional Access Policy remediation process.
+        /// This method serves as a high-level coordinator that delegates specific responsibilities
+        /// to focused helper methods for better maintainability and readability.
+        /// </summary>
+        /// <param name="analysisOnly">If true, only generates analysis reports without scripts</param>
+        /// <param name="interactive">If true, enables interactive mode for user approval</param>
+        /// <param name="riskLevel">Filter remediations by risk level (Low, Medium, High, Critical, All)</param>
+        /// <param name="scriptFormat">Format for generated scripts (PowerShell, AzureCLI, Terraform)</param>
+        /// <param name="outputDir">Directory for output files</param>
+        /// <param name="includeImpactAnalysis">If true, performs impact analysis on remediations</param>
+        /// <param name="dryRun">If true, generates scripts in dry-run mode</param>
+        /// <param name="backup">If true, includes backup functionality</param>
+        /// <returns>Exit code: 0 for success, 1 for failure</returns>
         private static async Task<int> RemediatePoliciesAsync(
             bool analysisOnly,
             bool interactive,
@@ -1667,6 +1681,85 @@ namespace ConditionalAccessExporter
             {
                 Logger.WriteInfo("Starting Conditional Access Policy remediation analysis...");
 
+                // Initialize environment and services
+                var services = await InitializeRemediationServicesAsync(outputDir);
+                if (services == null)
+                {
+                    return 1;
+                }
+
+                // Fetch and validate policies
+                var policies = await FetchAndValidatePoliciesAsync();
+                if (policies == null)
+                {
+                    return 1;
+                }
+
+                if (!policies.Any())
+                {
+                    Logger.WriteInfo("No policies found to analyze.");
+                    return 0;
+                }
+
+                // Analyze policies for remediation opportunities
+                var remediationResults = await AnalyzePoliciesForRemediationAsync(policies, services.RemediationService);
+                if (!remediationResults.Any())
+                {
+                    Logger.WriteInfo("No remediations found during analysis.");
+                    return 0;
+                }
+
+                // Filter results by risk level
+                var filteredResults = FilterRemediationsByRiskLevel(remediationResults, riskLevel);
+                if (!filteredResults.Any())
+                {
+                    Logger.WriteInfo("No remediations found based on the specified criteria.");
+                    return 0;
+                }
+
+                // Perform impact analysis if requested
+                if (includeImpactAnalysis)
+                {
+                    await PerformImpactAnalysisAsync(filteredResults, services.ImpactAnalysisService);
+                }
+
+                // Execute the appropriate workflow based on mode
+                return await ExecuteRemediationWorkflowAsync(
+                    filteredResults,
+                    services.ScriptGenerationService,
+                    analysisOnly,
+                    interactive,
+                    scriptFormat,
+                    outputDir,
+                    dryRun,
+                    backup);
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(ex);
+                return 1;
+            }
+        }
+
+        /// <summary>
+        /// Data structure to hold initialized services for remediation operations.
+        /// </summary>
+        private class RemediationServices
+        {
+            public RemediationService RemediationService { get; set; } = null!;
+            public ImpactAnalysisService ImpactAnalysisService { get; set; } = null!;
+            public ScriptGenerationService ScriptGenerationService { get; set; } = null!;
+        }
+
+        /// <summary>
+        /// Initializes authentication credentials and required services for remediation operations.
+        /// </summary>
+        /// <param name="outputDir">Output directory to create</param>
+        /// <returns>RemediationServices instance or null if initialization fails</returns>
+        private static async Task<RemediationServices?> InitializeRemediationServicesAsync(string outputDir)
+        {
+            try
+            {
                 // Create output directory
                 Directory.CreateDirectory(outputDir);
 
@@ -1678,7 +1771,7 @@ namespace ConditionalAccessExporter
                 if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
                 {
                     Logger.WriteError("Authentication credentials not found. Please set AZURE_TENANT_ID, AZURE_CLIENT_ID, and AZURE_CLIENT_SECRET environment variables.");
-                    return 1;
+                    return null;
                 }
 
                 // Initialize services
@@ -1689,106 +1782,188 @@ namespace ConditionalAccessExporter
                 var scriptGenerationService = new ScriptGenerationService();
                 var remediationService = new RemediationService(policyComparisonService, impactAnalysisService, scriptGenerationService);
 
-                // Fetch current policies
+                return new RemediationServices
+                {
+                    RemediationService = remediationService,
+                    ImpactAnalysisService = impactAnalysisService,
+                    ScriptGenerationService = scriptGenerationService
+                };
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError($"Failed to initialize remediation services: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Fetches Conditional Access policies from Microsoft Graph and validates the result.
+        /// </summary>
+        /// <returns>List of ConditionalAccessPolicy objects or null if fetch fails</returns>
+        private static async Task<List<ConditionalAccessPolicy>?> FetchAndValidatePoliciesAsync()
+        {
+            try
+            {
                 Logger.WriteInfo("Fetching current Conditional Access policies...");
                 var policiesResult = await FetchEntraPoliciesAsync();
                 
                 if (policiesResult == null)
                 {
                     Logger.WriteError("Failed to fetch policies from Microsoft Graph API.");
-                    return 1;
+                    return null;
                 }
                 
                 var policies = JsonConvert.DeserializeObject<List<ConditionalAccessPolicy>>(JsonConvert.SerializeObject(policiesResult));
 
-                if (policies == null || !policies.Any())
+                if (policies == null)
                 {
-                    Logger.WriteInfo("No policies found to analyze.");
-                    return 0;
+                    Logger.WriteError("Failed to deserialize policies from API response.");
+                    return null;
                 }
 
                 Logger.WriteInfo($"Found {policies.Count} policies to analyze.");
-
-                // Generate remediation analysis
-                var remediationResults = new List<RemediationResult>();
-                
-                foreach (var policy in policies)
-                {
-                    try
-                    {
-                        var result = await remediationService.AnalyzePolicyAsync(policy);
-                        if (result.PolicyRemediations.Any())
-                        {
-                            remediationResults.Add(result);
-                        }
-                    }
-                    catch (Exception policyEx)
-                    {
-                        Logger.WriteError($"Failed to analyze policy '{policy.DisplayName}': {policyEx.Message}");
-                        // Continue with other policies rather than failing completely
-                    }
-                }
-
-                // Filter by risk level if specified
-                if (!string.Equals(riskLevel, "All", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (Enum.TryParse<Models.RiskLevel>(riskLevel, true, out var riskLevelFilter))
-                    {
-                        remediationResults = remediationResults.Where(r => 
-                            r.PolicyRemediations.Any(rem => rem.RiskLevel == riskLevelFilter)).ToList();
-                    }
-                }
-
-                if (!remediationResults.Any())
-                {
-                    Logger.WriteInfo("No remediations found based on the specified criteria.");
-                    return 0;
-                }
-
-                Logger.WriteInfo($"Found {remediationResults.Count} policies requiring remediation.");
-
-                // Generate impact analysis if requested
-                if (includeImpactAnalysis)
-                {
-                    Logger.WriteInfo("Performing impact analysis...");
-                    foreach (var result in remediationResults)
-                    {
-                        foreach (var remediation in result.PolicyRemediations)
-                        {
-                            // TODO: Impact analysis needs to be implemented for individual remediations
-                            // var impact = await impactAnalysisService.AnalyzeImpactAsync(policyComparison);
-                            // remediation.ImpactAnalysis = impact;
-                        }
-                    }
-                }
-
-                // Interactive mode
-                if (interactive)
-                {
-                    await RunInteractiveRemediationAsync(remediationResults, scriptGenerationService, scriptFormat, outputDir, dryRun, backup);
-                    return 0;
-                }
-
-                // Analysis only mode
-                if (analysisOnly)
-                {
-                    await GenerateAnalysisReportAsync(remediationResults, outputDir);
-                    Logger.WriteInfo($"Analysis report generated in: {outputDir}");
-                    return 0;
-                }
-
-                // Generate remediation scripts
-                Logger.WriteInfo($"Generating {scriptFormat} remediation scripts...");
-                await GenerateRemediationScriptsAsync(remediationResults, scriptGenerationService, scriptFormat, outputDir, dryRun, backup);
-
-                Logger.WriteInfo($"Remediation analysis and scripts generated successfully in: {outputDir}");
-                return 0;
+                return policies;
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(ex);
-                return 1;
+                Logger.WriteError($"Error fetching policies: {ex.Message}");
+                return null;
             }
+        }
+
+        /// <summary>
+        /// Analyzes a collection of policies to identify remediation opportunities.
+        /// </summary>
+        /// <param name="policies">Policies to analyze</param>
+        /// <param name="remediationService">Service to perform the analysis</param>
+        /// <returns>List of RemediationResult objects containing identified remediations</returns>
+        private static async Task<List<RemediationResult>> AnalyzePoliciesForRemediationAsync(
+            List<ConditionalAccessPolicy> policies,
+            RemediationService remediationService)
+        {
+            var remediationResults = new List<RemediationResult>();
+            
+            foreach (var policy in policies)
+            {
+                try
+                {
+                    var result = await remediationService.AnalyzePolicyAsync(policy);
+                    if (result.PolicyRemediations.Any())
+                    {
+                        remediationResults.Add(result);
+                    }
+                }
+                catch (Exception policyEx)
+                {
+                    Logger.WriteError($"Failed to analyze policy '{policy.DisplayName}': {policyEx.Message}");
+                    // Continue with other policies rather than failing completely
+                }
+            }
+
+            Logger.WriteInfo($"Found {remediationResults.Count} policies requiring remediation.");
+            return remediationResults;
+        }
+
+        /// <summary>
+        /// Filters remediation results based on the specified risk level.
+        /// </summary>
+        /// <param name="remediationResults">Results to filter</param>
+        /// <param name="riskLevel">Risk level filter (Low, Medium, High, Critical, All)</param>
+        /// <returns>Filtered list of RemediationResult objects</returns>
+        private static List<RemediationResult> FilterRemediationsByRiskLevel(
+            List<RemediationResult> remediationResults,
+            string riskLevel)
+        {
+            // Return all results if "All" is specified
+            if (string.Equals(riskLevel, "All", StringComparison.OrdinalIgnoreCase))
+            {
+                return remediationResults;
+            }
+
+            // Filter by specific risk level
+            if (Enum.TryParse<Models.RiskLevel>(riskLevel, true, out var riskLevelFilter))
+            {
+                return remediationResults.Where(r => 
+                    r.PolicyRemediations.Any(rem => rem.RiskLevel == riskLevelFilter)).ToList();
+            }
+
+            Logger.WriteError($"Invalid risk level specified: {riskLevel}. Valid values are: Low, Medium, High, Critical, All");
+            return remediationResults;
+        }
+
+        /// <summary>
+        /// Performs impact analysis on the provided remediation results.
+        /// </summary>
+        /// <param name="remediationResults">Results to analyze for impact</param>
+        /// <param name="impactAnalysisService">Service to perform impact analysis</param>
+        private static async Task PerformImpactAnalysisAsync(
+            List<RemediationResult> remediationResults,
+            ImpactAnalysisService impactAnalysisService)
+        {
+            Logger.WriteInfo("Performing impact analysis...");
+            
+            foreach (var result in remediationResults)
+            {
+                foreach (var remediation in result.PolicyRemediations)
+                {
+                    try
+                    {
+                        // TODO: Impact analysis needs to be implemented for individual remediations
+                        // The current implementation placeholder is preserved for backwards compatibility
+                        // var impact = await impactAnalysisService.AnalyzeImpactAsync(policyComparison);
+                        // remediation.ImpactAnalysis = impact;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.WriteError($"Failed to perform impact analysis for policy '{remediation.PolicyName}': {ex.Message}");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Executes the appropriate remediation workflow based on the specified mode.
+        /// </summary>
+        /// <param name="remediationResults">Results to process</param>
+        /// <param name="scriptGenerationService">Service for generating scripts</param>
+        /// <param name="analysisOnly">If true, only generates analysis reports</param>
+        /// <param name="interactive">If true, enables interactive mode</param>
+        /// <param name="scriptFormat">Format for generated scripts</param>
+        /// <param name="outputDir">Directory for output files</param>
+        /// <param name="dryRun">If true, generates scripts in dry-run mode</param>
+        /// <param name="backup">If true, includes backup functionality</param>
+        /// <returns>Exit code: 0 for success, 1 for failure</returns>
+        private static async Task<int> ExecuteRemediationWorkflowAsync(
+            List<RemediationResult> remediationResults,
+            ScriptGenerationService scriptGenerationService,
+            bool analysisOnly,
+            bool interactive,
+            string scriptFormat,
+            string outputDir,
+            bool dryRun,
+            bool backup)
+        {
+            // Interactive mode
+            if (interactive)
+            {
+                await RunInteractiveRemediationAsync(remediationResults, scriptGenerationService, scriptFormat, outputDir, dryRun, backup);
+                return 0;
+            }
+
+            // Analysis only mode
+            if (analysisOnly)
+            {
+                await GenerateAnalysisReportAsync(remediationResults, outputDir);
+                Logger.WriteInfo($"Analysis report generated in: {outputDir}");
+                return 0;
+            }
+
+            // Generate remediation scripts
+            Logger.WriteInfo($"Generating {scriptFormat} remediation scripts...");
+            await GenerateRemediationScriptsAsync(remediationResults, scriptGenerationService, scriptFormat, outputDir, dryRun, backup);
+
+            Logger.WriteInfo($"Remediation analysis and scripts generated successfully in: {outputDir}");
+            return 0;
         }
 
         private static async Task RunInteractiveRemediationAsync(
