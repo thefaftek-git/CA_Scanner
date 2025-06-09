@@ -138,22 +138,45 @@ namespace ConditionalAccessExporter.Services
                 return Models.RiskLevel.Low;
 
             var maxRisk = Models.RiskLevel.Low;
-            var diffJson = JsonConvert.SerializeObject(differences);
-            var diffObject = JObject.Parse(diffJson);
 
-            foreach (var property in diffObject.Properties())
+            // Try to process differences directly without JSON serialization
+            if (differences is IDictionary<string, object> diffDictionary)
             {
-                var fieldPath = property.Name.ToLowerInvariant();
-                
-                // Check if this field has a defined risk level
-                var fieldRisk = _riskConfig.FieldRiskLevels
-                    .Where(kvp => fieldPath.Contains(kvp.Key.ToLowerInvariant()))
-                    .Select(kvp => kvp.Value)
-                    .DefaultIfEmpty(Models.RiskLevel.Low)
-                    .Max();
+                foreach (var kvp in diffDictionary)
+                {
+                    var fieldPath = kvp.Key.ToLowerInvariant();
+                    
+                    // Check if this field has a defined risk level
+                    var fieldRisk = _riskConfig.FieldRiskLevels
+                        .Where(kvp => fieldPath.Contains(kvp.Key.ToLowerInvariant()))
+                        .Select(kvp => kvp.Value)
+                        .DefaultIfEmpty(Models.RiskLevel.Low)
+                        .Max();
 
-                if (fieldRisk > maxRisk)
-                    maxRisk = fieldRisk;
+                    if (fieldRisk > maxRisk)
+                        maxRisk = fieldRisk;
+                }
+            }
+            else
+            {
+                // Fallback to JSON serialization for other types
+                var diffJson = JsonConvert.SerializeObject(differences);
+                var diffObject = JObject.Parse(diffJson);
+
+                foreach (var property in diffObject.Properties())
+                {
+                    var fieldPath = property.Name.ToLowerInvariant();
+                    
+                    // Check if this field has a defined risk level
+                    var fieldRisk = _riskConfig.FieldRiskLevels
+                        .Where(kvp => fieldPath.Contains(kvp.Key.ToLowerInvariant()))
+                        .Select(kvp => kvp.Value)
+                        .DefaultIfEmpty(Models.RiskLevel.Low)
+                        .Max();
+
+                    if (fieldRisk > maxRisk)
+                        maxRisk = fieldRisk;
+                }
             }
 
             return maxRisk;
