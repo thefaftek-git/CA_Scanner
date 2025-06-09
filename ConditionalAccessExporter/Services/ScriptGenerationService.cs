@@ -133,27 +133,28 @@ namespace ConditionalAccessExporter.Services
         {
             return remediation.Action switch
             {
-                RemediationAction.Create => GenerateTerraformCreatePolicy(remediation.PolicyId, remediation.PolicyName),
-                RemediationAction.Update => GenerateTerraformUpdatePolicy(remediation.PolicyId, remediation.PolicyName),
+                RemediationAction.Create => GenerateTerraformCreatePolicy(remediation.PolicyId, remediation.PolicyName, step.Description),
+                RemediationAction.Update => GenerateTerraformUpdatePolicy(remediation.PolicyId, remediation.PolicyName, step.Description),
                 RemediationAction.Delete => $"# Remove resource: azuread_conditional_access_policy.policy_{remediation.PolicyId.Replace("-", "_")}",
                 RemediationAction.NoAction => $"# No action required: {step.Description}",
                 _ => $"# TODO: Implement action type {remediation.Action}"
             };
         }
         
-        private string GenerateTerraformCreatePolicy(string policyId, string policyName)
+        private string GenerateTerraformCreatePolicy(string policyId, string policyName, string stepDescription)
         {
-            return GenerateTerraformPolicy(policyId, policyName);
+            return GenerateTerraformPolicy(policyId, policyName, stepDescription);
         }
         
-        private string GenerateTerraformUpdatePolicy(string policyId, string policyName)
+        private string GenerateTerraformUpdatePolicy(string policyId, string policyName, string stepDescription)
         {
-            return GenerateTerraformPolicy(policyId, policyName);
+            return GenerateTerraformPolicy(policyId, policyName, stepDescription);
         }
         
-        private string GenerateTerraformPolicy(string policyId, string policyName)
+        private string GenerateTerraformPolicy(string policyId, string policyName, string stepDescription)
         {
-            return $@"resource ""azuread_conditional_access_policy"" ""policy_{policyId.Replace("-", "_")}"" {{
+            return $@"# {stepDescription}
+resource ""azuread_conditional_access_policy"" ""policy_{policyId.Replace("-", "_")}"" {{
   display_name = ""{policyName}""
   state        = ""enabled""
 }}";

@@ -1846,24 +1846,19 @@ namespace ConditionalAccessExporter
                     .SelectMany(r => r.PolicyRemediations)
                     .GroupBy(r => r.RiskLevel)
                     .ToDictionary(g => g.Key.ToString(), g => g.Count()),
-                PolicyAnalysis = results.Select(r => new
+                PolicyAnalysis = results.SelectMany(r => r.PolicyRemediations.Select(rem => new
                 {
-                    PolicyName = "Remediation Analysis", // Generic name since PolicyId doesn't exist in RemediationResult
-                    PolicyId = r.TenantId, // Use TenantId since PolicyId doesn't exist
-                    RemediationCount = r.PolicyRemediations.Count,
-                    Remediations = r.PolicyRemediations.Select(rem => new
+                    PolicyName = rem.PolicyName, // Use actual PolicyName from PolicyRemediations
+                    PolicyId = rem.PolicyId, // Use actual PolicyId from PolicyRemediations
+                    Action = rem.Action.ToString(),
+                    RiskLevel = rem.RiskLevel.ToString(),
+                    ActionCount = rem.Steps.Count,
+                    ImpactAnalysis = rem.Impact != null ? new
                     {
-                        PolicyName = rem.PolicyName,
-                        Action = rem.Action.ToString(),
-                        RiskLevel = rem.RiskLevel.ToString(),
-                        ActionCount = rem.Steps.Count,
-                        ImpactAnalysis = rem.Impact != null ? new
-                        {
-                            EstimatedUserImpact = rem.Impact.EstimatedAffectedUsers,
-                            ImpactDescription = rem.Impact.ImpactDescription
-                        } : null
-                    })
-                })
+                        EstimatedUserImpact = rem.Impact.EstimatedAffectedUsers,
+                        ImpactDescription = rem.Impact.ImpactDescription
+                    } : null
+                }))
             };
 
             var reportPath = Path.Combine(outputDir, $"remediation-analysis-{DateTime.UtcNow:yyyyMMdd-HHmmss}.json");
