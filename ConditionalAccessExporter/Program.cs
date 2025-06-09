@@ -6,6 +6,7 @@ using System.Text;
 using System.CommandLine;
 using ConditionalAccessExporter.Models;
 using ConditionalAccessExporter.Services;
+using ConditionalAccessExporter.Utils;
 
 namespace ConditionalAccessExporter
 {
@@ -1691,6 +1692,13 @@ namespace ConditionalAccessExporter
                 // Fetch current policies
                 Logger.WriteInfo("Fetching current Conditional Access policies...");
                 var policiesResult = await FetchEntraPoliciesAsync();
+                
+                if (policiesResult == null)
+                {
+                    Logger.WriteError("Failed to fetch policies from Microsoft Graph API.");
+                    return 1;
+                }
+                
                 var policies = JsonConvert.DeserializeObject<List<ConditionalAccessPolicy>>(JsonConvert.SerializeObject(policiesResult));
 
                 if (policies == null || !policies.Any())
@@ -1706,10 +1714,18 @@ namespace ConditionalAccessExporter
                 
                 foreach (var policy in policies)
                 {
-                    var result = await remediationService.AnalyzePolicyAsync(policy);
-                    if (result.PolicyRemediations.Any())
+                    try
                     {
-                        remediationResults.Add(result);
+                        var result = await remediationService.AnalyzePolicyAsync(policy);
+                        if (result.PolicyRemediations.Any())
+                        {
+                            remediationResults.Add(result);
+                        }
+                    }
+                    catch (Exception policyEx)
+                    {
+                        Logger.WriteError($"Failed to analyze policy '{policy.DisplayName}': {policyEx.Message}");
+                        // Continue with other policies rather than failing completely
                     }
                 }
 
@@ -1878,32 +1894,41 @@ namespace ConditionalAccessExporter
             string outputDir,
             bool dryRun)
         {
-            string script = scriptFormat.ToLower() switch
+            try
             {
-                "powershell" => scriptService.GeneratePowerShellScript(remediation),
-                "azurecli" => scriptService.GenerateAzureCliScript(remediation),
-                "terraform" => scriptService.GenerateTerraformScript(remediation),
-                _ => scriptService.GeneratePowerShellScript(remediation)
-            };
+                string script = scriptFormat.ToLower() switch
+                {
+                    "powershell" => scriptService.GeneratePowerShellScript(remediation),
+                    "azurecli" => scriptService.GenerateAzureCliScript(remediation),
+                    "terraform" => scriptService.GenerateTerraformScript(remediation),
+                    _ => scriptService.GeneratePowerShellScript(remediation)
+                };
 
-            var extension = scriptFormat.ToLower() switch
-            {
-                "powershell" => "ps1",
-                "azurecli" => "sh",
-                "terraform" => "tf",
-                _ => "ps1"
-            };
+                var extension = scriptFormat.ToLower() switch
+                {
+                    "powershell" => "ps1",
+                    "azurecli" => "sh",
+                    "terraform" => "tf",
+                    _ => "ps1"
+                };
 
-            var sanitizedPolicyName = SanitizeFileName(remediation.PolicyName);
-            var fileName = $"remediate-{sanitizedPolicyName}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.{extension}";
-            var scriptPath = Path.Combine(outputDir, fileName);
+                var sanitizedPolicyName = FileHelper.SanitizeFileName(remediation.PolicyName);
+                var fileName = $"remediate-{sanitizedPolicyName}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.{extension}";
+                var scriptPath = Path.Combine(outputDir, fileName);
 
-            if (dryRun)
-            {
-                script = $"# DRY RUN MODE - NO CHANGES WILL BE APPLIED\n# Remove this comment and the exit statement to execute\nexit 0\n\n{script}";
+                if (dryRun)
+                {
+                    script = $"# DRY RUN MODE - NO CHANGES WILL BE APPLIED\n# Remove this comment and the exit statement to execute\nexit 0\n\n{script}";
+                }
+
+                await File.WriteAllTextAsync(scriptPath, script);
+                Logger.WriteInfo($"Generated script: {scriptPath}");
             }
-
-            await File.WriteAllTextAsync(scriptPath, script);
+            catch (Exception ex)
+            {
+                Logger.WriteError($"Failed to generate remediation script for policy '{remediation.PolicyName}': {ex.Message}");
+                throw;
+            }
         }
 
         private static async Task HandleExceptionAsync(Exception ex)
@@ -1932,38 +1957,6 @@ namespace ConditionalAccessExporter
             
             Logger.WriteInfo($"Stack trace: {ex.StackTrace}");
         }
-        
-        private static string SanitizeFileName(string fileName)
-        {
-            if (string.IsNullOrWhiteSpace(fileName))
-                return "unnamed";
-                
-            // Get invalid characters for file names
-            var invalidChars = Path.GetInvalidFileNameChars();
-            
-            // Replace invalid characters with underscores
-            var sanitized = new StringBuilder();
-            foreach (char c in fileName)
-            {
-                if (invalidChars.Contains(c))
-                    sanitized.Append('_');
-                else
-                    sanitized.Append(c);
-            }
-            
-            // Replace multiple consecutive underscores with single underscore
-            var result = sanitized.ToString();
-            while (result.Contains("__"))
-                result = result.Replace("__", "_");
-                
-            // Trim underscores from start and end
-            result = result.Trim('_');
-            
-            // Ensure we have a valid filename
-            if (string.IsNullOrWhiteSpace(result))
-                return "unnamed";
-                
-            return result;
-        }
+
     }
 }
