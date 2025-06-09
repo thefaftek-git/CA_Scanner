@@ -3,7 +3,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace ConditionalAccessExporter.Utils
 {
@@ -34,8 +33,25 @@ namespace ConditionalAccessExporter.Utils
             }
             
             // Replace multiple consecutive underscores with single underscore
-            var result = sanitized.ToString();
-            result = Regex.Replace(result, "_{2,}", "_");
+            var collapsed = new StringBuilder();
+            bool lastWasUnderscore = false;
+            foreach (char c in sanitized.ToString())
+            {
+                if (c == '_')
+                {
+                    if (!lastWasUnderscore)
+                    {
+                        collapsed.Append(c);
+                    }
+                    lastWasUnderscore = true;
+                }
+                else
+                {
+                    collapsed.Append(c);
+                    lastWasUnderscore = false;
+                }
+            }
+            var result = collapsed.ToString();
                 
             // Trim underscores from start and end
             result = result.Trim('_');
