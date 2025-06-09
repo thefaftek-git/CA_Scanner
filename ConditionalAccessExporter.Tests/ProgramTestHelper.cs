@@ -173,6 +173,34 @@ namespace ConditionalAccessExporter.Tests
         }
 
         /// <summary>
+        /// Invokes the private static RemediatePoliciesAsync method in Program class
+        /// </summary>
+        public static async Task<int> InvokeRemediatePoliciesAsync(
+            bool analysisOnly,
+            bool interactive,
+            string riskLevel,
+            string scriptFormat,
+            string outputDir,
+            bool includeImpactAnalysis,
+            bool dryRun,
+            bool backup)
+        {
+            var method = GetPrivateMethod("RemediatePoliciesAsync");
+            
+            var result = await (Task<int>)method.Invoke(null, new object[] {
+                analysisOnly,
+                interactive,
+                riskLevel,
+                scriptFormat,
+                outputDir,
+                includeImpactAnalysis,
+                dryRun,
+                backup
+            });
+            return result;
+        }
+
+        /// <summary>
         /// Capture console output to a string
         /// </summary>
         public static string CaptureConsoleOutput(Action action)
