@@ -1440,21 +1440,11 @@ namespace ConditionalAccessExporter
 
         private static string[] ProcessReportFormats(string[] reportFormats)
         {
-            var processedFormats = new List<string>();
-            foreach (var format in reportFormats)
-            {
-                if (format.Contains(','))
-                {
-                    // Split comma-separated values
-                    var splitFormats = ProcessCommaSeparatedValues(format)
-                        .Select(f => f.ToLowerInvariant());
-                    processedFormats.AddRange(splitFormats);
-                }
-                else
-                {
-                    processedFormats.Add(format.Trim().ToLowerInvariant());
-                }
-            }
+            // Use existing comma-separated splitting helper to eliminate code duplication
+            var processedFormats = ProcessCommaSeparatedArray(reportFormats)
+                .Select(f => f.ToLowerInvariant())
+                .ToList();
+            
             return processedFormats.Distinct().ToArray();
         }
 
