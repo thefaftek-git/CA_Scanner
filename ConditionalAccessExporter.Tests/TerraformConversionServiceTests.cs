@@ -21,13 +21,13 @@ namespace ConditionalAccessExporter.Tests
         #region Test Case 1.1: Single Fully Populated Policy
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_SingleFullyPopulatedPolicy_ShouldConvertSuccessfully()
+        public void ConvertToGraphJsonAsync_SingleFullyPopulatedPolicy_ShouldConvertSuccessfully()
         {
             // Arrange
             var parseResult = CreateFullyPopulatedTerraformParseResult();
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.NotNull(result);
@@ -65,13 +65,13 @@ namespace ConditionalAccessExporter.Tests
         #region Test Case 1.2: Multiple Policies
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_MultiplePolicies_ShouldConvertAll()
+        public void ConvertToGraphJsonAsync_MultiplePolicies_ShouldConvertAll()
         {
             // Arrange
             var parseResult = CreateTerraformParseResultWithMultiplePolicies();
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.NotNull(result);
@@ -91,7 +91,7 @@ namespace ConditionalAccessExporter.Tests
         #region Test Case 1.3: Empty Policies List
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_EmptyPoliciesList_ShouldReturnEmptyList()
+        public void ConvertToGraphJsonAsync_EmptyPoliciesList_ShouldReturnEmptyList()
         {
             // Arrange
             var parseResult = new TerraformParseResult
@@ -104,7 +104,7 @@ namespace ConditionalAccessExporter.Tests
             };
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.NotNull(result);
@@ -124,7 +124,7 @@ namespace ConditionalAccessExporter.Tests
         #region Test Case 1.4: Minimal Required Fields
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_MinimalRequiredFields_ShouldConvertWithDefaults()
+        public void ConvertToGraphJsonAsync_MinimalRequiredFields_ShouldConvertWithDefaults()
         {
             // Arrange
             var parseResult = new TerraformParseResult
@@ -146,7 +146,7 @@ namespace ConditionalAccessExporter.Tests
             };
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.NotNull(result);
@@ -169,13 +169,13 @@ namespace ConditionalAccessExporter.Tests
         #region Test Case 1.5: Conditions Mapping Tests
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_ApplicationsConditions_ShouldMapCorrectly()
+        public void ConvertToGraphJsonAsync_ApplicationsConditions_ShouldMapCorrectly()
         {
             // Arrange
             var parseResult = CreateTerraformParseResultWithApplicationsConditions();
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -201,13 +201,13 @@ namespace ConditionalAccessExporter.Tests
         }
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_UsersConditions_ShouldMapCorrectly()
+        public void ConvertToGraphJsonAsync_UsersConditions_ShouldMapCorrectly()
         {
             // Arrange
             var parseResult = CreateTerraformParseResultWithUsersConditions();
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -238,13 +238,13 @@ namespace ConditionalAccessExporter.Tests
         }
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_ClientAppTypes_ShouldMapCorrectly()
+        public void ConvertToGraphJsonAsync_ClientAppTypes_ShouldMapCorrectly()
         {
             // Arrange
             var parseResult = CreateTerraformParseResultWithClientAppTypes();
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -261,13 +261,13 @@ namespace ConditionalAccessExporter.Tests
         }
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_PlatformsConditions_ShouldMapCorrectly()
+        public void ConvertToGraphJsonAsync_PlatformsConditions_ShouldMapCorrectly()
         {
             // Arrange
             var parseResult = CreateTerraformParseResultWithPlatformsConditions();
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -288,13 +288,13 @@ namespace ConditionalAccessExporter.Tests
         }
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_LocationsConditions_ShouldMapCorrectly()
+        public void ConvertToGraphJsonAsync_LocationsConditions_ShouldMapCorrectly()
         {
             // Arrange
             var parseResult = CreateTerraformParseResultWithLocationsConditions();
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -313,13 +313,13 @@ namespace ConditionalAccessExporter.Tests
         }
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_RiskLevels_ShouldMapCorrectly()
+        public void ConvertToGraphJsonAsync_RiskLevels_ShouldMapCorrectly()
         {
             // Arrange
             var parseResult = CreateTerraformParseResultWithRiskLevels();
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -338,13 +338,13 @@ namespace ConditionalAccessExporter.Tests
         }
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_ClientApplicationsConditions_ShouldMapCorrectly()
+        public void ConvertToGraphJsonAsync_ClientApplicationsConditions_ShouldMapCorrectly()
         {
             // Arrange
             var parseResult = CreateTerraformParseResultWithClientApplicationsConditions();
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -367,13 +367,13 @@ namespace ConditionalAccessExporter.Tests
         #region Test Case 1.6: Grant Controls Mapping
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_GrantControls_ShouldMapCorrectly()
+        public void ConvertToGraphJsonAsync_GrantControls_ShouldMapCorrectly()
         {
             // Arrange
             var parseResult = CreateTerraformParseResultWithGrantControls();
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -407,13 +407,13 @@ namespace ConditionalAccessExporter.Tests
         #region Test Case 1.7: Session Controls Mapping
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_SessionControls_ShouldMapCorrectly()
+        public void ConvertToGraphJsonAsync_SessionControls_ShouldMapCorrectly()
         {
             // Arrange
             var parseResult = CreateTerraformParseResultWithSessionControls();
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -452,7 +452,7 @@ namespace ConditionalAccessExporter.Tests
         [InlineData("enabledForReportingButNotEnforced", "enabledForReportingButNotEnforced")]
         [InlineData(null, "disabled")]
         [InlineData("invalid", "disabled")]
-        public async Task ConvertToGraphJsonAsync_DifferentStates_ShouldMapCorrectly(string? terraformState, string expectedState)
+        public void ConvertToGraphJsonAsync_DifferentStates_ShouldMapCorrectly(string? terraformState, string expectedState)
         {
             // Arrange
             var parseResult = new TerraformParseResult
@@ -473,7 +473,7 @@ namespace ConditionalAccessExporter.Tests
             };
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -490,7 +490,7 @@ namespace ConditionalAccessExporter.Tests
         #region Test Case 1.9: Null Handling
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_NullNestedObjects_ShouldHandleGracefully()
+        public void ConvertToGraphJsonAsync_NullNestedObjects_ShouldHandleGracefully()
         {
             // Arrange
             var parseResult = new TerraformParseResult
@@ -514,7 +514,7 @@ namespace ConditionalAccessExporter.Tests
             };
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -534,7 +534,7 @@ namespace ConditionalAccessExporter.Tests
         #region Test Case 1.10: Error Handling
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_PolicyConversionFailure_ShouldContinueWithOthers()
+        public void ConvertToGraphJsonAsync_PolicyConversionFailure_ShouldContinueWithOthers()
         {
             // Arrange - Create a scenario that might cause conversion issues
             var parseResult = new TerraformParseResult
@@ -563,7 +563,7 @@ namespace ConditionalAccessExporter.Tests
             };
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.NotNull(result);
@@ -577,7 +577,7 @@ namespace ConditionalAccessExporter.Tests
         #region Test Case 1.11: Variable and Local Resolution
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_VariableResolution_ShouldResolveCorrectly()
+        public void ConvertToGraphJsonAsync_VariableResolution_ShouldResolveCorrectly()
         {
             // Arrange
             var parseResult = new TerraformParseResult
@@ -622,7 +622,7 @@ namespace ConditionalAccessExporter.Tests
             };
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -638,7 +638,7 @@ namespace ConditionalAccessExporter.Tests
         }
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_LocalResolution_ShouldResolveCorrectly()
+        public void ConvertToGraphJsonAsync_LocalResolution_ShouldResolveCorrectly()
         {
             // Arrange
             var parseResult = new TerraformParseResult
@@ -666,7 +666,7 @@ namespace ConditionalAccessExporter.Tests
             };
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -680,7 +680,7 @@ namespace ConditionalAccessExporter.Tests
         }
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_UnresolvedVariables_ShouldGenerateWarnings()
+        public void ConvertToGraphJsonAsync_UnresolvedVariables_ShouldGenerateWarnings()
         {
             // Arrange
             var parseResult = new TerraformParseResult
@@ -701,7 +701,7 @@ namespace ConditionalAccessExporter.Tests
             };
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -709,7 +709,7 @@ namespace ConditionalAccessExporter.Tests
         }
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_DataSourceReferences_ShouldGenerateWarnings()
+        public void ConvertToGraphJsonAsync_DataSourceReferences_ShouldGenerateWarnings()
         {
             // Arrange
             var parseResult = new TerraformParseResult
@@ -730,7 +730,7 @@ namespace ConditionalAccessExporter.Tests
             };
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -742,7 +742,7 @@ namespace ConditionalAccessExporter.Tests
         #region Test Case 1.12: Special Terraform Values
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_SpecialValues_ShouldMapCorrectly()
+        public void ConvertToGraphJsonAsync_SpecialValues_ShouldMapCorrectly()
         {
             // Arrange
             var parseResult = new TerraformParseResult
@@ -775,7 +775,7 @@ namespace ConditionalAccessExporter.Tests
             };
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.Equal(1, result.SuccessfulConversions);
@@ -794,13 +794,13 @@ namespace ConditionalAccessExporter.Tests
         #region General Assertions Tests
 
         [Fact]
-        public async Task ConvertToGraphJsonAsync_GeneralStructure_ShouldBeCorrect()
+        public void ConvertToGraphJsonAsync_GeneralStructure_ShouldBeCorrect()
         {
             // Arrange
             var parseResult = CreateFullyPopulatedTerraformParseResult();
 
             // Act
-            var result = await _conversionService.ConvertToGraphJsonAsync(parseResult);
+            var result = _conversionService.ConvertToGraphJson(parseResult);
 
             // Assert
             Assert.True(result.ConvertedAt > DateTime.MinValue);

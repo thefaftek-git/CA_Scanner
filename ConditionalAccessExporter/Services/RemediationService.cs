@@ -41,7 +41,7 @@ namespace ConditionalAccessExporter.Services
             // Generate backup if requested
             if (options.GenerateBackup)
             {
-                remediationResult.BackupInfo = await GenerateBackupAsync(options.OutputDirectory);
+                remediationResult.BackupInfo = GenerateBackup(options.OutputDirectory);
             }
 
             // Process each policy comparison to create remediation actions
@@ -61,7 +61,7 @@ namespace ConditionalAccessExporter.Services
             remediationResult.Summary = CalculateRemediationSummary(remediationResult.PolicyRemediations);
 
             // Generate scripts for each format
-            await GenerateRemediationScriptsAsync(remediationResult, options);
+            GenerateRemediationScripts(remediationResult, options);
 
             Logger.WriteInfo($"Generated remediation plan for {remediationResult.PolicyRemediations.Count} policies");
             
@@ -312,19 +312,19 @@ namespace ConditionalAccessExporter.Services
             };
         }
 
-        private async Task GenerateRemediationScriptsAsync(RemediationResult result, RemediationOptions options)
+        private void GenerateRemediationScripts(RemediationResult result, RemediationOptions options)
         {
             foreach (var format in options.OutputFormats)
             {
                 foreach (var remediation in result.PolicyRemediations)
                 {
-                    var script = await _scriptGenerationService.GenerateScriptAsync(remediation, format, options);
+                    var script = _scriptGenerationService.GenerateScript(remediation, format, options);
                     remediation.GeneratedScripts[format] = script.Script;
                 }
             }
         }
 
-        public async Task<RemediationResult> AnalyzePolicyAsync(ConditionalAccessPolicy policy)
+        public RemediationResult AnalyzePolicy(ConditionalAccessPolicy policy)
         {
             var result = new RemediationResult
             {
@@ -346,7 +346,7 @@ namespace ConditionalAccessExporter.Services
             return result;
         }
 
-        private async Task<BackupInfo> GenerateBackupAsync(string outputDirectory)
+        private BackupInfo GenerateBackup(string outputDirectory)
         {
             var backupDir = Path.Combine(outputDirectory, "backups", DateTime.UtcNow.ToString("yyyyMMdd_HHmmss"));
             Directory.CreateDirectory(backupDir);
@@ -360,7 +360,7 @@ namespace ConditionalAccessExporter.Services
             };
         }
 
-        public async Task<InteractiveSession> StartInteractiveSessionAsync(RemediationResult result)
+        public InteractiveSession StartInteractiveSession(RemediationResult result)
         {
             var session = new InteractiveSession
             {
@@ -373,7 +373,7 @@ namespace ConditionalAccessExporter.Services
             return session;
         }
 
-        public async Task<UserDecision> PromptUserDecisionAsync(PolicyRemediation remediation)
+        public UserDecision PromptUserDecision(PolicyRemediation remediation)
         {
             Console.WriteLine();
             Console.WriteLine($"=== Policy Remediation Required ===");

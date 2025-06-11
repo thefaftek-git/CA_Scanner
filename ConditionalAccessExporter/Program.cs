@@ -539,7 +539,7 @@ namespace ConditionalAccessExporter
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(ex);
+                HandleException(ex);
                 return 1;
             }
         }
@@ -626,7 +626,7 @@ namespace ConditionalAccessExporter
 
                 // Convert to Graph JSON format
                 Logger.WriteInfo("Converting to Microsoft Graph JSON format...");
-                var conversionResult = await conversionService.ConvertToGraphJsonAsync(parseResult);
+                var conversionResult = conversionService.ConvertToGraphJson(parseResult);
 
                 if (conversionResult.Errors.Any())
                 {
@@ -685,7 +685,7 @@ namespace ConditionalAccessExporter
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(ex);
+                HandleException(ex);
                 return 1;
             }
         }
@@ -796,7 +796,7 @@ namespace ConditionalAccessExporter
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(ex);
+                HandleException(ex);
                 return 1;
             }
         }
@@ -909,7 +909,7 @@ namespace ConditionalAccessExporter
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(ex);
+                HandleException(ex);
                 return 1;
             }
         }
@@ -1104,7 +1104,7 @@ namespace ConditionalAccessExporter
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(ex);
+                HandleException(ex);
                 return (int)ExitCode.Error;
             }
         }
@@ -1392,7 +1392,7 @@ namespace ConditionalAccessExporter
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(ex);
+                HandleException(ex);
                 return 1;
             }
         }
@@ -1502,7 +1502,7 @@ namespace ConditionalAccessExporter
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(ex);
+                HandleException(ex);
                 return 1;
             }
         }
@@ -1638,7 +1638,7 @@ namespace ConditionalAccessExporter
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(ex);
+                HandleException(ex);
                 return 1;
             }
         }
@@ -1672,7 +1672,7 @@ namespace ConditionalAccessExporter
                 Logger.WriteInfo("Starting Conditional Access Policy remediation analysis...");
 
                 // Initialize environment and services
-                var services = await InitializeRemediationServicesAsync(outputDir);
+                var services = InitializeRemediationServices(outputDir);
                 if (services == null)
                 {
                     return 1;
@@ -1692,7 +1692,7 @@ namespace ConditionalAccessExporter
                 }
 
                 // Analyze policies for remediation opportunities
-                var remediationResults = await AnalyzePoliciesForRemediationAsync(policies, services.RemediationService);
+                var remediationResults = AnalyzePoliciesForRemediation(policies, services.RemediationService);
                 if (!remediationResults.Any())
                 {
                     Logger.WriteInfo("No remediations found during analysis.");
@@ -1710,7 +1710,7 @@ namespace ConditionalAccessExporter
                 // Perform impact analysis if requested
                 if (includeImpactAnalysis)
                 {
-                    await PerformImpactAnalysisAsync(filteredResults, services.ImpactAnalysisService);
+                    PerformImpactAnalysis(filteredResults, services.ImpactAnalysisService);
                 }
 
                 // Execute the appropriate workflow based on mode
@@ -1726,7 +1726,7 @@ namespace ConditionalAccessExporter
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(ex);
+                HandleException(ex);
                 return 1;
             }
         }
@@ -1746,7 +1746,7 @@ namespace ConditionalAccessExporter
         /// </summary>
         /// <param name="outputDir">Output directory to create</param>
         /// <returns>RemediationServices instance or null if initialization fails</returns>
-        private static async Task<RemediationServices?> InitializeRemediationServicesAsync(string outputDir)
+        private static RemediationServices? InitializeRemediationServices(string outputDir)
         {
             try
             {
@@ -1827,7 +1827,7 @@ namespace ConditionalAccessExporter
         /// <param name="policies">Policies to analyze</param>
         /// <param name="remediationService">Service to perform the analysis</param>
         /// <returns>List of RemediationResult objects containing identified remediations</returns>
-        private static async Task<List<RemediationResult>> AnalyzePoliciesForRemediationAsync(
+        private static List<RemediationResult> AnalyzePoliciesForRemediation(
             List<ConditionalAccessPolicy> policies,
             RemediationService remediationService)
         {
@@ -1837,7 +1837,7 @@ namespace ConditionalAccessExporter
             {
                 try
                 {
-                    var result = await remediationService.AnalyzePolicyAsync(policy);
+                    var result = remediationService.AnalyzePolicy(policy);
                     if (result.PolicyRemediations.Any())
                     {
                         remediationResults.Add(result);
@@ -1886,7 +1886,7 @@ namespace ConditionalAccessExporter
         /// </summary>
         /// <param name="remediationResults">Results to analyze for impact</param>
         /// <param name="impactAnalysisService">Service to perform impact analysis</param>
-        private static async Task PerformImpactAnalysisAsync(
+        private static void PerformImpactAnalysis(
             List<RemediationResult> remediationResults,
             ImpactAnalysisService impactAnalysisService)
         {
@@ -2091,7 +2091,7 @@ namespace ConditionalAccessExporter
             }
         }
 
-        private static async Task HandleExceptionAsync(Exception ex)
+        private static void HandleException(Exception ex)
         {
             Logger.WriteInfo($"Error: {ex.Message}");
             

@@ -93,7 +93,7 @@ namespace ConditionalAccessExporter.Services
             Console.WriteLine($"Found {referencePolicies.Count} reference policy files");
 
             // Perform comparison
-            await PerformComparisonAsync(result, entraData.Policies, referencePolicies, matchingOptions);
+            PerformComparison(result, entraData.Policies, referencePolicies, matchingOptions);
 
             return result;
         }
@@ -275,7 +275,7 @@ namespace ConditionalAccessExporter.Services
             return policies;
         }
 
-        private async Task PerformComparisonAsync(
+        private void PerformComparison(
             ComparisonResult result,
             List<JObject> entraPolicies,
             Dictionary<string, ReferencePolicy> referencePolicies,
@@ -286,7 +286,7 @@ namespace ConditionalAccessExporter.Services
             // Compare each Entra policy
             foreach (var entraPolicy in entraPolicies)
             {
-                var comparison = await CompareEntraPolicyAsync(entraPolicy, referencePolicies, matchingOptions);
+                var comparison = CompareEntraPolicy(entraPolicy, referencePolicies, matchingOptions);
                 result.PolicyComparisons.Add(comparison);
 
                 if (comparison.ReferenceFileName != null)
@@ -327,7 +327,7 @@ namespace ConditionalAccessExporter.Services
             }
         }
 
-        private async Task<PolicyComparison> CompareEntraPolicyAsync(
+        private PolicyComparison CompareEntraPolicy(
             JObject entraPolicy,
             Dictionary<string, ReferencePolicy> referencePolicies,
             MatchingOptions matchingOptions)
