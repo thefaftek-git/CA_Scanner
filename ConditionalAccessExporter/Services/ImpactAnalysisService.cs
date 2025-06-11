@@ -106,7 +106,7 @@ namespace ConditionalAccessExporter.Services
             {
                 foreach (var roleId in userConditions.IncludeRoles)
                 {
-                    var roleSize = await GetRoleAssignmentCountAsync(roleId);
+                    var roleSize = GetRoleAssignmentCount(roleId);
                     affectedUserCount += roleSize;
                     impact.AffectedUserGroups.Add($"Role: {roleId}");
                 }
@@ -391,7 +391,7 @@ namespace ConditionalAccessExporter.Services
             }
         }
 
-        private async Task<int> GetRoleAssignmentCountAsync(string roleId)
+        private int GetRoleAssignmentCount(string roleId)
         {
             if (_graphServiceClient == null)
                 return 10; // Default estimate

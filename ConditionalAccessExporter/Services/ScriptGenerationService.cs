@@ -11,7 +11,7 @@ namespace ConditionalAccessExporter.Services
 {
     public class ScriptGenerationService
     {
-        public async Task<ScriptGenerationResult> GenerateScriptAsync(PolicyRemediation remediation, RemediationFormat format, RemediationOptions options)
+        public ScriptGenerationResult GenerateScript(PolicyRemediation remediation, RemediationFormat format, RemediationOptions options)
         {
             var result = new ScriptGenerationResult
             {

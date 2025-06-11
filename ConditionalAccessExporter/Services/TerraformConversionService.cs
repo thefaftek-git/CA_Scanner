@@ -9,7 +9,7 @@ namespace ConditionalAccessExporter.Services
         private readonly List<string> _errors = new();
         private readonly List<string> _warnings = new();
 
-        public async Task<TerraformConversionResult> ConvertToGraphJsonAsync(TerraformParseResult parseResult)
+        public TerraformConversionResult ConvertToGraphJson(TerraformParseResult parseResult)
         {
             var result = new TerraformConversionResult
             {
@@ -71,7 +71,7 @@ namespace ConditionalAccessExporter.Services
             result.Errors = _errors;
             result.Warnings = _warnings;
 
-            return await Task.FromResult(result);
+            return result;
         }
 
         private object ConvertPolicyToGraphFormat(TerraformConditionalAccessPolicy terraformPolicy, TerraformParseResult parseResult)
@@ -402,7 +402,7 @@ namespace ConditionalAccessExporter.Services
             return guid.ToString();
         }
 
-        public async Task<bool> ValidateConvertedPolicyAsync(object policy)
+        public bool ValidateConvertedPolicy(object policy)
         {
             try
             {

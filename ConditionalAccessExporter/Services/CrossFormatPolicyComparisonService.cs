@@ -35,8 +35,8 @@ namespace ConditionalAccessExporter.Services
                 ComparedAt = DateTime.UtcNow,
                 SourceDirectory = sourceDirectory,
                 ReferenceDirectory = referenceDirectory,
-                SourceFormat = await DetectFormatAsync(sourceDirectory),
-                ReferenceFormat = await DetectFormatAsync(referenceDirectory)
+                SourceFormat = DetectFormat(sourceDirectory),
+                ReferenceFormat = DetectFormat(referenceDirectory)
             };
 
             // Load and normalize source policies
@@ -50,7 +50,7 @@ namespace ConditionalAccessExporter.Services
             Console.WriteLine($"Found {sourcePolicies.Count} source policies ({result.SourceFormat}) and {referencePolicies.Count} reference policies ({result.ReferenceFormat})");
 
             // Perform cross-format comparison
-            await PerformCrossFormatComparisonAsync(result, sourcePolicies, referencePolicies, matchingOptions);
+            PerformCrossFormatComparison(result, sourcePolicies, referencePolicies, matchingOptions);
 
             return result;
         }
@@ -78,12 +78,12 @@ namespace ConditionalAccessExporter.Services
             result.Summary.TotalReferencePolicies = referencePolicies.Count;
 
             // Perform comparison
-            await PerformCrossFormatComparisonAsync(result, sourcePolicies, referencePolicies, matchingOptions);
+            PerformCrossFormatComparison(result, sourcePolicies, referencePolicies, matchingOptions);
 
             return result;
         }
 
-        private async Task<PolicyFormat> DetectFormatAsync(string directory)
+        private PolicyFormat DetectFormat(string directory)
         {
             if (!Directory.Exists(directory))
                 return PolicyFormat.Unknown;
@@ -462,7 +462,7 @@ namespace ConditionalAccessExporter.Services
             return jsonArray.Select(token => token.ToString()).ToList();
         }
 
-        private async Task PerformCrossFormatComparisonAsync(
+        private void PerformCrossFormatComparison(
             CrossFormatComparisonResult result,
             List<NormalizedPolicy> sourcePolicies,
             List<NormalizedPolicy> referencePolicies,
@@ -473,7 +473,7 @@ namespace ConditionalAccessExporter.Services
             // Compare each source policy
             foreach (var sourcePolicy in sourcePolicies)
             {
-                var comparison = await ComparePolicyAsync(sourcePolicy, referencePolicies, matchingOptions);
+                var comparison = ComparePolicy(sourcePolicy, referencePolicies, matchingOptions);
                 result.PolicyComparisons.Add(comparison);
 
                 if (comparison.ReferencePolicy != null)
@@ -516,7 +516,7 @@ namespace ConditionalAccessExporter.Services
             }
         }
 
-        private async Task<CrossFormatPolicyComparison> ComparePolicyAsync(
+        private CrossFormatPolicyComparison ComparePolicy(
             NormalizedPolicy sourcePolicy,
             List<NormalizedPolicy> referencePolicies,
             CrossFormatMatchingOptions matchingOptions)
@@ -536,7 +536,7 @@ namespace ConditionalAccessExporter.Services
                 comparison.ReferencePolicy = matchingReference;
 
                 // Perform semantic comparison
-                var semanticComparison = await CompareSemanticEquivalenceAsync(sourcePolicy, matchingReference);
+                var semanticComparison = CompareSemanticEquivalence(sourcePolicy, matchingReference);
                 comparison.SemanticAnalysis = semanticComparison;
 
                 
@@ -555,7 +555,7 @@ namespace ConditionalAccessExporter.Services
                 
 
                 comparison.Differences = semanticComparison.Differences;
-                comparison.ConversionSuggestions = await GenerateConversionSuggestionsAsync(sourcePolicy, matchingReference);
+                comparison.ConversionSuggestions = GenerateConversionSuggestions(sourcePolicy, matchingReference);
             }
 
             return comparison;
@@ -688,7 +688,7 @@ namespace ConditionalAccessExporter.Services
             return null;
         }
 
-        private async Task<SemanticAnalysisResult> CompareSemanticEquivalenceAsync(
+        private SemanticAnalysisResult CompareSemanticEquivalence(
             NormalizedPolicy sourcePolicy, 
             NormalizedPolicy referencePolicy)
         {
@@ -727,7 +727,7 @@ namespace ConditionalAccessExporter.Services
             // Modified logic: Only consider semantically equivalent if there are NO differences
             result.IsSemanticallyEquivalent = differences.Count == 0;
 
-            return await Task.FromResult(result);
+            return result;
         }
 
         private void CompareConditions(NormalizedConditions source, NormalizedConditions reference, List<string> differences)
@@ -838,7 +838,7 @@ namespace ConditionalAccessExporter.Services
             }
         }
 
-        private async Task<List<string>> GenerateConversionSuggestionsAsync(
+        private List<string> GenerateConversionSuggestions(
             NormalizedPolicy sourcePolicy, 
             NormalizedPolicy referencePolicy)
         {
@@ -864,7 +864,7 @@ namespace ConditionalAccessExporter.Services
                 suggestions.Add($"Update policy state from '{sourcePolicy.State}' to '{referencePolicy.State}'");
             }
 
-            return await Task.FromResult(suggestions);
+            return suggestions;
         }
     }
 }

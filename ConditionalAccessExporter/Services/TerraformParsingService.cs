@@ -32,17 +32,17 @@ namespace ConditionalAccessExporter.Services
                 // Parse different types of Terraform content
                 if (filePath.EndsWith(".tf", StringComparison.OrdinalIgnoreCase))
                 {
-                    await ParseHclFileAsync(content, result);
+                    ParseHclFile(content, result);
                 }
                 else if (filePath.EndsWith(".tfstate", StringComparison.OrdinalIgnoreCase) || 
                          filePath.EndsWith(".tfstate.backup", StringComparison.OrdinalIgnoreCase))
                 {
-                    await ParseTerraformStateAsync(content, result);
+                    ParseTerraformState(content, result);
                 }
                 else
                 {
                     _warnings.Add($"Unknown file type for: {filePath}. Attempting HCL parsing.");
-                    await ParseHclFileAsync(content, result);
+                    ParseHclFile(content, result);
                 }
             }
             catch (Exception ex)
@@ -99,7 +99,7 @@ namespace ConditionalAccessExporter.Services
             return result;
         }
 
-        private async Task ParseHclFileAsync(string content, TerraformParseResult result)
+        private void ParseHclFile(string content, TerraformParseResult result)
         {
             // Parse azuread_conditional_access_policy resources using a more robust approach
             var policyBlocks = ExtractResourceBlocks(content, "azuread_conditional_access_policy");
@@ -149,11 +149,9 @@ namespace ConditionalAccessExporter.Services
                     _errors.Add($"Error parsing locals: {ex.Message}");
                 }
             }
-
-            await Task.CompletedTask;
         }
 
-        private async Task ParseTerraformStateAsync(string content, TerraformParseResult result)
+        private void ParseTerraformState(string content, TerraformParseResult result)
         {
             try
             {
@@ -194,8 +192,6 @@ namespace ConditionalAccessExporter.Services
             {
                 _errors.Add($"Error parsing Terraform state: {ex.Message}");
             }
-
-            await Task.CompletedTask;
         }
 
         private TerraformConditionalAccessPolicy ParseConditionalAccessPolicyResource(string resourceName, string resourceBody)
