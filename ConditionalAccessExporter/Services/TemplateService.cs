@@ -30,7 +30,7 @@ namespace ConditionalAccessExporter.Services
             }
         }
 
-        public async Task<List<TemplateInfo>> ListAvailableTemplatesAsync()
+        public async Task<List<TemplateInfo>> ListAvailableTemplatesAsync(CancellationToken cancellationToken = default)
         {
             var templates = new List<TemplateInfo>();
             
@@ -43,6 +43,8 @@ namespace ConditionalAccessExporter.Services
             
             foreach (var file in templateFiles)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                
                 var relativePath = Path.GetRelativePath(_templateBaseDirectory, file)
                     .Replace(Path.DirectorySeparatorChar, '/');
                 var templateName = relativePath.Replace(".json", "");
@@ -52,7 +54,7 @@ namespace ConditionalAccessExporter.Services
                 var description = "No description available";
                 try
                 {
-                    var content = await File.ReadAllTextAsync(file);
+                    var content = await File.ReadAllTextAsync(file, cancellationToken);
                     dynamic? policy = JsonConvert.DeserializeObject(content);
                     if (policy?.DisplayName != null)
                     {
@@ -76,7 +78,7 @@ namespace ConditionalAccessExporter.Services
             return templates.OrderBy(t => t.Category).ThenBy(t => t.Name).ToList();
         }
 
-        public async Task<TemplateCreationResult> CreateTemplateAsync(string templateName, string outputDirectory)
+        public async Task<TemplateCreationResult> CreateTemplateAsync(string templateName, string outputDirectory, CancellationToken cancellationToken = default)
         {
             var result = new TemplateCreationResult();
             
@@ -98,11 +100,16 @@ namespace ConditionalAccessExporter.Services
                 var outputPath = Path.Combine(outputDirectory, $"{Path.GetFileName(templateName)}.json");
                 
                 // Read template and copy to output directory
-                var templateContent = await File.ReadAllTextAsync(templatePath);
-                await File.WriteAllTextAsync(outputPath, templateContent);
+                var templateContent = await File.ReadAllTextAsync(templatePath, cancellationToken);
+                await File.WriteAllTextAsync(outputPath, templateContent, cancellationToken);
                 
                 result.Success = true;
                 result.OutputPath = outputPath;
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                result.Errors.Add($"Operation was cancelled while creating template '{templateName}'");
                 return result;
             }
             catch (Exception ex)
@@ -112,7 +119,7 @@ namespace ConditionalAccessExporter.Services
             }
         }
 
-        public async Task<BaselineCreationResult> CreateBaselineSetAsync(string outputDirectory)
+        public async Task<BaselineCreationResult> CreateBaselineSetAsync(string outputDirectory, CancellationToken cancellationToken = default)
         {
             var result = new BaselineCreationResult();
             
@@ -135,7 +142,9 @@ namespace ConditionalAccessExporter.Services
                 var success = true;
                 foreach (var template in baselineTemplates)
                 {
-                    var templateResult = await CreateTemplateAsync(template, outputDirectory);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    
+                    var templateResult = await CreateTemplateAsync(template, outputDirectory, cancellationToken);
                     if (templateResult.Success)
                     {
                         result.CreatedFiles.Add(templateResult.OutputPath);
@@ -151,6 +160,11 @@ namespace ConditionalAccessExporter.Services
                 result.Success = success;
                 return result;
             }
+            catch (OperationCanceledException)
+            {
+                result.Errors.Add("Operation was cancelled while creating baseline template set");
+                return result;
+            }
             catch (Exception ex)
             {
                 result.Errors.Add($"Error creating baseline template set: {ex.Message}");
@@ -158,7 +172,7 @@ namespace ConditionalAccessExporter.Services
             }
         }
 
-        public async Task<TemplateValidationResult> ValidateTemplateAsync(string templatePath)
+        public async Task<TemplateValidationResult> ValidateTemplateAsync(string templatePath, CancellationToken cancellationToken = default)
         {
             var result = new TemplateValidationResult();
             
@@ -170,7 +184,7 @@ namespace ConditionalAccessExporter.Services
                     return result;
                 }
 
-                var content = await File.ReadAllTextAsync(templatePath);
+                var content = await File.ReadAllTextAsync(templatePath, cancellationToken);
                 
                 // Try to parse as JSON
                 var jsonObject = JsonConvert.DeserializeObject(content);
@@ -203,6 +217,11 @@ namespace ConditionalAccessExporter.Services
                 result.IsValid = !result.Errors.Any();
                 return result;
             }
+            catch (OperationCanceledException)
+            {
+                result.Errors.Add($"Operation was cancelled while validating template: {templatePath}");
+                return result;
+            }
             catch (JsonException ex)
             {
                 result.Errors.Add($"JSON parsing error in template {templatePath}: {ex.Message}");
@@ -215,13 +234,13 @@ namespace ConditionalAccessExporter.Services
             }
         }
 
-        public string GetTemplateDocumentation(string templateName)
+        public async Task<string> GetTemplateDocumentationAsync(string templateName, CancellationToken cancellationToken = default)
         {
             var docPath = Path.Combine(_templateBaseDirectory, $"{templateName}.md");
             
             if (File.Exists(docPath))
             {
-                return File.ReadAllText(docPath);
+                return await File.ReadAllTextAsync(docPath, cancellationToken);
             }
 
             // Return basic template info if no documentation file exists
