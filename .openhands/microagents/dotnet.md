@@ -18,11 +18,11 @@ CA_Scanner is a .NET 8.0 console application designed for analyzing and managing
 ## .NET Project Structure
 
 ### Target Framework
-- **Framework**: .NET 8.0
-- **Project Type**: Console application with comprehensive service architecture
-- **Solution File**: `ConditionalAccessExporter.sln`
-- **Main Project**: `ConditionalAccessExporter/ConditionalAccessExporter.csproj`
-- **Test Project**: `ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj`
+* **Framework**: .NET 8.0
+* **Project Type**: Console application with comprehensive service architecture
+* **Solution File**: `ConditionalAccessExporter.sln`
+* **Main Project**: `ConditionalAccessExporter/ConditionalAccessExporter.csproj`
+* **Test Project**: `ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj`
 
 ### Solution Structure
 ```
