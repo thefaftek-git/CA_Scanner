@@ -287,7 +287,7 @@ namespace ConditionalAccessExporter.Services
                 {
                     var stateValue = stateProp.GetValue(dynAttributes);
                     if (stateValue != null)
-                        policy.State = stateValue.ToString() ?? string.Empty;
+                        policy.State = stateValue.ToString();
                 }
 
                 // For now, we'll skip conditions/grant_controls for non-JObject types
@@ -632,7 +632,10 @@ namespace ConditionalAccessExporter.Services
             var result = new List<string>();
             foreach (var item in array)
             {
-                result.Add(item?.ToString() ?? string.Empty);
+                if (item != null)
+                {
+                    result.Add(item.ToString());
+                }
             }
             
             return result.Any() ? result : null;
@@ -649,7 +652,7 @@ namespace ConditionalAccessExporter.Services
                 foreach (var item in arrayToken.Children())
                 {
                     if (item != null)
-                        result.Add(item.ToString() ?? string.Empty);
+                        result.Add(item.ToString());
                 }
             }
             
