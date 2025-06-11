@@ -111,7 +111,7 @@ namespace ConditionalAccessExporter.Services
                 throw new ArgumentException("Input JSON string cannot be null or empty.", nameof(json));
             }
 
-            JToken parsedToken;
+            JToken? parsedToken;
             try
             {
                 parsedToken = JsonConvert.DeserializeObject<JToken>(json);

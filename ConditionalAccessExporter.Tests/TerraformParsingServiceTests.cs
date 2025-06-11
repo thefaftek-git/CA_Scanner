@@ -450,18 +450,18 @@ resource ""azuread_conditional_access_policy"" ""full_policy"" {
             Assert.NotNull(policy.Conditions.UserRiskLevels);
             
             // Verify applications
-            Assert.Contains("All", policy.Conditions.Applications.IncludeApplications);
-            Assert.Contains("excluded-app", policy.Conditions.Applications.ExcludeApplications);
+            Assert.Contains("All", policy.Conditions.Applications.IncludeApplications!);
+            Assert.Contains("excluded-app", policy.Conditions.Applications.ExcludeApplications!);
             
             // Verify users
-            Assert.Contains("All", policy.Conditions.Users.IncludeUsers);
-            Assert.Contains("admin-user", policy.Conditions.Users.ExcludeUsers);
+            Assert.Contains("All", policy.Conditions.Users.IncludeUsers!);
+            Assert.Contains("admin-user", policy.Conditions.Users.ExcludeUsers!);
             
             // Verify grant controls
             Assert.NotNull(policy.GrantControls);
             Assert.Equal("OR", policy.GrantControls.Operator);
-            Assert.Contains("mfa", policy.GrantControls.BuiltInControls);
-            Assert.Contains("compliantDevice", policy.GrantControls.BuiltInControls);
+            Assert.Contains("mfa", policy.GrantControls.BuiltInControls!);
+            Assert.Contains("compliantDevice", policy.GrantControls.BuiltInControls!);
         }
 
         [Fact]

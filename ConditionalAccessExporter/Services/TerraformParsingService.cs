@@ -246,11 +246,11 @@ namespace ConditionalAccessExporter.Services
                 // Use JObject properties directly instead of dynamic conversion
                 var displayNameToken = jObj["display_name"];
                 if (displayNameToken != null)
-                    policy.DisplayName = displayNameToken.ToString();
+                    policy.DisplayName = displayNameToken.ToString() ?? string.Empty;
                 
                 var stateToken = jObj["state"];
                 if (stateToken != null)
-                    policy.State = stateToken.ToString();
+                    policy.State = stateToken.ToString() ?? string.Empty;
 
                 // Parse conditions from state
                 var conditionsToken = jObj["conditions"];
@@ -284,7 +284,7 @@ namespace ConditionalAccessExporter.Services
                 {
                     var displayNameValue = displayNameProp.GetValue(dynAttributes);
                     if (displayNameValue != null)
-                        policy.DisplayName = displayNameValue.ToString();
+                        policy.DisplayName = displayNameValue.ToString() ?? string.Empty;
                 }
                 
                 var stateProp = dynAttributes?.GetType().GetProperty("state");
@@ -292,7 +292,7 @@ namespace ConditionalAccessExporter.Services
                 {
                     var stateValue = stateProp.GetValue(dynAttributes);
                     if (stateValue != null)
-                        policy.State = stateValue.ToString();
+                        policy.State = stateValue.ToString() ?? string.Empty;
                 }
 
                 // For now, we'll skip conditions/grant_controls for non-JObject types
@@ -637,7 +637,7 @@ namespace ConditionalAccessExporter.Services
             var result = new List<string>();
             foreach (var item in array)
             {
-                result.Add(item.ToString());
+                result.Add(item?.ToString() ?? string.Empty);
             }
             
             return result.Any() ? result : null;
@@ -654,7 +654,7 @@ namespace ConditionalAccessExporter.Services
                 foreach (var item in arrayToken.Children())
                 {
                     if (item != null)
-                        result.Add(item.ToString());
+                        result.Add(item.ToString() ?? string.Empty);
                 }
             }
             

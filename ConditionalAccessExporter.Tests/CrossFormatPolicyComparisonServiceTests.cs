@@ -455,13 +455,13 @@ namespace ConditionalAccessExporter.Tests
             };
         }
 
-        private JObject CreateJsonPolicyWithConditions(string id, string displayName, string state, string[] includeUsers = null)
+        private JObject CreateJsonPolicyWithConditions(string id, string displayName, string state, string[]? includeUsers = null)
         {
             var policy = CreateJsonPolicy(id, displayName, state);
             
             if (includeUsers != null)
             {
-                policy["Conditions"]["Users"]["IncludeUsers"] = new JArray(includeUsers);
+                policy["Conditions"]!["Users"]!["IncludeUsers"] = new JArray(includeUsers);
             }
 
             return policy;
@@ -492,7 +492,7 @@ namespace ConditionalAccessExporter.Tests
 }}";
         }
 
-        private string CreateTerraformPolicyWithConditions(string resourceName, string displayName, string state, string[] includeUsers = null)
+        private string CreateTerraformPolicyWithConditions(string resourceName, string displayName, string state, string[]? includeUsers = null)
         {
             var usersSection = includeUsers != null 
                 ? $@"include_users = [""{string.Join(@""", """, includeUsers)}""]"
