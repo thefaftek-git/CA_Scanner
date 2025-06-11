@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.5852369852369852" branch-rate="0.4306418219461698" lines-covered="3766" lines-valid="6435" branches-covered="1040" branches-valid="2415" complexity="2775" version="0" timestamp="1749666545">
+<coverage line-rate="0.5852369852369852" branch-rate="0.4306418219461698" lines-covered="3766" lines-valid="6435" branches-covered="1040" branches-valid="2415" complexity="2775" version="0" timestamp="1749667194">
   <sources>
     <source>/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter/</source>
   </sources>
