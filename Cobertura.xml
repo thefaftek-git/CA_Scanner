@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.5853658536585366" branch-rate="0.4306418219461698" lines-covered="3768" lines-valid="6437" branches-covered="1040" branches-valid="2415" complexity="2775" version="0" timestamp="1749512489">
+<coverage line-rate="0.5853658536585366" branch-rate="0.4306418219461698" lines-covered="3768" lines-valid="6437" branches-covered="1040" branches-valid="2415" complexity="2775" version="0" timestamp="1749605533">
   <sources>
     <source>/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter/</source>
   </sources>
@@ -11019,18 +11019,18 @@
                 <line number="529" hits="19" branch="true" condition-coverage="50% (1/2)" />
                 <line number="530" hits="19" branch="true" condition-coverage="50% (1/2)" />
                 <line number="531" hits="0" branch="false" />
-                <line number="533" hits="78" branch="true" condition-coverage="100% (2/2)" />
-                <line number="534" hits="15" branch="false" />
-                <line number="535" hits="15" branch="true" condition-coverage="50% (1/2)" />
-                <line number="536" hits="15" branch="true" condition-coverage="100% (2/2)" />
+                <line number="533" hits="80" branch="true" condition-coverage="100% (2/2)" />
+                <line number="534" hits="16" branch="false" />
+                <line number="535" hits="16" branch="true" condition-coverage="50% (1/2)" />
+                <line number="536" hits="16" branch="true" condition-coverage="100% (2/2)" />
                 <line number="537" hits="0" branch="false" />
-                <line number="539" hits="15" branch="true" condition-coverage="100% (2/2)" />
-                <line number="540" hits="15" branch="false" />
-                <line number="541" hits="15" branch="false" />
-                <line number="543" hits="15" branch="true" condition-coverage="100% (2/2)" />
+                <line number="539" hits="16" branch="true" condition-coverage="100% (2/2)" />
+                <line number="540" hits="16" branch="false" />
+                <line number="541" hits="16" branch="false" />
+                <line number="543" hits="16" branch="true" condition-coverage="100% (2/2)" />
                 <line number="544" hits="9" branch="false" />
                 <line number="545" hits="9" branch="false" />
-                <line number="547" hits="6" branch="false" />
+                <line number="547" hits="7" branch="false" />
                 <line number="549" hits="10" branch="false" />
                 <line number="550" hits="19" branch="false" />
               </lines>
@@ -11591,18 +11591,18 @@
             <line number="529" hits="19" branch="true" condition-coverage="50% (1/2)" />
             <line number="530" hits="19" branch="true" condition-coverage="50% (1/2)" />
             <line number="531" hits="0" branch="false" />
-            <line number="533" hits="78" branch="true" condition-coverage="100% (2/2)" />
-            <line number="534" hits="15" branch="false" />
-            <line number="535" hits="15" branch="true" condition-coverage="50% (1/2)" />
-            <line number="536" hits="15" branch="true" condition-coverage="100% (2/2)" />
+            <line number="533" hits="80" branch="true" condition-coverage="100% (2/2)" />
+            <line number="534" hits="16" branch="false" />
+            <line number="535" hits="16" branch="true" condition-coverage="50% (1/2)" />
+            <line number="536" hits="16" branch="true" condition-coverage="100% (2/2)" />
             <line number="537" hits="0" branch="false" />
-            <line number="539" hits="15" branch="true" condition-coverage="100% (2/2)" />
-            <line number="540" hits="15" branch="false" />
-            <line number="541" hits="15" branch="false" />
-            <line number="543" hits="15" branch="true" condition-coverage="100% (2/2)" />
+            <line number="539" hits="16" branch="true" condition-coverage="100% (2/2)" />
+            <line number="540" hits="16" branch="false" />
+            <line number="541" hits="16" branch="false" />
+            <line number="543" hits="16" branch="true" condition-coverage="100% (2/2)" />
             <line number="544" hits="9" branch="false" />
             <line number="545" hits="9" branch="false" />
-            <line number="547" hits="6" branch="false" />
+            <line number="547" hits="7" branch="false" />
             <line number="549" hits="10" branch="false" />
             <line number="550" hits="19" branch="false" />
             <line number="553" hits="2" branch="false" />
@@ -12080,14 +12080,14 @@
             </method>
             <method name="get_Policy" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="605" hits="85" branch="false" />
+                <line number="605" hits="86" branch="false" />
               </lines>
             </method>
           </methods>
           <lines>
             <line number="603" hits="45" branch="false" />
             <line number="604" hits="34" branch="false" />
-            <line number="605" hits="85" branch="false" />
+            <line number="605" hits="86" branch="false" />
           </lines>
         </class>
         <class name="ConditionalAccessExporter.Services.RemediationService" filename="/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter/Services/RemediationService.cs" line-rate="0" branch-rate="0" complexity="82">
