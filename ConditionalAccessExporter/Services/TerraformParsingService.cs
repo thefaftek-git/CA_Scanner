@@ -244,13 +244,8 @@ namespace ConditionalAccessExporter.Services
             if (attributes is Newtonsoft.Json.Linq.JObject jObj)
             {
                 // Use JObject properties directly instead of dynamic conversion
-                var displayNameToken = jObj["display_name"];
-                if (displayNameToken != null)
-                    policy.DisplayName = displayNameToken.ToString() ?? string.Empty;
-                
-                var stateToken = jObj["state"];
-                if (stateToken != null)
-                    policy.State = stateToken.ToString() ?? string.Empty;
+                policy.DisplayName = jObj.Value<string>("display_name") ?? string.Empty;
+                policy.State = jObj.Value<string>("state") ?? string.Empty;
 
                 // Parse conditions from state
                 var conditionsToken = jObj["conditions"];
@@ -470,7 +465,7 @@ namespace ConditionalAccessExporter.Services
         {
             return new TerraformGrantControls
             {
-                Operator = grantControlsToken["operator"]?.ToString(),
+                Operator = grantControlsToken.Value<string>("operator"),
                 BuiltInControls = ParseStringArrayFromStateToken(grantControlsToken["built_in_controls"]),
                 CustomAuthenticationFactors = ParseStringArrayFromStateToken(grantControlsToken["custom_authentication_factors"]),
                 TermsOfUse = ParseStringArrayFromStateToken(grantControlsToken["terms_of_use"])
