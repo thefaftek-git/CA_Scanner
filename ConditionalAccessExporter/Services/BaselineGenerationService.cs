@@ -10,7 +10,7 @@ namespace ConditionalAccessExporter.Services
 {
     public class BaselineGenerationService
     {
-        public async Task<int> GenerateBaselineAsync(BaselineGenerationOptions options)
+        public async Task<int> GenerateBaselineAsync(BaselineGenerationOptions options, CancellationToken cancellationToken = default)
         {
             Console.WriteLine("Baseline Generation");
             Console.WriteLine("==================");
@@ -34,7 +34,7 @@ namespace ConditionalAccessExporter.Services
 
                 // Fetch policies from tenant
                 Console.WriteLine("Fetching policies from tenant...");
-                var policies = await FetchPoliciesAsync();
+                var policies = await FetchPoliciesAsync(cancellationToken);
 
                 if (policies?.Value == null || !policies.Value.Any())
                 {
@@ -52,13 +52,20 @@ namespace ConditionalAccessExporter.Services
                 var generatedFiles = new List<string>();
                 foreach (var policy in filteredPolicies)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    
                     try
                     {
-                        var fileName = await GeneratePolicyFileAsync(policy, options);
+                        var fileName = await GeneratePolicyFileAsync(policy, options, cancellationToken);
                         if (!string.IsNullOrEmpty(fileName))
                         {
                             generatedFiles.Add(fileName);
                         }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Console.WriteLine("Operation was cancelled during baseline generation");
+                        throw;
                     }
                     catch (Exception ex)
                     {
@@ -100,7 +107,7 @@ namespace ConditionalAccessExporter.Services
             }
         }
 
-        private async Task<ConditionalAccessPolicyCollectionResponse?> FetchPoliciesAsync()
+        private async Task<ConditionalAccessPolicyCollectionResponse?> FetchPoliciesAsync(CancellationToken cancellationToken = default)
         {
             // Get Azure credentials from environment variables
             var tenantId = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
@@ -124,7 +131,7 @@ namespace ConditionalAccessExporter.Services
             Console.WriteLine("Authenticating to Microsoft Graph...");
 
             // Get all conditional access policies
-            return await graphClient.Identity.ConditionalAccess.Policies.GetAsync();
+            return await graphClient.Identity.ConditionalAccess.Policies.GetAsync(cancellationToken: cancellationToken);
         }
 
         private List<ConditionalAccessPolicy> FilterPolicies(IList<ConditionalAccessPolicy> policies, BaselineGenerationOptions options)
@@ -150,7 +157,7 @@ namespace ConditionalAccessExporter.Services
             return filtered.ToList();
         }
 
-        private async Task<string?> GeneratePolicyFileAsync(ConditionalAccessPolicy policy, BaselineGenerationOptions options)
+        private async Task<string?> GeneratePolicyFileAsync(ConditionalAccessPolicy policy, BaselineGenerationOptions options, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(policy.DisplayName))
             {
@@ -172,7 +179,7 @@ namespace ConditionalAccessExporter.Services
                 DateFormatHandling = DateFormatHandling.IsoDateFormat
             });
 
-            await File.WriteAllTextAsync(filePath, json, Encoding.UTF8);
+            await File.WriteAllTextAsync(filePath, json, Encoding.UTF8, cancellationToken);
             
             Console.WriteLine($"Generated: {fileName}");
             return fileName;
