@@ -269,7 +269,7 @@ namespace ConditionalAccessExporter.Tests
         {
             // Arrange
             var jsonPolicy = CreateStandardJsonPolicy();
-            jsonPolicy["Conditions"]["ClientAppTypes"] = new JArray("Browser", "MobileAppsAndDesktopClients");
+            jsonPolicy["Conditions"]!["ClientAppTypes"] = new JArray("Browser", "MobileAppsAndDesktopClients");
             var entraExport = new { Policies = new[] { jsonPolicy } };
 
             var terraformDirectory = CreateTerraformDirectoryWithClientAppTypes(new[] { "browser", "mobileAppsAndDesktopClients" });
@@ -469,7 +469,7 @@ resource ""azuread_conditional_access_policy"" ""test_policy"" {
         private JObject CreateJsonPolicyWithUsers(string[] users)
         {
             var policy = CreateStandardJsonPolicy();
-            policy["Conditions"]["Users"]["IncludeUsers"] = new JArray(users);
+            policy["Conditions"]!["Users"]!["IncludeUsers"] = new JArray(users);
             return policy;
         }
 

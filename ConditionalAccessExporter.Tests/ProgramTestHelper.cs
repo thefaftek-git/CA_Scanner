@@ -27,7 +27,7 @@ namespace ConditionalAccessExporter.Tests
         {
             var mainMethod = GetPrivateMethod("Main");
             
-            var result = await (Task<int>)mainMethod.Invoke(null, new object[] { args });
+            var result = await (Task<int>)mainMethod.Invoke(null, new object[] { args })!;
             return result;
         }
 
@@ -38,7 +38,7 @@ namespace ConditionalAccessExporter.Tests
         {
             var method = GetPrivateMethod("ExportPoliciesAsync");
             
-            var result = await (Task<int>)method.Invoke(null, new object[] { outputPath });
+            var result = await (Task<int>)method.Invoke(null, new object[] { outputPath })!;
             return result;
         }
 
@@ -53,7 +53,7 @@ namespace ConditionalAccessExporter.Tests
         {
             var method = GetPrivateMethod("ConvertTerraformAsync");
             
-            var result = await (Task<int>)method.Invoke(null, new object[] { inputPath, outputPath, validate, verbose });
+            var result = await (Task<int>)method.Invoke(null, new object[] { inputPath, outputPath, validate, verbose })!;
             return result;
         }
 
@@ -83,7 +83,7 @@ namespace ConditionalAccessExporter.Tests
                     generateModule,
                     includeComments,
                     providerVersion
-                });
+                })!;
             return result;
         }
 
@@ -103,7 +103,7 @@ namespace ConditionalAccessExporter.Tests
             
             var result = await (Task<int>)method.Invoke(
                 null, 
-                new object[] { 
+                new object?[] { 
                     referenceDirectory,
                     entraFile,
                     outputDirectory,
@@ -113,11 +113,11 @@ namespace ConditionalAccessExporter.Tests
                     explainValues,
                     false, // exitOnDifferences
                     null,  // maxDifferences
-                    new string[0], // failOn
-                    new string[0], // ignore
+                    Array.Empty<string>(), // failOn
+                    Array.Empty<string>(), // ignore
                     false, // quiet
                     false  // skipValidation
-                });
+                })!;
             return result;
         }
 
@@ -147,7 +147,7 @@ namespace ConditionalAccessExporter.Tests
                     caseSensitive,
                     enableSemantic,
                     similarityThreshold
-                });
+                })!;
             return result;
         }
 
@@ -158,7 +158,7 @@ namespace ConditionalAccessExporter.Tests
         {
             var method = GetPrivateMethod("FetchEntraPoliciesAsync");
             
-            var result = await (Task<ConditionalAccessPolicyCollectionResponse>)method.Invoke(null, null);
+            var result = await (Task<ConditionalAccessPolicyCollectionResponse>)method.Invoke(null, null)!;
             return result;
         }
 
@@ -169,7 +169,7 @@ namespace ConditionalAccessExporter.Tests
         {
             var method = GetPrivateMethod("HandleExceptionAsync");
             
-            await (Task)method.Invoke(null, new object[] { exception });
+            await (Task)method.Invoke(null, new object[] { exception })!;
         }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace ConditionalAccessExporter.Tests
                 includeImpactAnalysis,
                 dryRun,
                 backup
-            });
+            })!;
             return result;
         }
 

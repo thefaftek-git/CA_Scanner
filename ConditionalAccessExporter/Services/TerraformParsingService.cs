@@ -244,13 +244,8 @@ namespace ConditionalAccessExporter.Services
             if (attributes is Newtonsoft.Json.Linq.JObject jObj)
             {
                 // Use JObject properties directly instead of dynamic conversion
-                var displayNameToken = jObj["display_name"];
-                if (displayNameToken != null)
-                    policy.DisplayName = displayNameToken.ToString();
-                
-                var stateToken = jObj["state"];
-                if (stateToken != null)
-                    policy.State = stateToken.ToString();
+                policy.DisplayName = jObj.Value<string>("display_name") ?? string.Empty;
+                policy.State = jObj.Value<string>("state") ?? string.Empty;
 
                 // Parse conditions from state
                 var conditionsToken = jObj["conditions"];
@@ -284,7 +279,7 @@ namespace ConditionalAccessExporter.Services
                 {
                     var displayNameValue = displayNameProp.GetValue(dynAttributes);
                     if (displayNameValue != null)
-                        policy.DisplayName = displayNameValue.ToString();
+                        policy.DisplayName = displayNameValue.ToString() ?? string.Empty;
                 }
                 
                 var stateProp = dynAttributes?.GetType().GetProperty("state");
@@ -470,7 +465,7 @@ namespace ConditionalAccessExporter.Services
         {
             return new TerraformGrantControls
             {
-                Operator = grantControlsToken["operator"]?.ToString(),
+                Operator = grantControlsToken.Value<string>("operator"),
                 BuiltInControls = ParseStringArrayFromStateToken(grantControlsToken["built_in_controls"]),
                 CustomAuthenticationFactors = ParseStringArrayFromStateToken(grantControlsToken["custom_authentication_factors"]),
                 TermsOfUse = ParseStringArrayFromStateToken(grantControlsToken["terms_of_use"])
@@ -637,7 +632,10 @@ namespace ConditionalAccessExporter.Services
             var result = new List<string>();
             foreach (var item in array)
             {
-                result.Add(item.ToString());
+                if (item != null)
+                {
+                    result.Add(item.ToString());
+                }
             }
             
             return result.Any() ? result : null;
