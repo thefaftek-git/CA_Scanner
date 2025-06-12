@@ -17,8 +17,8 @@ namespace ConditionalAccessExporter.Utils
         {
             var processorCount = Environment.ProcessorCount;
             
-            // Use 75% of available cores, with a minimum of 2 and maximum of 16
-            var optimalDegree = Math.Max(2, Math.Min(16, (int)(processorCount * 0.75)));
+            // Use 75% of available cores, with a minimum of 2 and maximum of 16, but never exceed processor count
+            var optimalDegree = Math.Min(processorCount, Math.Max(2, Math.Min(16, (int)(processorCount * 0.75))));
             
             return optimalDegree;
         }

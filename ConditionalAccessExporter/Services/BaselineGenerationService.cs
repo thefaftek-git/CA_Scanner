@@ -81,7 +81,7 @@ namespace ConditionalAccessExporter.Services
                 // Log errors for failed policies
                 foreach (var error in parallelResult.Errors)
                 {
-                    Console.WriteLine($"Warning: Failed to generate file for policy: {error.Exception.Message}");
+                    Console.WriteLine($"Warning: Failed to generate file for policy '{error.Item}': {error.Exception.Message}");
                 }
 
                 Console.WriteLine($"Baseline file generation completed in {parallelResult.ElapsedTime.TotalMilliseconds:F0}ms");

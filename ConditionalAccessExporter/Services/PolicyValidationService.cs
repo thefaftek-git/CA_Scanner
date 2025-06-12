@@ -70,6 +70,9 @@ namespace ConditionalAccessExporter.Services
             IProgress<ParallelProcessingProgress>? progress = null,
             CancellationToken cancellationToken = default)
         {
+            // Honor cancellation before any processing begins
+            cancellationToken.ThrowIfCancellationRequested();
+            
             var result = new DirectoryValidationResult
             {
                 DirectoryPath = directoryPath,
