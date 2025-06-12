@@ -10,11 +10,6 @@ namespace ConditionalAccessExporter.Services
         private readonly List<string> _errors = new();
         private readonly List<string> _warnings = new();
 
-        public TerraformConversionResult ConvertToGraphJson(TerraformParseResult parseResult)
-        {
-            return ConvertToGraphJsonAsync(parseResult).GetAwaiter().GetResult();
-        }
-
         public async Task<TerraformConversionResult> ConvertToGraphJsonAsync(TerraformParseResult parseResult, CancellationToken cancellationToken = default)
         {
             var result = new TerraformConversionResult
