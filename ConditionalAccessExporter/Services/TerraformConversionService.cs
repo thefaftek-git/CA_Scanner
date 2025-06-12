@@ -1,4 +1,5 @@
 using ConditionalAccessExporter.Models;
+using ConditionalAccessExporter.Utils;
 using Newtonsoft.Json;
 
 namespace ConditionalAccessExporter.Services
@@ -10,6 +11,11 @@ namespace ConditionalAccessExporter.Services
         private readonly List<string> _warnings = new();
 
         public TerraformConversionResult ConvertToGraphJson(TerraformParseResult parseResult)
+        {
+            return ConvertToGraphJsonAsync(parseResult).GetAwaiter().GetResult();
+        }
+
+        public async Task<TerraformConversionResult> ConvertToGraphJsonAsync(TerraformParseResult parseResult, CancellationToken cancellationToken = default)
         {
             var result = new TerraformConversionResult
             {
@@ -23,20 +29,50 @@ namespace ConditionalAccessExporter.Services
                 var successCount = 0;
                 var failureCount = 0;
 
-                foreach (var terraformPolicy in parseResult.Policies)
+                if (parseResult.Policies.Count > 0)
                 {
-                    try
+                    Console.WriteLine($"Converting {parseResult.Policies.Count} Terraform policies to Graph JSON format using parallel processing...");
+
+                    var parallelOptions = new ParallelProcessingOptions
                     {
-                        var graphPolicy = ConvertPolicyToGraphFormat(terraformPolicy, parseResult);
-                        convertedPolicies.Add(graphPolicy);
-                        successCount++;
-                        _conversionLog.Add($"Successfully converted policy: {terraformPolicy.DisplayName ?? terraformPolicy.ResourceName}");
-                    }
-                    catch (Exception ex)
+                        ContinueOnError = true, // Continue converting other policies even if some fail
+                        ProgressReportInterval = Math.Max(1, parseResult.Policies.Count / 10) // Report progress every 10%
+                    };
+
+                    var progress = new Progress<ParallelProcessingProgress>(p => 
                     {
-                        failureCount++;
-                        _errors.Add($"Failed to convert policy '{terraformPolicy.DisplayName ?? terraformPolicy.ResourceName}': {ex.Message}");
+                        if (p.Completed % parallelOptions.ProgressReportInterval == 0 || p.Completed == p.Total)
+                        {
+                            Console.WriteLine($"Converting policies: {p}");
+                        }
+                    });
+
+                    var parallelResult = await ParallelProcessingService.ProcessInParallelAsync(
+                        parseResult.Policies,
+                        async (terraformPolicy, ct) => 
+                        {
+                            await Task.Yield(); // Make this truly async
+                            var graphPolicy = ConvertPolicyToGraphFormat(terraformPolicy, parseResult);
+                            _conversionLog.Add($"Successfully converted policy: {terraformPolicy.DisplayName ?? terraformPolicy.ResourceName}");
+                            return graphPolicy;
+                        },
+                        parallelOptions,
+                        progress,
+                        cancellationToken);
+
+                    // Collect results
+                    convertedPolicies.AddRange(parallelResult.Results);
+                    successCount = parallelResult.Results.Count;
+                    failureCount = parallelResult.Errors.Count;
+
+                    // Log errors
+                    foreach (var error in parallelResult.Errors)
+                    {
+                        _errors.Add($"Failed to convert policy: {error.Exception.Message}");
                     }
+
+                    Console.WriteLine($"Policy conversion completed in {parallelResult.ElapsedTime.TotalMilliseconds:F0}ms");
+                    Console.WriteLine($"Average speed: {parallelResult.AverageItemsPerSecond:F1} policies/second");
                 }
 
                 // Create the final export structure matching the existing format
