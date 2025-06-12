@@ -238,6 +238,8 @@ namespace ConditionalAccessExporter.Tests
             Assert.Equal(50, result.TotalProcessed);
             // The +1 margin accounts for slight variances in thread scheduling or timing,
             // which can occasionally result in one extra thread being active momentarily.
+            // The +1 margin accounts for slight variances in thread scheduling or timing,
+            // which can occasionally result in one extra thread being active momentarily.
             Assert.True(maxConcurrentCount <= options.MaxDegreeOfParallelism!.Value + 1);
             
             _output.WriteLine($"Max concurrent operations observed: {maxConcurrentCount}");
