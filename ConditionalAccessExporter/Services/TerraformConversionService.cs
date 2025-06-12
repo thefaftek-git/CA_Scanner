@@ -1,6 +1,8 @@
 using ConditionalAccessExporter.Models;
 using ConditionalAccessExporter.Utils;
 using Newtonsoft.Json;
+using System;
+using static ConditionalAccessExporter.Logger;
 
 namespace ConditionalAccessExporter.Services
 {
@@ -26,7 +28,7 @@ namespace ConditionalAccessExporter.Services
 
                 if (parseResult.Policies.Count == 0)
                 {
-                    Console.WriteLine("No Terraform policies found to convert.");
+                    Logger.WriteInfo("No Terraform policies found to convert.");
                     
                     // Create the final export structure for empty case
                     var emptyExportData = new
@@ -56,7 +58,7 @@ namespace ConditionalAccessExporter.Services
                     return result;
                 }
                 
-                Console.WriteLine($"Converting {parseResult.Policies.Count} Terraform policies to Graph JSON format using parallel processing...");
+                Logger.WriteInfo($"Converting {parseResult.Policies.Count} Terraform policies to Graph JSON format using parallel processing...");
 
                 var parallelOptions = new ParallelProcessingOptions
                 {
@@ -68,7 +70,7 @@ namespace ConditionalAccessExporter.Services
                 {
                     if (p.Completed % parallelOptions.ProgressReportInterval == 0 || p.Completed == p.Total)
                     {
-                        Console.WriteLine($"Converting policies: {p}");
+                        Logger.WriteInfo($"Converting policies: {p}");
                     }
                 });
 
@@ -96,8 +98,8 @@ namespace ConditionalAccessExporter.Services
                     _errors.Add($"Failed to convert policy: {error.Item} - {error.Exception.Message}");
                 }
 
-                Console.WriteLine($"Policy conversion completed in {parallelResult.ElapsedTime.TotalMilliseconds:F0}ms");
-                Console.WriteLine($"Average speed: {parallelResult.AverageItemsPerSecond:F1} policies/second");
+                Logger.WriteInfo($"Policy conversion completed in {parallelResult.ElapsedTime.TotalMilliseconds:F0}ms");
+                Logger.WriteInfo($"Average speed: {parallelResult.AverageItemsPerSecond:F1} policies/second");
 
                 // Create the final export structure matching the existing format
                 var exportData = new

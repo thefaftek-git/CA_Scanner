@@ -236,7 +236,9 @@ namespace ConditionalAccessExporter.Tests
 
             // Assert
             Assert.Equal(50, result.TotalProcessed);
-            Assert.True(maxConcurrentCount <= options.MaxDegreeOfParallelism!.Value + 1); // Allow for slight variance
+            // The +1 margin accounts for slight variances in thread scheduling or timing,
+            // which can occasionally result in one extra thread being active momentarily.
+            Assert.True(maxConcurrentCount <= options.MaxDegreeOfParallelism!.Value + 1);
             
             _output.WriteLine($"Max concurrent operations observed: {maxConcurrentCount}");
             _output.WriteLine($"Configured max degree of parallelism: {options.MaxDegreeOfParallelism}");
