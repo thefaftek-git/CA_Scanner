@@ -89,6 +89,7 @@ namespace ConditionalAccessExporter.Services
 
             if (jsonFiles.Length == 0)
             {
+                Console.WriteLine($"No JSON files found in directory: {directoryPath}. No files were processed.");
                 return result;
             }
 

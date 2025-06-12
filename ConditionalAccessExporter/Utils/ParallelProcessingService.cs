@@ -34,8 +34,6 @@ namespace ConditionalAccessExporter.Utils
         {
             var opts = options ?? new ParallelProcessingOptions();
             var sourceList = source.ToList();
-            var results = new List<TResult>();
-            var errors = new List<ParallelProcessingError>();
             var completed = 0;
             var total = sourceList.Count;
             var stopwatch = Stopwatch.StartNew();
@@ -104,7 +102,9 @@ namespace ConditionalAccessExporter.Utils
                                 PercentComplete = (double)currentCompleted / total * 100,
                                 ElapsedTime = stopwatch.Elapsed,
                                 EstimatedTimeRemaining = EstimateTimeRemaining(stopwatch.Elapsed, currentCompleted, total),
-                                ItemsPerSecond = currentCompleted / stopwatch.Elapsed.TotalSeconds
+                                ItemsPerSecond = stopwatch.Elapsed.TotalSeconds > 0 
+                                    ? currentCompleted / stopwatch.Elapsed.TotalSeconds 
+                                    : 0
                             };
                             
                             progress.Report(progressReport);
@@ -127,7 +127,9 @@ namespace ConditionalAccessExporter.Utils
                 TotalProcessed = completed,
                 TotalItems = total,
                 ElapsedTime = stopwatch.Elapsed,
-                AverageItemsPerSecond = completed / stopwatch.Elapsed.TotalSeconds,
+                AverageItemsPerSecond = stopwatch.Elapsed.TotalSeconds > 0 
+                    ? completed / stopwatch.Elapsed.TotalSeconds 
+                    : 0,
                 SuccessRate = total > 0 ? (double)(completed - errorsList.Count) / total * 100 : 0
             };
         }

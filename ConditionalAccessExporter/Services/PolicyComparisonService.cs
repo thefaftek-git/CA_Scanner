@@ -33,7 +33,7 @@ namespace ConditionalAccessExporter.Services
 
         public async Task<DirectoryValidationResult> ValidateReferenceDirectoryAsync(string referenceDirectory)
         {
-            Console.WriteLine($"Validating reference directory: {referenceDirectory}");
+            Logger.WriteInfo($"Validating reference directory: {referenceDirectory}");
             return await _validationService.ValidateDirectoryAsync(referenceDirectory);
         }
 
@@ -43,7 +43,7 @@ namespace ConditionalAccessExporter.Services
             MatchingOptions matchingOptions,
             bool skipValidation = false)
         {
-            Console.WriteLine($"Starting comparison with reference directory: {referenceDirectory}");
+            Logger.WriteInfo($"Starting comparison with reference directory: {referenceDirectory}");
             
             var result = new ComparisonResult
             {
@@ -56,7 +56,7 @@ namespace ConditionalAccessExporter.Services
             result.TenantId = entraData.TenantId;
             result.Summary.TotalEntraPolicies = entraData.Policies.Count;
 
-            Console.WriteLine($"Found {entraData.Policies.Count} policies in Entra export");
+            Logger.WriteInfo($"Found {entraData.Policies.Count} policies in Entra export");
 
             // Validate reference files before loading (unless skipped)
             if (!skipValidation)
@@ -91,7 +91,7 @@ namespace ConditionalAccessExporter.Services
             var referencePolicies = await LoadReferencePoliciesAsync(referenceDirectory);
             result.Summary.TotalReferencePolicies = referencePolicies.Count;
 
-            Console.WriteLine($"Found {referencePolicies.Count} reference policy files");
+            Logger.WriteInfo($"Found {referencePolicies.Count} reference policy files");
 
             // Perform comparison
             PerformComparison(result, entraData.Policies, referencePolicies, matchingOptions);
@@ -243,7 +243,7 @@ namespace ConditionalAccessExporter.Services
                 return policies;
             }
 
-            Console.WriteLine($"Loading {jsonFiles.Length} reference policy files using parallel processing...");
+            Logger.WriteInfo($"Loading {jsonFiles.Length} reference policy files using parallel processing...");
 
             // Use parallel processing for loading reference files
             var parallelOptions = new ParallelProcessingOptions
@@ -256,7 +256,7 @@ namespace ConditionalAccessExporter.Services
             {
                 if (p.Completed % parallelOptions.ProgressReportInterval == 0 || p.Completed == p.Total)
                 {
-                    Console.WriteLine($"Loading reference files: {p}");
+                    Logger.WriteInfo($"Loading reference files: {p}");
                 }
             });
 
@@ -293,9 +293,9 @@ namespace ConditionalAccessExporter.Services
                 }
             }
 
-            Console.WriteLine($"Reference file loading completed: {policies.Count} files loaded successfully");
-            Console.WriteLine($"Processing time: {parallelResult.ElapsedTime.TotalMilliseconds:F0}ms");
-            Console.WriteLine($"Average speed: {parallelResult.AverageItemsPerSecond:F1} files/second");
+            Logger.WriteInfo($"Reference file loading completed: {policies.Count} files loaded successfully");
+            Logger.WriteInfo($"Processing time: {parallelResult.ElapsedTime.TotalMilliseconds:F0}ms");
+            Logger.WriteInfo($"Average speed: {parallelResult.AverageItemsPerSecond:F1} files/second");
 
             return policies;
         }

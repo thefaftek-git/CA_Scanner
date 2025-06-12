@@ -24,51 +24,57 @@ namespace ConditionalAccessExporter.Services
                 var successCount = 0;
                 var failureCount = 0;
 
-                if (parseResult.Policies.Count > 0)
+                if (parseResult.Policies.Count == 0)
                 {
-                    Console.WriteLine($"Converting {parseResult.Policies.Count} Terraform policies to Graph JSON format using parallel processing...");
-
-                    var parallelOptions = new ParallelProcessingOptions
-                    {
-                        ContinueOnError = true, // Continue converting other policies even if some fail
-                        ProgressReportInterval = Math.Max(1, parseResult.Policies.Count / 10) // Report progress every 10%
-                    };
-
-                    var progress = new Progress<ParallelProcessingProgress>(p => 
-                    {
-                        if (p.Completed % parallelOptions.ProgressReportInterval == 0 || p.Completed == p.Total)
-                        {
-                            Console.WriteLine($"Converting policies: {p}");
-                        }
-                    });
-
-                    var parallelResult = await ParallelProcessingService.ProcessInParallelAsync(
-                        parseResult.Policies,
-                        async (terraformPolicy, ct) => 
-                        {
-                            await Task.Yield(); // Make this truly async
-                            var graphPolicy = ConvertPolicyToGraphFormat(terraformPolicy, parseResult);
-                            _conversionLog.Add($"Successfully converted policy: {terraformPolicy.DisplayName ?? terraformPolicy.ResourceName}");
-                            return graphPolicy;
-                        },
-                        parallelOptions,
-                        progress,
-                        cancellationToken);
-
-                    // Collect results
-                    convertedPolicies.AddRange(parallelResult.Results);
-                    successCount = parallelResult.Results.Count;
-                    failureCount = parallelResult.Errors.Count;
-
-                    // Log errors
-                    foreach (var error in parallelResult.Errors)
-                    {
-                        _errors.Add($"Failed to convert policy: {error.Exception.Message}");
-                    }
-
-                    Console.WriteLine($"Policy conversion completed in {parallelResult.ElapsedTime.TotalMilliseconds:F0}ms");
-                    Console.WriteLine($"Average speed: {parallelResult.AverageItemsPerSecond:F1} policies/second");
+                    Console.WriteLine("No Terraform policies found to convert.");
+                    result.ConversionLog = _conversionLog;
+                    result.Errors = _errors;
+                    result.Warnings = _warnings;
+                    return result;
                 }
+                
+                Console.WriteLine($"Converting {parseResult.Policies.Count} Terraform policies to Graph JSON format using parallel processing...");
+
+                var parallelOptions = new ParallelProcessingOptions
+                {
+                    ContinueOnError = true, // Continue converting other policies even if some fail
+                    ProgressReportInterval = Math.Max(1, parseResult.Policies.Count / 10) // Report progress every 10%
+                };
+
+                var progress = new Progress<ParallelProcessingProgress>(p => 
+                {
+                    if (p.Completed % parallelOptions.ProgressReportInterval == 0 || p.Completed == p.Total)
+                    {
+                        Console.WriteLine($"Converting policies: {p}");
+                    }
+                });
+
+                var parallelResult = await ParallelProcessingService.ProcessInParallelAsync(
+                    parseResult.Policies,
+                    async (terraformPolicy, ct) => 
+                    {
+                        await Task.Yield(); // Make this truly async
+                        var graphPolicy = ConvertPolicyToGraphFormat(terraformPolicy, parseResult);
+                        _conversionLog.Add($"Successfully converted policy: {terraformPolicy.DisplayName ?? terraformPolicy.ResourceName}");
+                        return graphPolicy;
+                    },
+                    parallelOptions,
+                    progress,
+                    cancellationToken);
+
+                // Collect results
+                convertedPolicies.AddRange(parallelResult.Results);
+                successCount = parallelResult.Results.Count;
+                failureCount = parallelResult.Errors.Count;
+
+                // Log errors
+                foreach (var error in parallelResult.Errors)
+                {
+                    _errors.Add($"Failed to convert policy: {error.Item} - {error.Exception.Message}");
+                }
+
+                Console.WriteLine($"Policy conversion completed in {parallelResult.ElapsedTime.TotalMilliseconds:F0}ms");
+                Console.WriteLine($"Average speed: {parallelResult.AverageItemsPerSecond:F1} policies/second");
 
                 // Create the final export structure matching the existing format
                 var exportData = new
