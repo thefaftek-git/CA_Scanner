@@ -27,6 +27,29 @@ namespace ConditionalAccessExporter.Services
                 if (parseResult.Policies.Count == 0)
                 {
                     Console.WriteLine("No Terraform policies found to convert.");
+                    
+                    // Create the final export structure for empty case
+                    var emptyExportData = new
+                    {
+                        ExportedAt = DateTime.UtcNow,
+                        Source = "Terraform",
+                        SourcePath = parseResult.SourcePath,
+                        PoliciesCount = 0,
+                        Policies = new List<object>(),
+                        ConversionSummary = new
+                        {
+                            SuccessfulConversions = 0,
+                            FailedConversions = 0,
+                            TotalTerraformPolicies = 0,
+                            VariablesFound = parseResult.Variables.Count,
+                            LocalsFound = parseResult.Locals.Count,
+                            DataSourcesFound = parseResult.DataSources.Count
+                        }
+                    };
+
+                    result.ConvertedPolicies = emptyExportData;
+                    result.SuccessfulConversions = 0;
+                    result.FailedConversions = 0;
                     result.ConversionLog = _conversionLog;
                     result.Errors = _errors;
                     result.Warnings = _warnings;
