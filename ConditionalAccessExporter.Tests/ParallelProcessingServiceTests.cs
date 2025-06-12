@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace ConditionalAccessExporter.Tests
 {
     [Collection("ConsoleOutputTestCollection")]
-    public class ParallelProcessingServiceTests
+    public class ParallelProcessingServiceTests : IDisposable
     {
         private readonly ITestOutputHelper _output;
         private readonly string _testDirectory;
@@ -242,7 +242,7 @@ namespace ConditionalAccessExporter.Tests
             _output.WriteLine($"Configured max degree of parallelism: {options.MaxDegreeOfParallelism}");
         }
 
-        private void Dispose()
+        public void Dispose()
         {
             try
             {

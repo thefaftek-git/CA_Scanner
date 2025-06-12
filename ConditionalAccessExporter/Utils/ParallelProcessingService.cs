@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -46,10 +47,8 @@ namespace ConditionalAccessExporter.Utils
             };
 
             // Thread-safe collections for results and errors
-            var resultsList = new List<TResult>();
-            var errorsList = new List<ParallelProcessingError>();
-            var resultLock = new object();
-            var errorLock = new object();
+            var resultsList = new ConcurrentBag<TResult>();
+            var errorsList = new ConcurrentBag<ParallelProcessingError>();
 
             try
             {
@@ -58,11 +57,7 @@ namespace ConditionalAccessExporter.Utils
                     try
                     {
                         var result = await processor(item, ct);
-                        
-                        lock (resultLock)
-                        {
-                            resultsList.Add(result);
-                        }
+                        resultsList.Add(result);
                     }
                     catch (OperationCanceledException)
                     {
@@ -73,15 +68,12 @@ namespace ConditionalAccessExporter.Utils
                     {
                         if (opts.ContinueOnError)
                         {
-                            lock (errorLock)
+                            errorsList.Add(new ParallelProcessingError
                             {
-                                errorsList.Add(new ParallelProcessingError
-                                {
-                                    Item = item?.ToString() ?? "Unknown",
-                                    Exception = ex,
-                                    Timestamp = DateTime.UtcNow
-                                });
-                            }
+                                Item = item?.ToString() ?? "Unknown",
+                                Exception = ex,
+                                Timestamp = DateTime.UtcNow
+                            });
                         }
                         else
                         {
@@ -122,8 +114,8 @@ namespace ConditionalAccessExporter.Utils
 
             return new ParallelProcessingResult<TResult>
             {
-                Results = resultsList,
-                Errors = errorsList,
+                Results = resultsList.ToList(),
+                Errors = errorsList.ToList(),
                 TotalProcessed = completed,
                 TotalItems = total,
                 ElapsedTime = stopwatch.Elapsed,
