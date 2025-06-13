@@ -78,10 +78,12 @@ namespace ConditionalAccessExporter.Services
                     parseResult.Policies,
                     async (terraformPolicy, ct) => 
                     {
-                        await Task.Yield(); // Make this truly async
-                        var graphPolicy = ConvertPolicyToGraphFormat(terraformPolicy, parseResult);
-                        _conversionLog.Add($"Successfully converted policy: {terraformPolicy.DisplayName ?? terraformPolicy.ResourceName}");
-                        return graphPolicy;
+                        return await Task.Run(() =>
+                        {
+                            var graphPolicy = ConvertPolicyToGraphFormat(terraformPolicy, parseResult);
+                            _conversionLog.Add($"Successfully converted policy: {terraformPolicy.DisplayName ?? terraformPolicy.ResourceName}");
+                            return graphPolicy;
+                        }, ct);
                     },
                     parallelOptions,
                     progress,
