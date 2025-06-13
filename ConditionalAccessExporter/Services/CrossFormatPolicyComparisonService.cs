@@ -566,6 +566,9 @@ namespace ConditionalAccessExporter.Services
             List<NormalizedPolicy> referencePolicies,
             CrossFormatMatchingOptions matchingOptions)
         {
+            // Provide default options if null
+            matchingOptions ??= new CrossFormatMatchingOptions();
+            
             switch (matchingOptions.Strategy)
             {
                 case CrossFormatMatchingStrategy.ByName:
