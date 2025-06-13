@@ -1,18 +1,36 @@
-﻿2025-06-13T03:18:06.2332892Z ##[group]Run dotnet --version && dotnet build --no-restore
-2025-06-13T03:18:06.2333436Z [36;1mdotnet --version && dotnet build --no-restore[0m
-2025-06-13T03:18:06.2402441Z shell: /usr/bin/bash -e {0}
-2025-06-13T03:18:06.2402760Z env:
-2025-06-13T03:18:06.2403003Z   DOTNET_ROOT: /usr/share/dotnet
-2025-06-13T03:18:06.2403325Z ##[endgroup]
-2025-06-13T03:18:06.3454220Z 8.0.411
-2025-06-13T03:18:12.3191805Z   ConditionalAccessExporter -> /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter/bin/Debug/net8.0/ConditionalAccessExporter.dll
-2025-06-13T03:18:15.1225104Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/CrossFormatPolicyComparisonServiceSpecificMethodTests.cs(85,13): warning xUnit2012: Do not use Assert.True() to check if a value exists in a collection. Use Assert.Contains instead. (https://xunit.net/xunit.analyzers/rules/xUnit2012) [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
-2025-06-13T03:18:15.2796149Z   ConditionalAccessExporter.Tests -> /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/bin/Debug/net8.0/ConditionalAccessExporter.Tests.dll
-2025-06-13T03:18:15.3024466Z 
-2025-06-13T03:18:15.3031537Z Build succeeded.
-2025-06-13T03:18:15.3032232Z 
-2025-06-13T03:18:15.3037017Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/CrossFormatPolicyComparisonServiceSpecificMethodTests.cs(85,13): warning xUnit2012: Do not use Assert.True() to check if a value exists in a collection. Use Assert.Contains instead. (https://xunit.net/xunit.analyzers/rules/xUnit2012) [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
-2025-06-13T03:18:15.3041188Z     1 Warning(s)
-2025-06-13T03:18:15.3041880Z     0 Error(s)
-2025-06-13T03:18:15.3044069Z 
-2025-06-13T03:18:15.3044707Z Time Elapsed 00:00:08.73
+﻿2025-06-13T05:42:50.2834310Z ##[group]Run dotnet --version && dotnet build --no-restore
+2025-06-13T05:42:50.2834778Z [36;1mdotnet --version && dotnet build --no-restore[0m
+2025-06-13T05:42:50.2893766Z shell: /usr/bin/bash -e {0}
+2025-06-13T05:42:50.2894070Z env:
+2025-06-13T05:42:50.2894286Z   DOTNET_ROOT: /usr/share/dotnet
+2025-06-13T05:42:50.2894548Z ##[endgroup]
+2025-06-13T05:42:50.3851007Z 8.0.411
+2025-06-13T05:42:56.6499626Z   ConditionalAccessExporter -> /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter/bin/Debug/net8.0/ConditionalAccessExporter.dll
+2025-06-13T05:42:59.9938748Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestDataFactory.cs(50,37): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:42:59.9949718Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestDataFactory.cs(50,67): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:42:59.9954072Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestDataFactory.cs(51,44): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:42:59.9959749Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestDataFactory.cs(51,81): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:42:59.9964677Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestDataFactory.cs(135,37): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:42:59.9969285Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestDataFactory.cs(135,67): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:42:59.9974560Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestDataFactory.cs(246,57): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:42:59.9980015Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/PolicyAssertions.cs(138,29): warning CS8602: Dereference of a possibly null reference. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:42:59.9985156Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/PolicyAssertions.cs(139,29): warning CS8602: Dereference of a possibly null reference. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:42:59.9990770Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/CrossFormatPolicyComparisonServiceTests.cs(554,79): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:43:00.1551057Z   ConditionalAccessExporter.Tests -> /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/bin/Debug/net8.0/ConditionalAccessExporter.Tests.dll
+2025-06-13T05:43:00.1777496Z 
+2025-06-13T05:43:00.1786245Z Build succeeded.
+2025-06-13T05:43:00.1787636Z 
+2025-06-13T05:43:00.1790515Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestDataFactory.cs(50,37): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:43:00.1796090Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestDataFactory.cs(50,67): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:43:00.1802478Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestDataFactory.cs(51,44): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:43:00.1807492Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestDataFactory.cs(51,81): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:43:00.1812214Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestDataFactory.cs(135,37): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:43:00.1817115Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestDataFactory.cs(135,67): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:43:00.1821830Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestDataFactory.cs(246,57): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:43:00.1826825Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/PolicyAssertions.cs(138,29): warning CS8602: Dereference of a possibly null reference. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:43:00.1831789Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/PolicyAssertions.cs(139,29): warning CS8602: Dereference of a possibly null reference. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:43:00.1836830Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/CrossFormatPolicyComparisonServiceTests.cs(554,79): warning CS8625: Cannot convert null literal to non-nullable reference type. [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T05:43:00.1839564Z     10 Warning(s)
+2025-06-13T05:43:00.1839862Z     0 Error(s)
+2025-06-13T05:43:00.1840031Z 
+2025-06-13T05:43:00.1840190Z Time Elapsed 00:00:09.57

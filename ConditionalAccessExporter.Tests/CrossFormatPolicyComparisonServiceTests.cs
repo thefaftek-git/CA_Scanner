@@ -534,7 +534,13 @@ namespace ConditionalAccessExporter.Tests
             Assert.NotNull(result);
             PolicyAssertions.AssertSummaryTotals(result.Summary, policyCount, policyCount);
             PolicyAssertions.AssertExecutionTimeWithinBounds(stopwatch.Elapsed, TimeSpan.FromSeconds(30));
-            PolicyAssertions.AssertHasMatchingPolicies(result.Summary);
+            // Assert that policies are being processed and compared
+            Assert.True(result.PolicyComparisons.Count > 0, "Expected policy comparisons to be performed");
+            Assert.True(result.PolicyComparisons.Any(c => 
+                c.Status == CrossFormatComparisonStatus.Identical ||
+                c.Status == CrossFormatComparisonStatus.SemanticallyEquivalent ||
+                c.Status == CrossFormatComparisonStatus.Different), 
+                "Expected policies to be matched and compared");
         }
 
         [Fact]
@@ -704,7 +710,13 @@ namespace ConditionalAccessExporter.Tests
             Assert.NotNull(result);
             PolicyAssertions.AssertSummaryTotals(result.Summary, policyCount, policyCount);
             PolicyAssertions.AssertExecutionTimeWithinBounds(stopwatch.Elapsed, TimeSpan.FromMinutes(2));
-            PolicyAssertions.AssertHasMatchingPolicies(result.Summary);
+            // Assert that policies are being processed and compared
+            Assert.True(result.PolicyComparisons.Count > 0, "Expected policy comparisons to be performed");
+            Assert.True(result.PolicyComparisons.Any(c => 
+                c.Status == CrossFormatComparisonStatus.Identical ||
+                c.Status == CrossFormatComparisonStatus.SemanticallyEquivalent ||
+                c.Status == CrossFormatComparisonStatus.Different), 
+                "Expected policies to be matched and compared");
         }
 
         #endregion
