@@ -31,9 +31,7 @@ namespace ConditionalAccessExporter.Tests
             var result = ParallelProcessingService.GetOptimalDegreeOfParallelism();
 
             // Assert
-            Assert.True(result >= 2, "Should return at least 2");
-            Assert.True(result <= 16, "Should not exceed 16");
-            Assert.True(result <= Environment.ProcessorCount, "Should not exceed processor count");
+            Assert.InRange(result, 2, Math.Min(16, Environment.ProcessorCount));
             
             _output.WriteLine($"Optimal parallelism: {result} (System cores: {Environment.ProcessorCount})");
         }
@@ -58,7 +56,7 @@ namespace ConditionalAccessExporter.Tests
             Assert.Equal(10, result.TotalProcessed);
             Assert.Equal(10, result.Results.Count);
             Assert.Empty(result.Errors);
-            Assert.True(result.SuccessRate >= 99.0); // Allow for minor floating point variance
+            Assert.InRange(result.SuccessRate, 99.0, 100.0); // Allow for minor floating point variance
             Assert.All(result.Results, r => Assert.Contains(r / 2, items));
 
             _output.WriteLine($"Processed {result.TotalProcessed} items in {result.ElapsedTime.TotalMilliseconds}ms");
@@ -92,7 +90,7 @@ namespace ConditionalAccessExporter.Tests
             Assert.Equal(10, result.TotalProcessed);
             Assert.Equal(7, result.Results.Count); // 10 - 3 errors (items 3, 6, 9)
             Assert.Equal(3, result.Errors.Count);
-            Assert.True(result.SuccessRate < 100);
+            Assert.InRange(result.SuccessRate, 0.0, 99.99);
             Assert.All(result.Errors, e => Assert.IsType<InvalidOperationException>(e.Exception));
 
             _output.WriteLine($"Successfully processed {result.SuccessfulItems} out of {result.TotalItems} items");
@@ -158,7 +156,7 @@ namespace ConditionalAccessExporter.Tests
             Assert.Equal(5, result.TotalProcessed);
             Assert.Equal(5, result.Results.Count);
             Assert.Empty(result.Errors);
-            Assert.All(result.Results, length => Assert.True(length > 0));
+            Assert.All(result.Results, length => Assert.True(length > 0, "All file lengths should be greater than 0"));
             Assert.NotEmpty(progressReports);
 
             _output.WriteLine($"Processed {result.TotalProcessed} files with {progressReports.Count} progress reports");
@@ -195,7 +193,7 @@ namespace ConditionalAccessExporter.Tests
 
             // Assert
             Assert.NotEmpty(progressReports);
-            Assert.True(progressReports.Count >= 3); // Should have at least a few progress reports
+            Assert.InRange(progressReports.Count, 3, int.MaxValue); // Should have at least a few progress reports
             
             var finalReport = progressReports.Last();
             Assert.Equal(20, finalReport.Total);
@@ -245,7 +243,7 @@ namespace ConditionalAccessExporter.Tests
             Assert.Equal(50, result.TotalProcessed);
             // The +1 margin accounts for slight variances in thread scheduling or timing,
             // which can occasionally result in one extra thread being active momentarily.
-            Assert.True(maxConcurrentCount <= options.MaxDegreeOfParallelism!.Value + 1);
+            Assert.InRange(maxConcurrentCount, 1, options.MaxDegreeOfParallelism!.Value + 1);
             
             _output.WriteLine($"Max concurrent operations observed: {maxConcurrentCount}");
             _output.WriteLine($"Configured max degree of parallelism: {options.MaxDegreeOfParallelism}");

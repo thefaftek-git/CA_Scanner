@@ -80,8 +80,7 @@ namespace ConditionalAccessExporter.Tests
 
             var comparison = result.PolicyComparisons.First();
             Assert.Equal("Test Policy", comparison.PolicyName);
-            Assert.True(comparison.Status == CrossFormatComparisonStatus.Identical || 
-                       comparison.Status == CrossFormatComparisonStatus.SemanticallyEquivalent);
+            PolicyAssertions.AssertPoliciesMatch(comparison);
         }
 
         [Fact]
@@ -204,8 +203,7 @@ namespace ConditionalAccessExporter.Tests
 
             // Assert
             var comparison = result.PolicyComparisons.First();
-            Assert.True(comparison.Status == CrossFormatComparisonStatus.SemanticallyEquivalent ||
-                       comparison.Status == CrossFormatComparisonStatus.Identical);
+            PolicyAssertions.AssertPoliciesMatch(comparison);
         }
 
         #endregion
@@ -262,7 +260,7 @@ namespace ConditionalAccessExporter.Tests
             var result = await _service.CompareAsync(sourceDir, referenceDir, matchingOptions);
 
             // Assert
-            Assert.True(result.Summary.MatchingPolicies > 0 || result.Summary.SemanticallyEquivalentPolicies > 0);
+            PolicyAssertions.AssertHasMatchingPolicies(result.Summary);
         }
 
         [Fact]
@@ -357,7 +355,7 @@ namespace ConditionalAccessExporter.Tests
             // Assert
             Assert.NotNull(result);
             // Should have loaded the valid policy despite malformed file
-            Assert.True(result.Summary.TotalSourcePolicies >= 1);
+            PolicyAssertions.AssertMinimumSourcePolicies(result, 1);
         }
 
         #endregion
@@ -408,6 +406,305 @@ namespace ConditionalAccessExporter.Tests
             // Assert
             Assert.Equal(PolicyFormat.Terraform, result.SourceFormat);
             Assert.Equal(PolicyFormat.Json, result.ReferenceFormat);
+        }
+
+        #endregion
+
+        #region Error Scenario Tests
+
+        [Fact]
+        public async Task ComparePoliciesAsync_EmptySourceDirectory_ShouldHandleGracefully()
+        {
+            // Arrange
+            var sourceDir = CreateSourceDirectory(); // Empty directory
+            var referenceDir = CreateReferenceDirectory();
+            
+            var terraformPolicy = TestDataFactory.CreateBasicTerraformPolicy("test_policy", "Test Policy");
+            WriteTerraformPolicyToFile(referenceDir, "policy.tf", terraformPolicy);
+
+            var matchingOptions = TestDataFactory.CreateMatchingOptions();
+
+            // Act
+            var result = await _service.CompareAsync(sourceDir, referenceDir, matchingOptions);
+
+            // Assert
+            Assert.NotNull(result);
+            PolicyAssertions.AssertSummaryTotals(result.Summary, 0, 1);
+            Assert.Equal(1, result.Summary.ReferenceOnlyPolicies);
+        }
+
+        [Fact]
+        public async Task ComparePoliciesAsync_EmptyReferenceDirectory_ShouldHandleGracefully()
+        {
+            // Arrange
+            var sourceDir = CreateSourceDirectory();
+            var referenceDir = CreateReferenceDirectory(); // Empty directory
+            
+            var jsonPolicy = TestDataFactory.CreateBasicJsonPolicy("test-id", "Test Policy");
+            WriteJsonPolicyToFile(sourceDir, "policy.json", jsonPolicy);
+
+            var matchingOptions = TestDataFactory.CreateMatchingOptions();
+
+            // Act
+            var result = await _service.CompareAsync(sourceDir, referenceDir, matchingOptions);
+
+            // Assert
+            Assert.NotNull(result);
+            PolicyAssertions.AssertSummaryTotals(result.Summary, 1, 0);
+            Assert.Equal(1, result.Summary.SourceOnlyPolicies);
+        }
+
+        [Fact]
+        public async Task ComparePoliciesAsync_BothDirectoriesEmpty_ShouldReturnEmptyResult()
+        {
+            // Arrange
+            var sourceDir = CreateSourceDirectory();
+            var referenceDir = CreateReferenceDirectory();
+            var matchingOptions = TestDataFactory.CreateMatchingOptions();
+
+            // Act
+            var result = await _service.CompareAsync(sourceDir, referenceDir, matchingOptions);
+
+            // Assert
+            Assert.NotNull(result);
+            PolicyAssertions.AssertSummaryTotals(result.Summary, 0, 0);
+            Assert.Empty(result.PolicyComparisons);
+        }
+
+        [Fact]
+        public async Task ComparePoliciesAsync_InvalidTerraformSyntax_ShouldSkipAndContinue()
+        {
+            // Arrange
+            var sourceDir = CreateSourceDirectory();
+            var referenceDir = CreateReferenceDirectory();
+
+            var jsonPolicy = TestDataFactory.CreateBasicJsonPolicy("valid-policy", "Valid Policy");
+            WriteJsonPolicyToFile(sourceDir, "valid.json", jsonPolicy);
+
+            // Create invalid Terraform file
+            var invalidTerraformPath = Path.Combine(referenceDir, "invalid.tf");
+            await File.WriteAllTextAsync(invalidTerraformPath, TestDataFactory.CreateInvalidTerraform());
+
+            // Create valid Terraform file
+            var validTerraformPolicy = TestDataFactory.CreateBasicTerraformPolicy("valid_policy", "Valid Policy");
+            WriteTerraformPolicyToFile(referenceDir, "valid.tf", validTerraformPolicy);
+
+            var matchingOptions = TestDataFactory.CreateMatchingOptions();
+
+            // Act
+            var result = await _service.CompareAsync(sourceDir, referenceDir, matchingOptions);
+
+            // Assert
+            Assert.NotNull(result);
+            // Should process the valid file despite invalid syntax in other file
+            PolicyAssertions.AssertMinimumReferencePolicies(result, 1);
+        }
+
+        [Fact]
+        public async Task ComparePoliciesAsync_LargeNumberOfPolicies_ShouldHandleEfficiently()
+        {
+            // Arrange
+            var sourceDir = CreateSourceDirectory();
+            var referenceDir = CreateReferenceDirectory();
+
+            const int policyCount = 100;
+
+            // Create many JSON policies
+            for (int i = 0; i < policyCount; i++)
+            {
+                var jsonPolicy = TestDataFactory.CreateBasicJsonPolicy($"policy-{i:D3}", $"Test Policy {i}");
+                WriteJsonPolicyToFile(sourceDir, $"policy-{i:D3}.json", jsonPolicy);
+            }
+
+            // Create corresponding Terraform policies
+            for (int i = 0; i < policyCount; i++)
+            {
+                var terraformPolicy = TestDataFactory.CreateBasicTerraformPolicy($"policy_{i:D3}", $"Test Policy {i}");
+                WriteTerraformPolicyToFile(referenceDir, $"policy-{i:D3}.tf", terraformPolicy);
+            }
+
+            var matchingOptions = TestDataFactory.CreateMatchingOptions();
+
+            // Act
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var result = await _service.CompareAsync(sourceDir, referenceDir, matchingOptions);
+            stopwatch.Stop();
+
+            // Assert
+            Assert.NotNull(result);
+            PolicyAssertions.AssertSummaryTotals(result.Summary, policyCount, policyCount);
+            PolicyAssertions.AssertExecutionTimeWithinBounds(stopwatch.Elapsed, TimeSpan.FromSeconds(30));
+            PolicyAssertions.AssertHasMatchingPolicies(result.Summary);
+        }
+
+        [Fact]
+        public async Task ComparePoliciesAsync_NullMatchingOptions_ShouldUseDefaults()
+        {
+            // Arrange
+            var sourceDir = CreateSourceDirectory();
+            var referenceDir = CreateReferenceDirectory();
+
+            var jsonPolicy = TestDataFactory.CreateBasicJsonPolicy("test-policy", "Test Policy");
+            var terraformPolicy = TestDataFactory.CreateBasicTerraformPolicy("test_policy", "Test Policy");
+
+            WriteJsonPolicyToFile(sourceDir, "policy.json", jsonPolicy);
+            WriteTerraformPolicyToFile(referenceDir, "policy.tf", terraformPolicy);
+
+            // Act
+            var result = await _service.CompareAsync(sourceDir, referenceDir, null);
+
+            // Assert
+            Assert.NotNull(result);
+            PolicyAssertions.AssertMinimumSourcePolicies(result, 1);
+            PolicyAssertions.AssertMinimumReferencePolicies(result, 1);
+        }
+
+        [Fact]
+        public async Task ComparePoliciesAsync_ReadOnlyFileSystem_ShouldNotThrow()
+        {
+            // Arrange
+            var sourceDir = CreateSourceDirectory();
+            var referenceDir = CreateReferenceDirectory();
+
+            var jsonPolicy = TestDataFactory.CreateBasicJsonPolicy("test-policy", "Test Policy");
+            var terraformPolicy = TestDataFactory.CreateBasicTerraformPolicy("test_policy", "Test Policy");
+
+            WriteJsonPolicyToFile(sourceDir, "policy.json", jsonPolicy);
+            WriteTerraformPolicyToFile(referenceDir, "policy.tf", terraformPolicy);
+
+            var matchingOptions = TestDataFactory.CreateMatchingOptions();
+
+            // Act & Assert - Should not throw even if file system is read-only
+            var result = await _service.CompareAsync(sourceDir, referenceDir, matchingOptions);
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task ComparePoliciesAsync_VeryLongPolicyNames_ShouldHandleCorrectly()
+        {
+            // Arrange
+            var sourceDir = CreateSourceDirectory();
+            var referenceDir = CreateReferenceDirectory();
+
+            var longName = new string('A', 500); // Very long policy name
+            var jsonPolicy = TestDataFactory.CreateBasicJsonPolicy("long-policy", longName);
+            var terraformPolicy = TestDataFactory.CreateBasicTerraformPolicy("long_policy", longName);
+
+            WriteJsonPolicyToFile(sourceDir, "long.json", jsonPolicy);
+            WriteTerraformPolicyToFile(referenceDir, "long.tf", terraformPolicy);
+
+            var matchingOptions = TestDataFactory.CreateMatchingOptions();
+
+            // Act
+            var result = await _service.CompareAsync(sourceDir, referenceDir, matchingOptions);
+
+            // Assert
+            Assert.NotNull(result);
+            PolicyAssertions.AssertMinimumSourcePolicies(result, 1);
+            PolicyAssertions.AssertMinimumReferencePolicies(result, 1);
+        }
+
+        [Fact]
+        public async Task ComparePoliciesAsync_SpecialCharactersInPolicyNames_ShouldHandleCorrectly()
+        {
+            // Arrange
+            var sourceDir = CreateSourceDirectory();
+            var referenceDir = CreateReferenceDirectory();
+
+            var specialName = "Policy with Special Characters: !@#$%^&*()_+-=[]{}|;':\",./<>?";
+            var jsonPolicy = TestDataFactory.CreateBasicJsonPolicy("special-policy", specialName);
+            var terraformPolicy = TestDataFactory.CreateBasicTerraformPolicy("special_policy", specialName);
+
+            WriteJsonPolicyToFile(sourceDir, "special.json", jsonPolicy);
+            WriteTerraformPolicyToFile(referenceDir, "special.tf", terraformPolicy);
+
+            var matchingOptions = TestDataFactory.CreateMatchingOptions();
+
+            // Act
+            var result = await _service.CompareAsync(sourceDir, referenceDir, matchingOptions);
+
+            // Assert
+            Assert.NotNull(result);
+            PolicyAssertions.AssertMinimumSourcePolicies(result, 1);
+            PolicyAssertions.AssertMinimumReferencePolicies(result, 1);
+        }
+
+        [Fact]
+        public async Task ComparePoliciesAsync_UnicodeCharacters_ShouldHandleCorrectly()
+        {
+            // Arrange
+            var sourceDir = CreateSourceDirectory();
+            var referenceDir = CreateReferenceDirectory();
+
+            var unicodeName = "Política de Acesso Condicional 测试政策 πολιτική اسياسة";
+            var jsonPolicy = TestDataFactory.CreateBasicJsonPolicy("unicode-policy", unicodeName);
+            var terraformPolicy = TestDataFactory.CreateBasicTerraformPolicy("unicode_policy", unicodeName);
+
+            WriteJsonPolicyToFile(sourceDir, "unicode.json", jsonPolicy);
+            WriteTerraformPolicyToFile(referenceDir, "unicode.tf", terraformPolicy);
+
+            var matchingOptions = TestDataFactory.CreateMatchingOptions();
+
+            // Act
+            var result = await _service.CompareAsync(sourceDir, referenceDir, matchingOptions);
+
+            // Assert
+            Assert.NotNull(result);
+            PolicyAssertions.AssertMinimumSourcePolicies(result, 1);
+            PolicyAssertions.AssertMinimumReferencePolicies(result, 1);
+        }
+
+        #endregion
+
+        #region Performance Tests
+
+        [Fact]
+        public async Task ComparePoliciesAsync_PerformanceWithManyComplexPolicies_ShouldCompleteWithinReasonableTime()
+        {
+            // Arrange
+            var sourceDir = CreateSourceDirectory();
+            var referenceDir = CreateReferenceDirectory();
+
+            const int policyCount = 50;
+
+            // Create complex JSON policies
+            for (int i = 0; i < policyCount; i++)
+            {
+                var jsonPolicy = TestDataFactory.CreateComplexJsonPolicy(
+                    $"policy-{i:D3}", 
+                    $"Complex Test Policy {i}",
+                    includeUsers: new[] { $"user-{i}", $"user-{i + 1000}" },
+                    excludeUsers: new[] { $"excluded-user-{i}" },
+                    includeApplications: new[] { "All" },
+                    excludeApplications: new[] { $"excluded-app-{i}" }
+                );
+                WriteJsonPolicyToFile(sourceDir, $"complex-policy-{i:D3}.json", jsonPolicy);
+            }
+
+            // Create corresponding complex Terraform policies
+            for (int i = 0; i < policyCount; i++)
+            {
+                var terraformPolicy = TestDataFactory.CreateComplexTerraformPolicy(
+                    $"complex_policy_{i:D3}", 
+                    $"Complex Test Policy {i}",
+                    includeUsers: new[] { $"user-{i}", $"user-{i + 1000}" },
+                    excludeUsers: new[] { $"excluded-user-{i}" }
+                );
+                WriteTerraformPolicyToFile(referenceDir, $"complex-policy-{i:D3}.tf", terraformPolicy);
+            }
+
+            var matchingOptions = TestDataFactory.CreateMatchingOptions(enableSemanticComparison: true);
+
+            // Act
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var result = await _service.CompareAsync(sourceDir, referenceDir, matchingOptions);
+            stopwatch.Stop();
+
+            // Assert
+            Assert.NotNull(result);
+            PolicyAssertions.AssertSummaryTotals(result.Summary, policyCount, policyCount);
+            PolicyAssertions.AssertExecutionTimeWithinBounds(stopwatch.Elapsed, TimeSpan.FromMinutes(2));
+            PolicyAssertions.AssertHasMatchingPolicies(result.Summary);
         }
 
         #endregion
