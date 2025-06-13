@@ -136,6 +136,12 @@ namespace ConditionalAccessExporter.Tests
 
             var progressReports = new List<ParallelProcessingProgress>();
             var progress = new Progress<ParallelProcessingProgress>(p => progressReports.Add(p));
+            
+            // Use a progress interval of 1 to ensure progress is reported for small batches
+            var options = new ParallelProcessingOptions
+            {
+                ProgressReportInterval = 1
+            };
 
             // Act
             var result = await ParallelProcessingService.ProcessFilesInParallelAsync(
@@ -145,6 +151,7 @@ namespace ConditionalAccessExporter.Tests
                     var content = await File.ReadAllTextAsync(filePath, ct);
                     return content.Length;
                 },
+                options: options,
                 progress: progress);
 
             // Assert
