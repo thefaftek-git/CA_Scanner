@@ -20,29 +20,134 @@ public class PolicyProcessingBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        // Create sample policy JSON
-        _samplePolicyJson = JsonConvert.SerializeObject(new
+        // Create varied sample policy configurations to better represent real-world scenarios
+        var policyTemplates = new object[]
         {
-            id = "test-policy-id",
-            displayName = "Test Conditional Access Policy",
-            state = "enabled",
-            conditions = new
+            // Basic MFA policy
+            new
             {
-                users = new
+                id = "policy-{0}",
+                displayName = "Require MFA for All Users - {0}",
+                state = "enabled",
+                conditions = new
                 {
-                    includeUsers = new[] { "All" }
+                    users = new
+                    {
+                        includeUsers = new[] { "All" },
+                        excludeUsers = new[] { "emergency-access@contoso.com" }
+                    },
+                    applications = new
+                    {
+                        includeApplications = new[] { "All" },
+                        excludeApplications = new[] { "00000002-0000-0ff1-ce00-000000000000" }
+                    },
+                    locations = new
+                    {
+                        includeLocations = new[] { "All" },
+                        excludeLocations = new[] { "AllTrusted" }
+                    },
+                    platforms = new
+                    {
+                        includePlatforms = new[] { "all" }
+                    },
+                    clientAppTypes = new[] { "all" }
                 },
-                applications = new
+                grantControls = new
                 {
-                    includeApplications = new[] { "All" }
+                    @operator = "OR",
+                    builtInControls = new[] { "mfa" }
                 }
             },
-            grantControls = new
+            // Device compliance policy
+            new
             {
-                @operator = "OR",
-                builtInControls = new[] { "mfa" }
+                id = "policy-{0}",
+                displayName = "Require Compliant Device - {0}",
+                state = "enabled",
+                conditions = new
+                {
+                    users = new
+                    {
+                        includeGroups = new[] { "Engineers", "Administrators" }
+                    },
+                    applications = new
+                    {
+                        includeApplications = new[] { "Office365", "SharePoint" }
+                    },
+                    platforms = new
+                    {
+                        includePlatforms = new[] { "windows", "macOS" }
+                    },
+                    clientAppTypes = new[] { "browser", "mobileAppsAndDesktopClients" }
+                },
+                grantControls = new
+                {
+                    @operator = "AND",
+                    builtInControls = new[] { "compliantDevice", "mfa" }
+                }
+            },
+            // Risk-based policy
+            new
+            {
+                id = "policy-{0}",
+                displayName = "Block High Risk Sign-ins - {0}",
+                state = "enabled",
+                conditions = new
+                {
+                    users = new
+                    {
+                        includeUsers = new[] { "All" }
+                    },
+                    applications = new
+                    {
+                        includeApplications = new[] { "All" }
+                    },
+                    signInRiskLevels = new[] { "high", "medium" },
+                    userRiskLevels = new[] { "high" }
+                },
+                grantControls = new
+                {
+                    @operator = "OR",
+                    builtInControls = new[] { "block" }
+                }
+            },
+            // Session control policy
+            new
+            {
+                id = "policy-{0}",
+                displayName = "Limit Browser Session - {0}",
+                state = "enabledForReportingButNotEnforced",
+                conditions = new
+                {
+                    users = new
+                    {
+                        includeUsers = new[] { "All" }
+                    },
+                    applications = new
+                    {
+                        includeApplications = new[] { "Office365" }
+                    },
+                    clientAppTypes = new[] { "browser" }
+                },
+                sessionControls = new
+                {
+                    signInFrequency = new
+                    {
+                        isEnabled = true,
+                        type = "hours",
+                        value = 4
+                    },
+                    persistentBrowser = new
+                    {
+                        isEnabled = true,
+                        mode = "never"
+                    }
+                }
             }
-        }, Formatting.Indented);
+        };
+
+        // Create the first sample policy using the first template
+        _samplePolicyJson = JsonConvert.SerializeObject(policyTemplates[0], Formatting.Indented);
 
         // Create sample Terraform configuration
         _sampleTerraformConfig = @"
@@ -66,15 +171,28 @@ resource ""azuread_conditional_access_policy"" ""test_policy"" {
   }
 }";
 
-        // Create policy sets for scalability testing
+        // Create varied policy sets for scalability testing using different templates
         _smallPolicySet = Enumerable.Range(1, 10)
-            .Select(i => _samplePolicyJson.Replace("test-policy-id", $"policy-{i}"))
+            .Select(i => 
+            {
+                var template = policyTemplates[i % policyTemplates.Length];
+                var policyJson = JsonConvert.SerializeObject(template, Formatting.Indented);
+                return policyJson.Replace("policy-{0}", $"policy-{i}")
+                                .Replace("- {0}", $"- {i}");
+            })
             .ToList();
 
         _largePolicySet = Enumerable.Range(1, 100)
-            .Select(i => _samplePolicyJson.Replace("test-policy-id", $"policy-{i}"))
+            .Select(i => 
+            {
+                var template = policyTemplates[i % policyTemplates.Length];
+                var policyJson = JsonConvert.SerializeObject(template, Formatting.Indented);
+                return policyJson.Replace("policy-{0}", $"policy-{i}")
+                                .Replace("- {0}", $"- {i}");
+            })
             .ToList();
     }
+
 
     [Benchmark]
     public void JsonDeserialization_SinglePolicy()

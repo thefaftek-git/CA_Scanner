@@ -297,24 +297,34 @@ public class FileIOBenchmarks
         var eventCount = 0;
         var resetEvent = new ManualResetEventSlim(false);
         
-        using var watcher = new FileSystemWatcher(_tempDirectory, "watcher_test.json");
-        watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName;
-        
-        // Set up event handlers to count events
-        watcher.Created += (sender, e) => { Interlocked.Increment(ref eventCount); };
-        watcher.Changed += (sender, e) => { 
-            Interlocked.Increment(ref eventCount);
-            if (eventCount >= 2) resetEvent.Set(); // Signal when we've received expected events
-        };
-        
-        watcher.EnableRaisingEvents = true;
-        
-        // Create and modify file
-        File.WriteAllText(watcherFile, _samplePolicyData);
-        File.AppendAllText(watcherFile, "\n// Modified");
-        
-        // Wait for events to be processed with timeout
-        resetEvent.Wait(TimeSpan.FromSeconds(1));
+        try
+        {
+            using var watcher = new FileSystemWatcher(_tempDirectory, "watcher_test.json");
+            watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName;
+            
+            // Set up event handlers to count events
+            watcher.Created += (sender, e) => { Interlocked.Increment(ref eventCount); };
+            watcher.Changed += (sender, e) => { 
+                Interlocked.Increment(ref eventCount);
+                if (eventCount >= 2) resetEvent.Set(); // Signal when we've received expected events
+            };
+            
+            watcher.EnableRaisingEvents = true;
+            
+            // Create and modify file
+            File.WriteAllText(watcherFile, _samplePolicyData);
+            File.AppendAllText(watcherFile, "\n// Modified");
+            
+            // Wait for events to be processed with timeout
+            resetEvent.Wait(TimeSpan.FromSeconds(1));
+        }
+        finally
+        {
+            if (File.Exists(watcherFile))
+            {
+                File.Delete(watcherFile);
+            }
+        }
     }
 }
 
