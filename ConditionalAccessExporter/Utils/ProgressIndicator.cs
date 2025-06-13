@@ -29,9 +29,9 @@ public class ProgressIndicator : IDisposable
         _progress = progress;
         _stopwatch = Stopwatch.StartNew();
         
-        // Record initial memory usage
-        GC.Collect();
-        _initialMemory = GC.GetTotalMemory(false);
+        // Record initial memory usage (only force GC for accurate benchmarking when needed)
+        // In normal operations, avoid the overhead of forcing garbage collection
+        _initialMemory = GC.GetTotalMemory(forceFullCollection: false);
         
         var interval = updateInterval ?? TimeSpan.FromMilliseconds(500);
         _updateTimer = new Timer(UpdateProgress, null, interval, interval);
