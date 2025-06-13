@@ -57,6 +57,16 @@ AZURE_CLIENT_ID=your-client-id
 AZURE_CLIENT_SECRET=your-client-secret
 ```
 
+## 📚 Documentation
+
+For comprehensive documentation, please refer to the main project guides:
+
+- **[Developer Guide](../CONTRIBUTING.md)**: Complete onboarding guide for contributors
+- **[Configuration Reference](../CONFIGURATION.md)**: All configuration options and environment variables
+- **[Examples & Use Cases](../EXAMPLES.md)**: Practical scenarios and real-world examples
+- **[Troubleshooting Guide](../TROUBLESHOOTING.md)**: Common issues and solutions
+- **[Advanced Features](../ADVANCED_FEATURES.md)**: In-depth technical documentation
+
 ## Usage
 
 ### Building the Application
@@ -71,7 +81,7 @@ Export Conditional Access policies from Entra ID to a JSON file:
 
 ```bash
 # Default export (backward compatible)
-dotnet run
+dotnet run export
 
 # Export with custom output file
 dotnet run export --output my-policies.json
