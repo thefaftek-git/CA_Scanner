@@ -22,7 +22,7 @@ public class PerformanceBenchmarkService
     /// <summary>
     /// Runs all available benchmarks
     /// </summary>
-    public async Task<BenchmarkExecutionResult> RunAllBenchmarksAsync(CancellationToken cancellationToken = default)
+    public Task<BenchmarkExecutionResult> RunAllBenchmarksAsync(CancellationToken cancellationToken = default)
     {
         var result = new BenchmarkExecutionResult();
         
@@ -62,7 +62,7 @@ public class PerformanceBenchmarkService
             _progressReporter?.Report($"Benchmark execution failed: {ex.Message}");
         }
 
-        return result;
+        return Task.FromResult(result);
     }
 
     /// <summary>

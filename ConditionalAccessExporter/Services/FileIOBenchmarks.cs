@@ -210,7 +210,10 @@ public class FileIOBenchmarks
         {
             var content = File.ReadAllText(file);
             var policy = JsonConvert.DeserializeObject(content);
-            policies.Add(policy);
+            if (policy != null)
+            {
+                policies.Add(policy);
+            }
         }
         
         // Serialize and write combined result
@@ -229,7 +232,10 @@ public class FileIOBenchmarks
         {
             var content = await File.ReadAllTextAsync(file);
             var policy = JsonConvert.DeserializeObject(content);
-            policies.Add(policy);
+            if (policy != null)
+            {
+                policies.Add(policy);
+            }
         }
         
         // Serialize and write combined result asynchronously

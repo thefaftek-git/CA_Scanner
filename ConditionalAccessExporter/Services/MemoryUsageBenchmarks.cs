@@ -124,7 +124,10 @@ public class MemoryUsageBenchmarks
         foreach (var json in _smallDataSet)
         {
             var obj = JsonConvert.DeserializeObject(json);
-            results.Add(obj);
+            if (obj != null)
+            {
+                results.Add(obj);
+            }
         }
         return results;
     }
@@ -136,7 +139,10 @@ public class MemoryUsageBenchmarks
         foreach (var json in _largeDataSet)
         {
             var obj = JsonConvert.DeserializeObject(json);
-            results.Add(obj);
+            if (obj != null)
+            {
+                results.Add(obj);
+            }
         }
         return results;
     }
@@ -234,7 +240,10 @@ public class MemoryUsageBenchmarks
         for (int i = 0; i < 1000; i++)
         {
             var policy = JsonConvert.DeserializeObject(_largePolicyJson);
-            dictionary[$"policy-{i}"] = policy;
+            if (policy != null)
+            {
+                dictionary[$"policy-{i}"] = policy;
+            }
         }
     }
 
@@ -245,7 +254,10 @@ public class MemoryUsageBenchmarks
         for (int i = 0; i < 1000; i++)
         {
             var policy = JsonConvert.DeserializeObject(_largePolicyJson);
-            dictionary[$"policy-{i}"] = policy;
+            if (policy != null)
+            {
+                dictionary[$"policy-{i}"] = policy;
+            }
         }
     }
 

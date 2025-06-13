@@ -82,10 +82,10 @@ namespace ConditionalAccessExporter.Tests
 
             // Assert
             Assert.NotNull(result);
-            Assert.True(result.PolicyComparisons.Any(p => 
+            Assert.Contains(result.PolicyComparisons, p => 
                 p.Status == CrossFormatComparisonStatus.Identical ||
                 p.Status == CrossFormatComparisonStatus.SemanticallyEquivalent ||
-                p.Status == CrossFormatComparisonStatus.Different)); // At least some comparison happened
+                p.Status == CrossFormatComparisonStatus.Different); // At least some comparison happened
         }
 
         [Fact]
