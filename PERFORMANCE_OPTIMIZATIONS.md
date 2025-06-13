@@ -141,23 +141,34 @@ The `StreamingJsonProcessor` utility provides memory-efficient processing:
 
 ## Benchmarking Results
 
-Use the `FilePerformanceBenchmark` class to measure improvements:
+CA_Scanner now includes comprehensive performance benchmarking capabilities. Use the built-in benchmarking suite to measure performance:
 
-```csharp
-var filePaths = Directory.GetFiles(policyDirectory, "*.json").ToList();
-var readResults = await FilePerformanceBenchmark.BenchmarkFileReadsAsync(filePaths, cancellationToken);
+```bash
+# Run all performance benchmarks
+dotnet run --project ConditionalAccessExporter benchmark
 
-// Example output:
-// Operation: Async File Reads
-// Files Processed: 150
-// Total Size: 25.3 MB
-// Duration: 1250 ms
-// Memory Used: 45.2 MB
-// Throughput: 20.24 MB/s
+# Run specific benchmark categories
+dotnet run --project ConditionalAccessExporter benchmark --type benchmarks
+dotnet run --project ConditionalAccessExporter benchmark --type memory
+dotnet run --project ConditionalAccessExporter benchmark --type regression
 
-var concurrentResult = await FilePerformanceBenchmark.BenchmarkConcurrentOperationsAsync(
-    filePaths, maxConcurrency: 8, cancellationToken);
+# Save results to file
+dotnet run --project ConditionalAccessExporter benchmark --output performance-results.txt
 ```
+
+The benchmarking suite provides detailed analysis including:
+
+```
+Policy Processing: 150/500 (30.0%) | Elapsed: 00:02:15 | ETA: 00:05:30 | Rate: 1.1 items/sec | Memory: 67.3 MB | Delta: +12.4 MB
+
+Benchmark Results:
+✓ JSON Serialization: 245ms (avg) | 15.2 MB/s throughput
+✓ Policy Comparison: 1.2s (avg) | 125 policies/sec
+✓ File I/O Operations: 890ms (avg) | 28.4 MB/s throughput
+✗ Memory Usage: 156MB peak | +23MB delta | Potential leak detected
+```
+
+For detailed benchmarking documentation, see [PERFORMANCE_BENCHMARKING.md](PERFORMANCE_BENCHMARKING.md).
 
 ## Best Practices
 
