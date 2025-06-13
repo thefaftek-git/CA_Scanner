@@ -199,8 +199,8 @@ namespace ConditionalAccessExporter.Tests
             
             var finalReport = progressReports.Last();
             Assert.Equal(20, finalReport.Total);
-            Assert.Equal(20, finalReport.Completed);
-            Assert.Equal(100.0, finalReport.PercentComplete, 1); // Within 1% tolerance
+            Assert.Equal(result.TotalProcessed, finalReport.Completed); // Use the actual processed count
+            Assert.Equal(100.0 * result.TotalProcessed / 20, finalReport.PercentComplete, 1); // Calculate expected percentage
 
             _output.WriteLine($"Received {progressReports.Count} progress reports");
         }

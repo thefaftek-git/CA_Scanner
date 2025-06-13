@@ -1,0 +1,18 @@
+﻿2025-06-13T03:18:06.2332892Z ##[group]Run dotnet --version && dotnet build --no-restore
+2025-06-13T03:18:06.2333436Z [36;1mdotnet --version && dotnet build --no-restore[0m
+2025-06-13T03:18:06.2402441Z shell: /usr/bin/bash -e {0}
+2025-06-13T03:18:06.2402760Z env:
+2025-06-13T03:18:06.2403003Z   DOTNET_ROOT: /usr/share/dotnet
+2025-06-13T03:18:06.2403325Z ##[endgroup]
+2025-06-13T03:18:06.3454220Z 8.0.411
+2025-06-13T03:18:12.3191805Z   ConditionalAccessExporter -> /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter/bin/Debug/net8.0/ConditionalAccessExporter.dll
+2025-06-13T03:18:15.1225104Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/CrossFormatPolicyComparisonServiceSpecificMethodTests.cs(85,13): warning xUnit2012: Do not use Assert.True() to check if a value exists in a collection. Use Assert.Contains instead. (https://xunit.net/xunit.analyzers/rules/xUnit2012) [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T03:18:15.2796149Z   ConditionalAccessExporter.Tests -> /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/bin/Debug/net8.0/ConditionalAccessExporter.Tests.dll
+2025-06-13T03:18:15.3024466Z 
+2025-06-13T03:18:15.3031537Z Build succeeded.
+2025-06-13T03:18:15.3032232Z 
+2025-06-13T03:18:15.3037017Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/CrossFormatPolicyComparisonServiceSpecificMethodTests.cs(85,13): warning xUnit2012: Do not use Assert.True() to check if a value exists in a collection. Use Assert.Contains instead. (https://xunit.net/xunit.analyzers/rules/xUnit2012) [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T03:18:15.3041188Z     1 Warning(s)
+2025-06-13T03:18:15.3041880Z     0 Error(s)
+2025-06-13T03:18:15.3044069Z 
+2025-06-13T03:18:15.3044707Z Time Elapsed 00:00:08.73
