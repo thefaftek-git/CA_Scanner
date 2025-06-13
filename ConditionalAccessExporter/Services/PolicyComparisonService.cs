@@ -1,4 +1,5 @@
 using ConditionalAccessExporter.Models;
+using ConditionalAccessExporter.Utils;
 using JsonDiffPatchDotNet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -32,7 +33,7 @@ namespace ConditionalAccessExporter.Services
 
         public async Task<DirectoryValidationResult> ValidateReferenceDirectoryAsync(string referenceDirectory)
         {
-            Console.WriteLine($"Validating reference directory: {referenceDirectory}");
+            Logger.WriteInfo($"Validating reference directory: {referenceDirectory}");
             return await _validationService.ValidateDirectoryAsync(referenceDirectory);
         }
 
@@ -42,7 +43,7 @@ namespace ConditionalAccessExporter.Services
             MatchingOptions matchingOptions,
             bool skipValidation = false)
         {
-            Console.WriteLine($"Starting comparison with reference directory: {referenceDirectory}");
+            Logger.WriteInfo($"Starting comparison with reference directory: {referenceDirectory}");
             
             var result = new ComparisonResult
             {
@@ -55,7 +56,7 @@ namespace ConditionalAccessExporter.Services
             result.TenantId = entraData.TenantId;
             result.Summary.TotalEntraPolicies = entraData.Policies.Count;
 
-            Console.WriteLine($"Found {entraData.Policies.Count} policies in Entra export");
+            Logger.WriteInfo($"Found {entraData.Policies.Count} policies in Entra export");
 
             // Validate reference files before loading (unless skipped)
             if (!skipValidation)
@@ -90,7 +91,7 @@ namespace ConditionalAccessExporter.Services
             var referencePolicies = await LoadReferencePoliciesAsync(referenceDirectory);
             result.Summary.TotalReferencePolicies = referencePolicies.Count;
 
-            Console.WriteLine($"Found {referencePolicies.Count} reference policy files");
+            Logger.WriteInfo($"Found {referencePolicies.Count} reference policy files");
 
             // Perform comparison
             PerformComparison(result, entraData.Policies, referencePolicies, matchingOptions);
@@ -224,7 +225,7 @@ namespace ConditionalAccessExporter.Services
             return data;
         }
 
-        private async Task<Dictionary<string, ReferencePolicy>> LoadReferencePoliciesAsync(string directory)
+        private async Task<Dictionary<string, ReferencePolicy>> LoadReferencePoliciesAsync(string directory, CancellationToken cancellationToken = default)
         {
             var policies = new Dictionary<string, ReferencePolicy>();
 
@@ -236,43 +237,88 @@ namespace ConditionalAccessExporter.Services
 
             var jsonFiles = Directory.GetFiles(directory, "*.json", SearchOption.TopDirectoryOnly);
             
-            foreach (var file in jsonFiles)
+            if (jsonFiles.Length == 0)
             {
-                try
+                Logger.WriteInfo($"No JSON files found in reference directory '{directory}'");
+                return policies;
+            }
+
+            Logger.WriteInfo($"Loading {jsonFiles.Length} reference policy files using parallel processing...");
+
+            // Use parallel processing for loading reference files
+            var parallelOptions = new ParallelProcessingOptions
+            {
+                ContinueOnError = true, // Continue loading other files even if some fail
+                ProgressReportInterval = Math.Max(1, jsonFiles.Length / 10) // Report progress every 10%
+            };
+
+            var progress = new Progress<ParallelProcessingProgress>(p => 
+            {
+                if (p.Completed % parallelOptions.ProgressReportInterval == 0 || p.Completed == p.Total)
                 {
-                    var content = await File.ReadAllTextAsync(file);
-                    var policy = JsonConvert.DeserializeObject<JObject>(content);
-                    
-                    if (policy != null)
-                    {
-                        var fileName = Path.GetFileName(file);
-                        policies[fileName] = new ReferencePolicy
-                        {
-                            FileName = fileName,
-                            FilePath = file,
-                            Policy = policy
-                        };
-                    }
+                    Logger.WriteInfo($"Loading reference files: {p}");
                 }
-                catch (JsonReaderException ex)
+            });
+
+            var parallelResult = await ParallelProcessingService.ProcessFilesInParallelAsync(
+                jsonFiles,
+                async (file, ct) => await LoadSingleReferencePolicyAsync(file, ct),
+                parallelOptions,
+                progress,
+                cancellationToken);
+
+            // Aggregate successful results
+            foreach (var refPolicy in parallelResult.Results.Where(p => p != null))
+            {
+                policies[refPolicy!.FileName] = refPolicy;
+            }
+
+            // Log errors for failed files
+            foreach (var error in parallelResult.Errors)
+            {
+                Logger.WriteError($"Failed to load reference file '{Path.GetFileName(error.Item)}': {error.Exception.Message}");
+                
+                if (error.Exception is JsonReaderException jsonEx)
                 {
-                    Logger.WriteError($"Failed to load reference file '{Path.GetFileName(file)}': Invalid JSON syntax at line {ex.LineNumber}, position {ex.LinePosition}");
-                    Logger.WriteError($"  Error: {ex.Message}");
+                    Logger.WriteError($"  Invalid JSON syntax at line {jsonEx.LineNumber}, position {jsonEx.LinePosition}");
                     Logger.WriteInfo($"  Suggestion: Check the JSON structure for missing commas, brackets, or quotes.");
                 }
-                catch (IOException ex)
+                else if (error.Exception is IOException)
                 {
-                    Logger.WriteError($"Failed to read reference file '{Path.GetFileName(file)}': {ex.Message}");
                     Logger.WriteInfo($"  Suggestion: Ensure the file exists and the application has read permissions.");
                 }
-                catch (Exception ex)
+                else
                 {
-                    Logger.WriteError($"Failed to load reference file '{Path.GetFileName(file)}': {ex.Message}");
                     Logger.WriteInfo($"  Suggestion: Review the file for any obvious issues.");
                 }
             }
 
+            Logger.WriteInfo($"Reference file loading completed: {policies.Count} files loaded successfully");
+            Logger.WriteInfo($"Processing time: {parallelResult.ElapsedTime.TotalMilliseconds:F0}ms");
+            Logger.WriteInfo($"Average speed: {parallelResult.AverageItemsPerSecond:F1} files/second");
+
             return policies;
+        }
+
+        private async Task<ReferencePolicy?> LoadSingleReferencePolicyAsync(string file, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            
+            var content = await File.ReadAllTextAsync(file, cancellationToken);
+            var policy = JsonConvert.DeserializeObject<JObject>(content);
+            
+            if (policy != null)
+            {
+                var fileName = Path.GetFileName(file);
+                return new ReferencePolicy
+                {
+                    FileName = fileName,
+                    FilePath = file,
+                    Policy = policy
+                };
+            }
+
+            return null;
         }
 
         private void PerformComparison(

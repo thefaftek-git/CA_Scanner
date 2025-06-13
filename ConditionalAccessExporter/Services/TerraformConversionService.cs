@@ -1,5 +1,8 @@
 using ConditionalAccessExporter.Models;
+using ConditionalAccessExporter.Utils;
 using Newtonsoft.Json;
+using System;
+using static ConditionalAccessExporter.Logger;
 
 namespace ConditionalAccessExporter.Services
 {
@@ -9,7 +12,7 @@ namespace ConditionalAccessExporter.Services
         private readonly List<string> _errors = new();
         private readonly List<string> _warnings = new();
 
-        public TerraformConversionResult ConvertToGraphJson(TerraformParseResult parseResult)
+        public async Task<TerraformConversionResult> ConvertToGraphJsonAsync(TerraformParseResult parseResult, CancellationToken cancellationToken = default)
         {
             var result = new TerraformConversionResult
             {
@@ -23,21 +26,82 @@ namespace ConditionalAccessExporter.Services
                 var successCount = 0;
                 var failureCount = 0;
 
-                foreach (var terraformPolicy in parseResult.Policies)
+                if (parseResult.Policies.Count == 0)
                 {
-                    try
+                    Logger.WriteInfo("No Terraform policies found to convert.");
+                    
+                    // Create the final export structure for empty case
+                    var emptyExportData = new
                     {
-                        var graphPolicy = ConvertPolicyToGraphFormat(terraformPolicy, parseResult);
-                        convertedPolicies.Add(graphPolicy);
-                        successCount++;
-                        _conversionLog.Add($"Successfully converted policy: {terraformPolicy.DisplayName ?? terraformPolicy.ResourceName}");
-                    }
-                    catch (Exception ex)
-                    {
-                        failureCount++;
-                        _errors.Add($"Failed to convert policy '{terraformPolicy.DisplayName ?? terraformPolicy.ResourceName}': {ex.Message}");
-                    }
+                        ExportedAt = DateTime.UtcNow,
+                        Source = "Terraform",
+                        SourcePath = parseResult.SourcePath,
+                        PoliciesCount = 0,
+                        Policies = new List<object>(),
+                        ConversionSummary = new
+                        {
+                            SuccessfulConversions = 0,
+                            FailedConversions = 0,
+                            TotalTerraformPolicies = 0,
+                            VariablesFound = parseResult.Variables.Count,
+                            LocalsFound = parseResult.Locals.Count,
+                            DataSourcesFound = parseResult.DataSources.Count
+                        }
+                    };
+
+                    result.ConvertedPolicies = emptyExportData;
+                    result.SuccessfulConversions = 0;
+                    result.FailedConversions = 0;
+                    result.ConversionLog = _conversionLog;
+                    result.Errors = _errors;
+                    result.Warnings = _warnings;
+                    return result;
                 }
+                
+                Logger.WriteInfo($"Converting {parseResult.Policies.Count} Terraform policies to Graph JSON format using parallel processing...");
+
+                var parallelOptions = new ParallelProcessingOptions
+                {
+                    ContinueOnError = true, // Continue converting other policies even if some fail
+                    ProgressReportInterval = Math.Max(1, parseResult.Policies.Count / 10) // Report progress every 10%
+                };
+
+                var progress = new Progress<ParallelProcessingProgress>(p => 
+                {
+                    if (p.Completed % parallelOptions.ProgressReportInterval == 0 || p.Completed == p.Total)
+                    {
+                        Logger.WriteInfo($"Converting policies: {p}");
+                    }
+                });
+
+                var parallelResult = await ParallelProcessingService.ProcessInParallelAsync(
+                    parseResult.Policies,
+                    async (terraformPolicy, ct) => 
+                    {
+                        return await Task.Run(() =>
+                        {
+                            var graphPolicy = ConvertPolicyToGraphFormat(terraformPolicy, parseResult);
+                            _conversionLog.Add($"Successfully converted policy: {terraformPolicy.DisplayName ?? terraformPolicy.ResourceName}");
+                            return graphPolicy;
+                        }, ct);
+                    },
+                    parallelOptions,
+                    progress,
+                    cancellationToken);
+
+                // Collect results
+                convertedPolicies.AddRange(parallelResult.Results);
+                successCount = parallelResult.Results.Count;
+                failureCount = parallelResult.Errors.Count;
+
+                // Log errors
+                foreach (var error in parallelResult.Errors)
+                {
+                    _errors.Add($"Failed to convert policy: {error.Item} - {error.Exception.Message}");
+                }
+
+                Logger.WriteInfo($"Policy conversion completed in {parallelResult.ElapsedTime.TotalMilliseconds:F0}ms");
+                Logger.WriteInfo($"Average speed: {parallelResult.AverageItemsPerSecond:F1} policies/second");
 
                 // Create the final export structure matching the existing format
                 var exportData = new

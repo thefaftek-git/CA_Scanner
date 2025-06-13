@@ -1,6 +1,7 @@
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 using Azure.Identity;
+using ConditionalAccessExporter.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
@@ -48,30 +49,43 @@ namespace ConditionalAccessExporter.Services
                 var filteredPolicies = FilterPolicies(policies.Value, options);
                 Console.WriteLine($"After filtering: {filteredPolicies.Count} policies selected");
 
-                // Generate baseline files
+                // Generate baseline files using parallel processing
                 var generatedFiles = new List<string>();
-                foreach (var policy in filteredPolicies)
+                
+                Console.WriteLine($"Generating baseline files for {filteredPolicies.Count} policies using parallel processing...");
+
+                var parallelOptions = new ParallelProcessingOptions
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    
-                    try
+                    ContinueOnError = true, // Continue processing other policies even if some fail
+                    ProgressReportInterval = Math.Max(1, filteredPolicies.Count / 10) // Report progress every 10%
+                };
+
+                var progress = new Progress<ParallelProcessingProgress>(p => 
+                {
+                    if (p.Completed % parallelOptions.ProgressReportInterval == 0 || p.Completed == p.Total)
                     {
-                        var fileName = await GeneratePolicyFileAsync(policy, options, cancellationToken);
-                        if (!string.IsNullOrEmpty(fileName))
-                        {
-                            generatedFiles.Add(fileName);
-                        }
+                        Console.WriteLine($"Generating baseline files: {p}");
                     }
-                    catch (OperationCanceledException)
-                    {
-                        Console.WriteLine("Operation was cancelled during baseline generation");
-                        throw;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Warning: Failed to generate file for policy '{policy.DisplayName}': {ex.Message}");
-                    }
+                });
+
+                var parallelResult = await ParallelProcessingService.ProcessInParallelAsync(
+                    filteredPolicies,
+                    async (policy, ct) => await GeneratePolicyFileAsync(policy, options, ct),
+                    parallelOptions,
+                    progress,
+                    cancellationToken);
+
+                // Collect successful results
+                generatedFiles.AddRange(parallelResult.Results.Where(f => !string.IsNullOrEmpty(f))!);
+
+                // Log errors for failed policies
+                foreach (var error in parallelResult.Errors)
+                {
+                    Console.WriteLine($"Warning: Failed to generate file for policy '{error.Item}': {error.Exception.Message}");
                 }
+
+                Console.WriteLine($"Baseline file generation completed in {parallelResult.ElapsedTime.TotalMilliseconds:F0}ms");
+                Console.WriteLine($"Average speed: {parallelResult.AverageItemsPerSecond:F1} policies/second");
 
                 // Summary
                 Console.WriteLine();

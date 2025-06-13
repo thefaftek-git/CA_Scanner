@@ -1,5 +1,6 @@
 
 using ConditionalAccessExporter.Models;
+using ConditionalAccessExporter.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ConditionalAccessExporter.Services
@@ -63,8 +65,14 @@ namespace ConditionalAccessExporter.Services
             _policySchema = JSchema.Parse(schemaJson);
         }
 
-        public async Task<DirectoryValidationResult> ValidateDirectoryAsync(string directoryPath)
+        public async Task<DirectoryValidationResult> ValidateDirectoryAsync(
+            string directoryPath, 
+            IProgress<ParallelProcessingProgress>? progress = null,
+            CancellationToken cancellationToken = default)
         {
+            // Honor cancellation before any processing begins
+            cancellationToken.ThrowIfCancellationRequested();
+            
             var result = new DirectoryValidationResult
             {
                 DirectoryPath = directoryPath,
@@ -82,24 +90,49 @@ namespace ConditionalAccessExporter.Services
             var jsonFiles = Directory.GetFiles(directoryPath, "*.json", SearchOption.TopDirectoryOnly);
             result.TotalFiles = jsonFiles.Length;
 
-            foreach (var filePath in jsonFiles)
+            if (jsonFiles.Length == 0)
             {
-                var fileValidationResult = await ValidateFileAsync(filePath);
-                result.FileResults.Add(fileValidationResult);
-                if (!fileValidationResult.IsValid)
-                {
-                    result.IsValid = false;
-                    result.InvalidFiles++;
-                }
-                else
-                {
-                    result.ValidFiles++;
-                }
+                Console.WriteLine($"No JSON files found in directory: {directoryPath}. No files were processed.");
+                return result;
             }
+
+            // Use parallel processing for file validation
+            var parallelOptions = new ParallelProcessingOptions
+            {
+                ContinueOnError = true, // Continue validation even if some files fail
+                ProgressReportInterval = Math.Max(1, jsonFiles.Length / 20) // Report progress every 5%
+            };
+
+            Console.WriteLine($"Validating {jsonFiles.Length} policy files using parallel processing...");
+
+            var parallelResult = await ParallelProcessingService.ProcessFilesInParallelAsync(
+                jsonFiles,
+                async (filePath, ct) => await ValidateFileAsync(filePath, ct),
+                parallelOptions,
+                progress,
+                cancellationToken);
+
+            // Aggregate results
+            result.FileResults.AddRange(parallelResult.Results);
+            result.ValidFiles = parallelResult.Results.Count(r => r.IsValid);
+            result.InvalidFiles = parallelResult.Results.Count(r => !r.IsValid);
+            result.IsValid = result.InvalidFiles == 0;
+
+            // Log any processing errors
+            foreach (var error in parallelResult.Errors)
+            {
+                result.PreflightErrors.Add($"Failed to validate file {error.Item}: {error.Exception.Message}");
+                result.IsValid = false;
+            }
+
+            Console.WriteLine($"Validation completed: {result.ValidFiles} valid, {result.InvalidFiles} invalid files");
+            Console.WriteLine($"Processing time: {parallelResult.ElapsedTime.TotalMilliseconds:F0}ms");
+            Console.WriteLine($"Average speed: {parallelResult.AverageItemsPerSecond:F1} files/second");
+
             return result;
         }
 
-        public async Task<ValidationResult> ValidateFileAsync(string filePath)
+        public async Task<ValidationResult> ValidateFileAsync(string filePath, CancellationToken cancellationToken = default)
         {
             var result = new ValidationResult
             {
@@ -110,7 +143,8 @@ namespace ConditionalAccessExporter.Services
 
             try
             {
-                var content = await File.ReadAllTextAsync(filePath);
+                cancellationToken.ThrowIfCancellationRequested();
+                var content = await File.ReadAllTextAsync(filePath, cancellationToken);
                 JObject policy;
                 try
                 {

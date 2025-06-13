@@ -626,7 +626,7 @@ namespace ConditionalAccessExporter
 
                 // Convert to Graph JSON format
                 Logger.WriteInfo("Converting to Microsoft Graph JSON format...");
-                var conversionResult = conversionService.ConvertToGraphJson(parseResult);
+                var conversionResult = await conversionService.ConvertToGraphJsonAsync(parseResult);
 
                 if (conversionResult.Errors.Any())
                 {

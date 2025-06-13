@@ -1,0 +1,1292 @@
+﻿2025-06-13T03:17:49.2929204Z Current runner version: '2.325.0'
+2025-06-13T03:17:49.2962969Z ##[group]Operating System
+2025-06-13T03:17:49.2963947Z Ubuntu
+2025-06-13T03:17:49.2964495Z 24.04.2
+2025-06-13T03:17:49.2965009Z LTS
+2025-06-13T03:17:49.2965672Z ##[endgroup]
+2025-06-13T03:17:49.2966245Z ##[group]Runner Image
+2025-06-13T03:17:49.2966872Z Image: ubuntu-24.04
+2025-06-13T03:17:49.2967473Z Version: 20250609.1.0
+2025-06-13T03:17:49.2968556Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250609.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-06-13T03:17:49.2970005Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250609.1
+2025-06-13T03:17:49.2972189Z ##[endgroup]
+2025-06-13T03:17:49.2973057Z ##[group]Runner Image Provisioner
+2025-06-13T03:17:49.2974131Z 2.0.437.1
+2025-06-13T03:17:49.2974921Z ##[endgroup]
+2025-06-13T03:17:49.2976197Z ##[group]GITHUB_TOKEN Permissions
+2025-06-13T03:17:49.2978706Z Contents: write
+2025-06-13T03:17:49.2979312Z Metadata: read
+2025-06-13T03:17:49.2980142Z Pages: write
+2025-06-13T03:17:49.2980777Z ##[endgroup]
+2025-06-13T03:17:49.2983560Z Secret source: Actions
+2025-06-13T03:17:49.2984638Z Prepare workflow directory
+2025-06-13T03:17:49.3344312Z Prepare all required actions
+2025-06-13T03:17:49.3386105Z Getting action download info
+2025-06-13T03:17:49.7281648Z ##[group]Download immutable action package 'actions/checkout@v3'
+2025-06-13T03:17:49.7283012Z Version: 3.6.0
+2025-06-13T03:17:49.7284235Z Digest: sha256:942562b9c7d4b1f2557f1da21f4d3eb4eb4fd01f2ad78b2a6e187d1b193e0a0f
+2025-06-13T03:17:49.7285586Z Source commit SHA: f43a0e5ff2bd294095638e18286ca9a3d1956744
+2025-06-13T03:17:49.7286601Z ##[endgroup]
+2025-06-13T03:17:49.8451076Z ##[group]Download immutable action package 'actions/setup-dotnet@v3'
+2025-06-13T03:17:49.8452552Z Version: 3.4.2
+2025-06-13T03:17:49.8453539Z Digest: sha256:b988103bd1785dcf8ff8b209ba81500bd5f2a083a3b82e66f1d11ee61cf4c24d
+2025-06-13T03:17:49.8454666Z Source commit SHA: 55ec9447dda3d1cf6bd587150f3262f30ee10815
+2025-06-13T03:17:49.8455458Z ##[endgroup]
+2025-06-13T03:17:50.0808610Z Download action repository 'danielpalme/ReportGenerator-GitHub-Action@5.2.0' (SHA:4d510cbed8a05af5aefea46c7fd6e05b95844c89)
+2025-06-13T03:17:50.3900829Z ##[group]Download immutable action package 'actions/upload-artifact@v4'
+2025-06-13T03:17:50.3902309Z Version: 4.6.2
+2025-06-13T03:17:50.3903148Z Digest: sha256:290722aa3281d5caf23d0acdc3dbeb3424786a1a01a9cc97e72f147225e37c38
+2025-06-13T03:17:50.3904310Z Source commit SHA: ea165f8d65b6e75b540449e92b4886f43607fa02
+2025-06-13T03:17:50.3905078Z ##[endgroup]
+2025-06-13T03:17:50.5079129Z Download action repository 'JamesIves/github-pages-deploy-action@v4' (SHA:6c2d9db40f9296374acc17b90404b6e8864128c8)
+2025-06-13T03:17:51.7785734Z Complete job name: build-and-test
+2025-06-13T03:17:51.8491621Z ##[group]Run actions/checkout@v3
+2025-06-13T03:17:51.8492416Z with:
+2025-06-13T03:17:51.8492714Z   repository: thefaftek-git/CA_Scanner
+2025-06-13T03:17:51.8493267Z   token: ***
+2025-06-13T03:17:51.8493521Z   ssh-strict: true
+2025-06-13T03:17:51.8493836Z   persist-credentials: true
+2025-06-13T03:17:51.8494134Z   clean: true
+2025-06-13T03:17:51.8494408Z   sparse-checkout-cone-mode: true
+2025-06-13T03:17:51.8494734Z   fetch-depth: 1
+2025-06-13T03:17:51.8494994Z   fetch-tags: false
+2025-06-13T03:17:51.8495252Z   lfs: false
+2025-06-13T03:17:51.8495525Z   submodules: false
+2025-06-13T03:17:51.8495839Z   set-safe-directory: true
+2025-06-13T03:17:51.8496376Z ##[endgroup]
+2025-06-13T03:17:52.0954744Z Syncing repository: thefaftek-git/CA_Scanner
+2025-06-13T03:17:52.0956467Z ##[group]Getting Git version info
+2025-06-13T03:17:52.0956957Z Working directory is '/home/runner/work/CA_Scanner/CA_Scanner'
+2025-06-13T03:17:52.0957619Z [command]/usr/bin/git version
+2025-06-13T03:17:52.1030192Z git version 2.49.0
+2025-06-13T03:17:52.1062897Z ##[endgroup]
+2025-06-13T03:17:52.1083522Z Temporarily overriding HOME='/home/runner/work/_temp/79590e44-f416-4c8b-9c72-539c05671b41' before making global git config changes
+2025-06-13T03:17:52.1084997Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-13T03:17:52.1088914Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/CA_Scanner/CA_Scanner
+2025-06-13T03:17:52.1127576Z Deleting the contents of '/home/runner/work/CA_Scanner/CA_Scanner'
+2025-06-13T03:17:52.1132192Z ##[group]Initializing the repository
+2025-06-13T03:17:52.1136036Z [command]/usr/bin/git init /home/runner/work/CA_Scanner/CA_Scanner
+2025-06-13T03:17:52.1220510Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-06-13T03:17:52.1221764Z hint: is subject to change. To configure the initial branch name to use in all
+2025-06-13T03:17:52.1222867Z hint: of your new repositories, which will suppress this warning, call:
+2025-06-13T03:17:52.1223404Z hint:
+2025-06-13T03:17:52.1223776Z hint: 	git config --global init.defaultBranch <name>
+2025-06-13T03:17:52.1224160Z hint:
+2025-06-13T03:17:52.1224524Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-06-13T03:17:52.1225131Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-06-13T03:17:52.1226027Z hint:
+2025-06-13T03:17:52.1226501Z hint: 	git branch -m <name>
+2025-06-13T03:17:52.1229644Z Initialized empty Git repository in /home/runner/work/CA_Scanner/CA_Scanner/.git/
+2025-06-13T03:17:52.1239598Z [command]/usr/bin/git remote add origin https://github.com/thefaftek-git/CA_Scanner
+2025-06-13T03:17:52.1273464Z ##[endgroup]
+2025-06-13T03:17:52.1274231Z ##[group]Disabling automatic garbage collection
+2025-06-13T03:17:52.1277100Z [command]/usr/bin/git config --local gc.auto 0
+2025-06-13T03:17:52.1304820Z ##[endgroup]
+2025-06-13T03:17:52.1305519Z ##[group]Setting up auth
+2025-06-13T03:17:52.1309787Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-13T03:17:52.1337373Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-13T03:17:52.1679252Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-13T03:17:52.1712349Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-13T03:17:52.1947527Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-06-13T03:17:52.1984998Z ##[endgroup]
+2025-06-13T03:17:52.1985990Z ##[group]Fetching the repository
+2025-06-13T03:17:52.1995386Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --progress --no-recurse-submodules --depth=1 origin +b4e4fa4c1ec55df9d192fe45859283e42378fcbd:refs/remotes/pull/116/merge
+2025-06-13T03:17:52.4909362Z remote: Enumerating objects: 96, done.        
+2025-06-13T03:17:52.4910320Z remote: Counting objects:   1% (1/96)        
+2025-06-13T03:17:52.4911169Z remote: Counting objects:   2% (2/96)        
+2025-06-13T03:17:52.4912289Z remote: Counting objects:   3% (3/96)        
+2025-06-13T03:17:52.4913132Z remote: Counting objects:   4% (4/96)        
+2025-06-13T03:17:52.4913756Z remote: Counting objects:   5% (5/96)        
+2025-06-13T03:17:52.4914501Z remote: Counting objects:   6% (6/96)        
+2025-06-13T03:17:52.4915283Z remote: Counting objects:   7% (7/96)        
+2025-06-13T03:17:52.4916069Z remote: Counting objects:   8% (8/96)        
+2025-06-13T03:17:52.4916838Z remote: Counting objects:   9% (9/96)        
+2025-06-13T03:17:52.4917559Z remote: Counting objects:  10% (10/96)        
+2025-06-13T03:17:52.4918053Z remote: Counting objects:  11% (11/96)        
+2025-06-13T03:17:52.4918561Z remote: Counting objects:  12% (12/96)        
+2025-06-13T03:17:52.4919054Z remote: Counting objects:  13% (13/96)        
+2025-06-13T03:17:52.4919521Z remote: Counting objects:  14% (14/96)        
+2025-06-13T03:17:52.4920006Z remote: Counting objects:  15% (15/96)        
+2025-06-13T03:17:52.4920859Z remote: Counting objects:  16% (16/96)        
+2025-06-13T03:17:52.4921548Z remote: Counting objects:  17% (17/96)        
+2025-06-13T03:17:52.4921989Z remote: Counting objects:  18% (18/96)        
+2025-06-13T03:17:52.4922357Z remote: Counting objects:  19% (19/96)        
+2025-06-13T03:17:52.4922724Z remote: Counting objects:  20% (20/96)        
+2025-06-13T03:17:52.4923067Z remote: Counting objects:  21% (21/96)        
+2025-06-13T03:17:52.4923405Z remote: Counting objects:  22% (22/96)        
+2025-06-13T03:17:52.4923733Z remote: Counting objects:  23% (23/96)        
+2025-06-13T03:17:52.4924071Z remote: Counting objects:  25% (24/96)        
+2025-06-13T03:17:52.4924415Z remote: Counting objects:  26% (25/96)        
+2025-06-13T03:17:52.4924741Z remote: Counting objects:  27% (26/96)        
+2025-06-13T03:17:52.4925074Z remote: Counting objects:  28% (27/96)        
+2025-06-13T03:17:52.4925411Z remote: Counting objects:  29% (28/96)        
+2025-06-13T03:17:52.4925763Z remote: Counting objects:  30% (29/96)        
+2025-06-13T03:17:52.4926108Z remote: Counting objects:  31% (30/96)        
+2025-06-13T03:17:52.4926460Z remote: Counting objects:  32% (31/96)        
+2025-06-13T03:17:52.4926809Z remote: Counting objects:  33% (32/96)        
+2025-06-13T03:17:52.4927163Z remote: Counting objects:  34% (33/96)        
+2025-06-13T03:17:52.4927508Z remote: Counting objects:  35% (34/96)        
+2025-06-13T03:17:52.4927858Z remote: Counting objects:  36% (35/96)        
+2025-06-13T03:17:52.4928218Z remote: Counting objects:  37% (36/96)        
+2025-06-13T03:17:52.4928577Z remote: Counting objects:  38% (37/96)        
+2025-06-13T03:17:52.4928919Z remote: Counting objects:  39% (38/96)        
+2025-06-13T03:17:52.4929291Z remote: Counting objects:  40% (39/96)        
+2025-06-13T03:17:52.4929651Z remote: Counting objects:  41% (40/96)        
+2025-06-13T03:17:52.4929998Z remote: Counting objects:  42% (41/96)        
+2025-06-13T03:17:52.4930336Z remote: Counting objects:  43% (42/96)        
+2025-06-13T03:17:52.4930702Z remote: Counting objects:  44% (43/96)        
+2025-06-13T03:17:52.4931068Z remote: Counting objects:  45% (44/96)        
+2025-06-13T03:17:52.4931640Z remote: Counting objects:  46% (45/96)        
+2025-06-13T03:17:52.4931999Z remote: Counting objects:  47% (46/96)        
+2025-06-13T03:17:52.4932361Z remote: Counting objects:  48% (47/96)        
+2025-06-13T03:17:52.4932713Z remote: Counting objects:  50% (48/96)        
+2025-06-13T03:17:52.4933079Z remote: Counting objects:  51% (49/96)        
+2025-06-13T03:17:52.4933415Z remote: Counting objects:  52% (50/96)        
+2025-06-13T03:17:52.4933788Z remote: Counting objects:  53% (51/96)        
+2025-06-13T03:17:52.4934377Z remote: Counting objects:  54% (52/96)        
+2025-06-13T03:17:52.4934750Z remote: Counting objects:  55% (53/96)        
+2025-06-13T03:17:52.4935093Z remote: Counting objects:  56% (54/96)        
+2025-06-13T03:17:52.4935453Z remote: Counting objects:  57% (55/96)        
+2025-06-13T03:17:52.4935821Z remote: Counting objects:  58% (56/96)        
+2025-06-13T03:17:52.4936161Z remote: Counting objects:  59% (57/96)        
+2025-06-13T03:17:52.4936517Z remote: Counting objects:  60% (58/96)        
+2025-06-13T03:17:52.4936880Z remote: Counting objects:  61% (59/96)        
+2025-06-13T03:17:52.4937248Z remote: Counting objects:  62% (60/96)        
+2025-06-13T03:17:52.4937589Z remote: Counting objects:  63% (61/96)        
+2025-06-13T03:17:52.4937941Z remote: Counting objects:  64% (62/96)        
+2025-06-13T03:17:52.4938294Z remote: Counting objects:  65% (63/96)        
+2025-06-13T03:17:52.4938648Z remote: Counting objects:  66% (64/96)        
+2025-06-13T03:17:52.4939023Z remote: Counting objects:  67% (65/96)        
+2025-06-13T03:17:52.4939389Z remote: Counting objects:  68% (66/96)        
+2025-06-13T03:17:52.4939736Z remote: Counting objects:  69% (67/96)        
+2025-06-13T03:17:52.4940086Z remote: Counting objects:  70% (68/96)        
+2025-06-13T03:17:52.4940441Z remote: Counting objects:  71% (69/96)        
+2025-06-13T03:17:52.4940993Z remote: Counting objects:  72% (70/96)        
+2025-06-13T03:17:52.4941480Z remote: Counting objects:  73% (71/96)        
+2025-06-13T03:17:52.4941935Z remote: Counting objects:  75% (72/96)        
+2025-06-13T03:17:52.4942296Z remote: Counting objects:  76% (73/96)        
+2025-06-13T03:17:52.4942638Z remote: Counting objects:  77% (74/96)        
+2025-06-13T03:17:52.4943004Z remote: Counting objects:  78% (75/96)        
+2025-06-13T03:17:52.4943365Z remote: Counting objects:  79% (76/96)        
+2025-06-13T03:17:52.4943722Z remote: Counting objects:  80% (77/96)        
+2025-06-13T03:17:52.4944066Z remote: Counting objects:  81% (78/96)        
+2025-06-13T03:17:52.4944434Z remote: Counting objects:  82% (79/96)        
+2025-06-13T03:17:52.4944786Z remote: Counting objects:  83% (80/96)        
+2025-06-13T03:17:52.4945137Z remote: Counting objects:  84% (81/96)        
+2025-06-13T03:17:52.4945478Z remote: Counting objects:  85% (82/96)        
+2025-06-13T03:17:52.4945834Z remote: Counting objects:  86% (83/96)        
+2025-06-13T03:17:52.4946186Z remote: Counting objects:  87% (84/96)        
+2025-06-13T03:17:52.4946588Z remote: Counting objects:  88% (85/96)        
+2025-06-13T03:17:52.4946937Z remote: Counting objects:  89% (86/96)        
+2025-06-13T03:17:52.4947311Z remote: Counting objects:  90% (87/96)        
+2025-06-13T03:17:52.4947680Z remote: Counting objects:  91% (88/96)        
+2025-06-13T03:17:52.4948039Z remote: Counting objects:  92% (89/96)        
+2025-06-13T03:17:52.4948388Z remote: Counting objects:  93% (90/96)        
+2025-06-13T03:17:52.4948738Z remote: Counting objects:  94% (91/96)        
+2025-06-13T03:17:52.4949097Z remote: Counting objects:  95% (92/96)        
+2025-06-13T03:17:52.4949466Z remote: Counting objects:  96% (93/96)        
+2025-06-13T03:17:52.4949806Z remote: Counting objects:  97% (94/96)        
+2025-06-13T03:17:52.4950159Z remote: Counting objects:  98% (95/96)        
+2025-06-13T03:17:52.4950514Z remote: Counting objects: 100% (96/96)        
+2025-06-13T03:17:52.4950904Z remote: Counting objects: 100% (96/96), done.        
+2025-06-13T03:17:52.4959000Z remote: Compressing objects:   1% (1/80)        
+2025-06-13T03:17:52.4959672Z remote: Compressing objects:   2% (2/80)        
+2025-06-13T03:17:52.4960072Z remote: Compressing objects:   3% (3/80)        
+2025-06-13T03:17:52.4960457Z remote: Compressing objects:   5% (4/80)        
+2025-06-13T03:17:52.4960849Z remote: Compressing objects:   6% (5/80)        
+2025-06-13T03:17:52.4961203Z remote: Compressing objects:   7% (6/80)        
+2025-06-13T03:17:52.4961746Z remote: Compressing objects:   8% (7/80)        
+2025-06-13T03:17:52.4962151Z remote: Compressing objects:  10% (8/80)        
+2025-06-13T03:17:52.4962745Z remote: Compressing objects:  11% (9/80)        
+2025-06-13T03:17:52.4963151Z remote: Compressing objects:  12% (10/80)        
+2025-06-13T03:17:52.4963542Z remote: Compressing objects:  13% (11/80)        
+2025-06-13T03:17:52.4963932Z remote: Compressing objects:  15% (12/80)        
+2025-06-13T03:17:52.4964327Z remote: Compressing objects:  16% (13/80)        
+2025-06-13T03:17:52.4964695Z remote: Compressing objects:  17% (14/80)        
+2025-06-13T03:17:52.4973485Z remote: Compressing objects:  18% (15/80)        
+2025-06-13T03:17:52.4985642Z remote: Compressing objects:  20% (16/80)        
+2025-06-13T03:17:52.4986936Z remote: Compressing objects:  21% (17/80)        
+2025-06-13T03:17:52.4994506Z remote: Compressing objects:  22% (18/80)        
+2025-06-13T03:17:52.5003057Z remote: Compressing objects:  23% (19/80)        
+2025-06-13T03:17:52.5005591Z remote: Compressing objects:  25% (20/80)        
+2025-06-13T03:17:52.5010876Z remote: Compressing objects:  26% (21/80)        
+2025-06-13T03:17:52.5012013Z remote: Compressing objects:  27% (22/80)        
+2025-06-13T03:17:52.5020921Z remote: Compressing objects:  28% (23/80)        
+2025-06-13T03:17:52.5025718Z remote: Compressing objects:  30% (24/80)        
+2025-06-13T03:17:52.5027230Z remote: Compressing objects:  31% (25/80)        
+2025-06-13T03:17:52.5028402Z remote: Compressing objects:  32% (26/80)        
+2025-06-13T03:17:52.5029012Z remote: Compressing objects:  33% (27/80)        
+2025-06-13T03:17:52.5043384Z remote: Compressing objects:  35% (28/80)        
+2025-06-13T03:17:52.5055734Z remote: Compressing objects:  36% (29/80)        
+2025-06-13T03:17:52.5077608Z remote: Compressing objects:  37% (30/80)        
+2025-06-13T03:17:52.5083411Z remote: Compressing objects:  38% (31/80)        
+2025-06-13T03:17:52.5100871Z remote: Compressing objects:  40% (32/80)        
+2025-06-13T03:17:52.5118995Z remote: Compressing objects:  41% (33/80)        
+2025-06-13T03:17:52.5135000Z remote: Compressing objects:  42% (34/80)        
+2025-06-13T03:17:52.5148313Z remote: Compressing objects:  43% (35/80)        
+2025-06-13T03:17:52.5166630Z remote: Compressing objects:  45% (36/80)        
+2025-06-13T03:17:52.5185176Z remote: Compressing objects:  46% (37/80)        
+2025-06-13T03:17:52.5192940Z remote: Compressing objects:  47% (38/80)        
+2025-06-13T03:17:52.5204698Z remote: Compressing objects:  48% (39/80)        
+2025-06-13T03:17:52.5216554Z remote: Compressing objects:  50% (40/80)        
+2025-06-13T03:17:52.5236433Z remote: Compressing objects:  51% (41/80)        
+2025-06-13T03:17:52.5252259Z remote: Compressing objects:  52% (42/80)        
+2025-06-13T03:17:52.5253081Z remote: Compressing objects:  53% (43/80)        
+2025-06-13T03:17:52.5256028Z remote: Compressing objects:  55% (44/80)        
+2025-06-13T03:17:52.5257002Z remote: Compressing objects:  56% (45/80)        
+2025-06-13T03:17:52.5258622Z remote: Compressing objects:  57% (46/80)        
+2025-06-13T03:17:52.5259187Z remote: Compressing objects:  58% (47/80)        
+2025-06-13T03:17:52.5260128Z remote: Compressing objects:  60% (48/80)        
+2025-06-13T03:17:52.5261023Z remote: Compressing objects:  61% (49/80)        
+2025-06-13T03:17:52.5262139Z remote: Compressing objects:  62% (50/80)        
+2025-06-13T03:17:52.5263009Z remote: Compressing objects:  63% (51/80)        
+2025-06-13T03:17:52.5263591Z remote: Compressing objects:  65% (52/80)        
+2025-06-13T03:17:52.5269085Z remote: Compressing objects:  66% (53/80)        
+2025-06-13T03:17:52.5269714Z remote: Compressing objects:  67% (54/80)        
+2025-06-13T03:17:52.5270239Z remote: Compressing objects:  68% (55/80)        
+2025-06-13T03:17:52.5270737Z remote: Compressing objects:  70% (56/80)        
+2025-06-13T03:17:52.5271246Z remote: Compressing objects:  71% (57/80)        
+2025-06-13T03:17:52.5271939Z remote: Compressing objects:  72% (58/80)        
+2025-06-13T03:17:52.5272353Z remote: Compressing objects:  73% (59/80)        
+2025-06-13T03:17:52.5272737Z remote: Compressing objects:  75% (60/80)        
+2025-06-13T03:17:52.5282183Z remote: Compressing objects:  76% (61/80)        
+2025-06-13T03:17:52.5283124Z remote: Compressing objects:  77% (62/80)        
+2025-06-13T03:17:52.5283594Z remote: Compressing objects:  78% (63/80)        
+2025-06-13T03:17:52.5289880Z remote: Compressing objects:  80% (64/80)        
+2025-06-13T03:17:52.5295121Z remote: Compressing objects:  81% (65/80)        
+2025-06-13T03:17:52.5296341Z remote: Compressing objects:  82% (66/80)        
+2025-06-13T03:17:52.5297103Z remote: Compressing objects:  83% (67/80)        
+2025-06-13T03:17:52.5297833Z remote: Compressing objects:  85% (68/80)        
+2025-06-13T03:17:52.5298597Z remote: Compressing objects:  86% (69/80)        
+2025-06-13T03:17:52.5299107Z remote: Compressing objects:  87% (70/80)        
+2025-06-13T03:17:52.5299586Z remote: Compressing objects:  88% (71/80)        
+2025-06-13T03:17:52.5300054Z remote: Compressing objects:  90% (72/80)        
+2025-06-13T03:17:52.5300673Z remote: Compressing objects:  91% (73/80)        
+2025-06-13T03:17:52.5301158Z remote: Compressing objects:  92% (74/80)        
+2025-06-13T03:17:52.5301765Z remote: Compressing objects:  93% (75/80)        
+2025-06-13T03:17:52.5302207Z remote: Compressing objects:  95% (76/80)        
+2025-06-13T03:17:52.5302573Z remote: Compressing objects:  96% (77/80)        
+2025-06-13T03:17:52.5303162Z remote: Compressing objects:  97% (78/80)        
+2025-06-13T03:17:52.5303551Z remote: Compressing objects:  98% (79/80)        
+2025-06-13T03:17:52.5303920Z remote: Compressing objects: 100% (80/80)        
+2025-06-13T03:17:52.5304308Z remote: Compressing objects: 100% (80/80), done.        
+2025-06-13T03:17:52.5657931Z remote: Total 96 (delta 17), reused 55 (delta 12), pack-reused 0 (from 0)        
+2025-06-13T03:17:52.5793898Z From https://github.com/thefaftek-git/CA_Scanner
+2025-06-13T03:17:52.5794939Z  * [new ref]         b4e4fa4c1ec55df9d192fe45859283e42378fcbd -> pull/116/merge
+2025-06-13T03:17:52.5827810Z ##[endgroup]
+2025-06-13T03:17:52.5828880Z ##[group]Determining the checkout info
+2025-06-13T03:17:52.5831864Z ##[endgroup]
+2025-06-13T03:17:52.5832757Z ##[group]Checking out the ref
+2025-06-13T03:17:52.5838499Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/116/merge
+2025-06-13T03:17:52.5982924Z Note: switching to 'refs/remotes/pull/116/merge'.
+2025-06-13T03:17:52.5983541Z 
+2025-06-13T03:17:52.5984060Z You are in 'detached HEAD' state. You can look around, make experimental
+2025-06-13T03:17:52.5985009Z changes and commit them, and you can discard any commits you make in this
+2025-06-13T03:17:52.5985750Z state without impacting any branches by switching back to a branch.
+2025-06-13T03:17:52.5986169Z 
+2025-06-13T03:17:52.5986496Z If you want to create a new branch to retain commits you create, you may
+2025-06-13T03:17:52.5987174Z do so (now or later) by using -c with the switch command. Example:
+2025-06-13T03:17:52.5987784Z 
+2025-06-13T03:17:52.5988170Z   git switch -c <new-branch-name>
+2025-06-13T03:17:52.5988666Z 
+2025-06-13T03:17:52.5989023Z Or undo this operation with:
+2025-06-13T03:17:52.5989504Z 
+2025-06-13T03:17:52.5989766Z   git switch -
+2025-06-13T03:17:52.5990087Z 
+2025-06-13T03:17:52.5990584Z Turn off this advice by setting config variable advice.detachedHead to false
+2025-06-13T03:17:52.5991550Z 
+2025-06-13T03:17:52.5992417Z HEAD is now at b4e4fa4 Merge ed8c286c7a2028899af2fa2f850dda43c5bb53f9 into 2affad107ba6f2ce43b22177464a7639d77fc90a
+2025-06-13T03:17:52.5994788Z ##[endgroup]
+2025-06-13T03:17:52.6032049Z [command]/usr/bin/git log -1 --format='%H'
+2025-06-13T03:17:52.6055306Z 'b4e4fa4c1ec55df9d192fe45859283e42378fcbd'
+2025-06-13T03:17:52.6353731Z ##[group]Run actions/setup-dotnet@v3
+2025-06-13T03:17:52.6354103Z with:
+2025-06-13T03:17:52.6354359Z   dotnet-version: 8.0.x
+2025-06-13T03:17:52.6354653Z   cache: false
+2025-06-13T03:17:52.6354902Z ##[endgroup]
+2025-06-13T03:17:52.8548941Z [command]/home/runner/work/_actions/actions/setup-dotnet/v3/externals/install-dotnet.sh --channel 8.0
+2025-06-13T03:17:53.1375059Z dotnet-install: Attempting to download using aka.ms link https://builds.dotnet.microsoft.com/dotnet/Sdk/8.0.411/dotnet-sdk-8.0.411-linux-x64.tar.gz
+2025-06-13T03:17:54.4162212Z dotnet-install: Remote file https://builds.dotnet.microsoft.com/dotnet/Sdk/8.0.411/dotnet-sdk-8.0.411-linux-x64.tar.gz size is 216078119 bytes.
+2025-06-13T03:17:54.4164254Z dotnet-install: Extracting archive from https://builds.dotnet.microsoft.com/dotnet/Sdk/8.0.411/dotnet-sdk-8.0.411-linux-x64.tar.gz
+2025-06-13T03:17:59.0337792Z dotnet-install: Downloaded file size is 216078119 bytes.
+2025-06-13T03:17:59.0338913Z dotnet-install: The remote and local file sizes are equal.
+2025-06-13T03:17:59.3246054Z dotnet-install: Installed version is 8.0.411
+2025-06-13T03:17:59.3307363Z dotnet-install: Adding to current process PATH: `/usr/share/dotnet`. Note: This change will be visible only when sourcing script.
+2025-06-13T03:17:59.3309482Z dotnet-install: Note that the script does not resolve dependencies during installation.
+2025-06-13T03:17:59.3311125Z dotnet-install: To check the list of dependencies, go to https://learn.microsoft.com/dotnet/core/install, select your operating system and check the "Dependencies" section.
+2025-06-13T03:17:59.3312433Z dotnet-install: Installation finished successfully.
+2025-06-13T03:17:59.3480419Z ##[group]Run dotnet --version && dotnet restore
+2025-06-13T03:17:59.3481066Z [36;1mdotnet --version && dotnet restore[0m
+2025-06-13T03:17:59.3591767Z shell: /usr/bin/bash -e {0}
+2025-06-13T03:17:59.3592087Z env:
+2025-06-13T03:17:59.3592326Z   DOTNET_ROOT: /usr/share/dotnet
+2025-06-13T03:17:59.3592629Z ##[endgroup]
+2025-06-13T03:17:59.4653055Z 8.0.411
+2025-06-13T03:18:00.5640189Z   Determining projects to restore...
+2025-06-13T03:18:05.9014063Z   Restored /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter/ConditionalAccessExporter.csproj (in 4.92 sec).
+2025-06-13T03:18:06.1796415Z   Restored /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj (in 5.2 sec).
+2025-06-13T03:18:06.2332917Z ##[group]Run dotnet --version && dotnet build --no-restore
+2025-06-13T03:18:06.2333440Z [36;1mdotnet --version && dotnet build --no-restore[0m
+2025-06-13T03:18:06.2402453Z shell: /usr/bin/bash -e {0}
+2025-06-13T03:18:06.2402763Z env:
+2025-06-13T03:18:06.2403006Z   DOTNET_ROOT: /usr/share/dotnet
+2025-06-13T03:18:06.2403328Z ##[endgroup]
+2025-06-13T03:18:06.3454274Z 8.0.411
+2025-06-13T03:18:12.3191873Z   ConditionalAccessExporter -> /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter/bin/Debug/net8.0/ConditionalAccessExporter.dll
+2025-06-13T03:18:15.1225214Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/CrossFormatPolicyComparisonServiceSpecificMethodTests.cs(85,13): warning xUnit2012: Do not use Assert.True() to check if a value exists in a collection. Use Assert.Contains instead. (https://xunit.net/xunit.analyzers/rules/xUnit2012) [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T03:18:15.2796228Z   ConditionalAccessExporter.Tests -> /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/bin/Debug/net8.0/ConditionalAccessExporter.Tests.dll
+2025-06-13T03:18:15.3024539Z 
+2025-06-13T03:18:15.3031548Z Build succeeded.
+2025-06-13T03:18:15.3032237Z 
+2025-06-13T03:18:15.3037033Z ##[warning]/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/CrossFormatPolicyComparisonServiceSpecificMethodTests.cs(85,13): warning xUnit2012: Do not use Assert.True() to check if a value exists in a collection. Use Assert.Contains instead. (https://xunit.net/xunit.analyzers/rules/xUnit2012) [/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj]
+2025-06-13T03:18:15.3041193Z     1 Warning(s)
+2025-06-13T03:18:15.3041888Z     0 Error(s)
+2025-06-13T03:18:15.3044074Z 
+2025-06-13T03:18:15.3044713Z Time Elapsed 00:00:08.73
+2025-06-13T03:18:15.3476811Z ##[group]Run dotnet --version && dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger "console;verbosity=detailed" --nologo
+2025-06-13T03:18:15.3478637Z [36;1mdotnet --version && dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger "console;verbosity=detailed" --nologo[0m
+2025-06-13T03:18:15.3566526Z shell: /usr/bin/bash -e {0}
+2025-06-13T03:18:15.3566878Z env:
+2025-06-13T03:18:15.3567149Z   DOTNET_ROOT: /usr/share/dotnet
+2025-06-13T03:18:15.3567859Z   AZURE_TENANT_ID: ***
+2025-06-13T03:18:15.3568261Z   AZURE_CLIENT_ID: ***
+2025-06-13T03:18:15.3568737Z   AZURE_CLIENT_SECRET: ***
+2025-06-13T03:18:15.3569065Z ##[endgroup]
+2025-06-13T03:18:15.4594732Z 8.0.411
+2025-06-13T03:18:15.8093145Z Build started 06/13/2025 03:18:15.
+2025-06-13T03:18:16.0088664Z      1>Project "/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.sln" on node 1 (VSTest target(s)).
+2025-06-13T03:18:16.0090541Z      1>ValidateSolutionConfiguration:
+2025-06-13T03:18:16.0091663Z          Building solution configuration "Debug|Any CPU".
+2025-06-13T03:18:16.5539773Z Test run for /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/bin/Debug/net8.0/ConditionalAccessExporter.Tests.dll (.NETCoreApp,Version=v8.0)
+2025-06-13T03:18:16.7305667Z A total of 1 test files matched the specified pattern.
+2025-06-13T03:18:16.7308129Z /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/bin/Debug/net8.0/ConditionalAccessExporter.Tests.dll
+2025-06-13T03:18:19.0130564Z [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 8.0.17)
+2025-06-13T03:18:19.2773657Z [xUnit.net 00:00:00.28]   Discovering: ConditionalAccessExporter.Tests
+2025-06-13T03:18:19.3494566Z [xUnit.net 00:00:00.35]   Discovered:  ConditionalAccessExporter.Tests
+2025-06-13T03:18:19.3518724Z [xUnit.net 00:00:00.36]   Starting:    ConditionalAccessExporter.Tests
+2025-06-13T03:18:19.4191644Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.4668702Z Starting comparison with reference directory: /tmp/test-ref-empty
+2025-06-13T03:18:19.4750127Z Found 1 policies in Entra export
+2025-06-13T03:18:19.4751619Z Validating reference files...
+2025-06-13T03:18:19.4758449Z Validating reference directory: /tmp/test-ref-empty
+2025-06-13T03:18:19.4805262Z No JSON files found in directory: /tmp/test-ref-empty. No files were processed.
+2025-06-13T03:18:19.4806483Z ✓ All 0 reference files are valid
+2025-06-13T03:18:19.4810146Z No JSON files found in reference directory '/tmp/test-ref-empty'
+2025-06-13T03:18:19.4831722Z Found 0 reference policy files
+2025-06-13T03:18:19.4853384Z Starting cross-format comparison between '/tmp/CrossFormatTests_eb5fea36/source' and '/tmp/CrossFormatTests_eb5fea36/reference'
+2025-06-13T03:18:19.4927442Z Starting Conditional Access Policy remediation analysis...
+2025-06-13T03:18:19.4929482Z Starting cross-format comparison between '/tmp/CrossFormatIntegrationTests_bff09ff5/source' and '/tmp/CrossFormatIntegrationTests_bff09ff5/reference'
+2025-06-13T03:18:19.4970945Z Authentication credentials not found. Please set AZURE_TENANT_ID, AZURE_CLIENT_ID, and AZURE_CLIENT_SECRET environment variables.
+2025-06-13T03:18:19.4984612Z Starting Conditional Access Policy remediation analysis...
+2025-06-13T03:18:19.4985489Z Starting Conditional Access Policy remediation analysis...
+2025-06-13T03:18:19.4986796Z Authentication credentials not found. Please set AZURE_TENANT_ID, AZURE_CLIENT_ID, and AZURE_CLIENT_SECRET environment variables.
+2025-06-13T03:18:19.4988448Z Authentication credentials not found. Please set AZURE_TENANT_ID, AZURE_CLIENT_ID, and AZURE_CLIENT_SECRET environment variables.
+2025-06-13T03:18:19.4989619Z Starting Conditional Access Policy remediation analysis...
+2025-06-13T03:18:19.4990859Z Authentication credentials not found. Please set AZURE_TENANT_ID, AZURE_CLIENT_ID, and AZURE_CLIENT_SECRET environment variables.
+2025-06-13T03:18:19.5012637Z Starting Conditional Access Policy remediation analysis...
+2025-06-13T03:18:19.5014090Z Authentication credentials not found. Please set AZURE_TENANT_ID, AZURE_CLIENT_ID, and AZURE_CLIENT_SECRET environment variables.
+2025-06-13T03:18:19.5015433Z Converting policies: Progress: 1/1 (100.0%) - 31.3 items/sec, ETA: 00:00
+2025-06-13T03:18:19.5016372Z Starting Conditional Access Policy remediation analysis...
+2025-06-13T03:18:19.5017739Z Authentication credentials not found. Please set AZURE_TENANT_ID, AZURE_CLIENT_ID, and AZURE_CLIENT_SECRET environment variables.
+2025-06-13T03:18:19.5040784Z Starting Conditional Access Policy remediation analysis...
+2025-06-13T03:18:19.5047056Z Authentication credentials not found. Please set AZURE_TENANT_ID, AZURE_CLIENT_ID, and AZURE_CLIENT_SECRET environment variables.
+2025-06-13T03:18:19.5274421Z Cross-format comparison report generated: /tmp/test-reports/cross-format-comparison-20250613-031819.json
+2025-06-13T03:18:19.5286281Z Starting comparison with reference directory: /tmp/test-ref-id-nomatch
+2025-06-13T03:18:19.5287076Z Found 1 policies in Entra export
+2025-06-13T03:18:19.5287598Z Validating reference files...
+2025-06-13T03:18:19.5288222Z Validating reference directory: /tmp/test-ref-id-nomatch
+2025-06-13T03:18:19.5293159Z Validating 1 policy files using parallel processing...
+2025-06-13T03:18:19.5296319Z Policy conversion completed in 78ms
+2025-06-13T03:18:19.5299068Z Average speed: 12.7 policies/second
+2025-06-13T03:18:19.5511159Z   Passed ConditionalAccessExporter.Tests.BaselineGenerationServiceTests.BaselineGenerationOptions_PropertiesSetCorrectly [16 ms]
+2025-06-13T03:18:19.5520944Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.5532289Z   Passed ConditionalAccessExporter.Tests.BaselineGenerationServiceTests.BaselineGenerationOptions_DefaultConstructor_SetsDefaults [< 1 ms]
+2025-06-13T03:18:19.5541845Z   Passed ConditionalAccessExporter.Tests.BaselineGenerationServiceTests.BaselineGenerationService_Constructor_CreatesInstance [< 1 ms]
+2025-06-13T03:18:19.5544257Z   Passed ConditionalAccessExporter.Tests.CrossFormatComparisonTests.CrossFormatMatchingOptions_DefaultValues_ShouldBeCorrect [11 ms]
+2025-06-13T03:18:19.5546289Z   Passed ConditionalAccessExporter.Tests.RemediatePoliciesAsyncTests.RemediatePoliciesAsync_AcceptsValidRiskLevels(riskLevel: "All") [10 ms]
+2025-06-13T03:18:19.5548452Z   Passed ConditionalAccessExporter.Tests.RemediatePoliciesAsyncTests.RemediatePoliciesAsync_AcceptsValidRiskLevels(riskLevel: "High") [< 1 ms]
+2025-06-13T03:18:19.5550551Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_EntraOnlyPolicy_ShouldReportAsEntraOnly [100 ms]
+2025-06-13T03:18:19.5552948Z   Passed ConditionalAccessExporter.Tests.RemediatePoliciesAsyncTests.RemediatePoliciesAsync_AcceptsValidRiskLevels(riskLevel: "Critical") [< 1 ms]
+2025-06-13T03:18:19.5799572Z Starting cross-format comparison between '/tmp/CrossFormatTests_5489670a/source' and '/tmp/CrossFormatTests_5489670a/reference'
+2025-06-13T03:18:19.5812782Z Starting cross-format comparison between '/tmp/test-source' and '/tmp/test-reference'
+2025-06-13T03:18:19.5866886Z Found 1 source policies (Json) and 0 reference policies (Mixed)
+2025-06-13T03:18:19.5872787Z   Passed ConditionalAccessExporter.Tests.RemediatePoliciesAsyncTests.RemediatePoliciesAsync_AcceptsValidRiskLevels(riskLevel: "Low") [< 1 ms]
+2025-06-13T03:18:19.5874834Z   Passed ConditionalAccessExporter.Tests.RemediatePoliciesAsyncTests.RemediatePoliciesAsync_AcceptsValidRiskLevels(riskLevel: "Medium") [1 ms]
+2025-06-13T03:18:19.5876885Z   Passed ConditionalAccessExporter.Tests.RemediatePoliciesAsyncTests.RemediatePoliciesAsync_CreatesOutputDirectory [< 1 ms]
+2025-06-13T03:18:19.5878862Z   Passed ConditionalAccessExporter.Tests.RemediatePoliciesAsyncTests.RemediatePoliciesAsync_WithoutCredentials_ReturnsErrorExitCode [3 ms]
+2025-06-13T03:18:19.5881047Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_ValidTfFileWithSinglePolicy_ShouldParseSuccessfully [83 ms]
+2025-06-13T03:18:19.5883672Z   Passed ConditionalAccessExporter.Tests.CrossFormatComparisonTests.CrossFormatReportGeneration_ShouldCreateValidJsonReport [70 ms]
+2025-06-13T03:18:19.5886079Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceTests.ComparePoliciesAsync_SemanticallyEquivalentPolicies_ShouldReturnSemanticallyEquivalentStatus [101 ms]
+2025-06-13T03:18:19.5888271Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.5935078Z Starting cross-format comparison between '/tmp/CrossFormatTests_c62e940d/source' and '/tmp/CrossFormatTests_c62e940d/reference'
+2025-06-13T03:18:19.6042516Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_TfFileWithUnsupportedResources_ShouldIgnoreOtherResources [21 ms]
+2025-06-13T03:18:19.6084470Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceSpecificMethodTests.CompareJsonToTerraformAsync_EmptyEntraExport_ShouldReturnEmptyResult [164 ms]
+2025-06-13T03:18:19.6087442Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithDifferentStates_ShouldIncludeStateCorrectly(inputState: "disabled", expectedOutputState: "disabled") [157 ms]
+2025-06-13T03:18:19.6090151Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceTests.ComparePoliciesAsync_SourceOnlyPolicy_ShouldReturnSourceOnlyStatus [26 ms]
+2025-06-13T03:18:19.6092938Z   Passed ConditionalAccessExporter.Tests.CrossFormatComparisonTests.CrossFormatComparison_WithSampleData_ShouldProduceValidResults [34 ms]
+2025-06-13T03:18:19.6095391Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceSpecificMethodTests.CompareJsonToTerraformAsync_ArrayOrderDifference_ShouldDetectSemanticEquivalence [15 ms]
+2025-06-13T03:18:19.6097329Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.6153792Z Starting cross-format comparison between '/tmp/CrossFormatTests_e18c1e9e/source' and '/tmp/CrossFormatTests_e18c1e9e/reference'
+2025-06-13T03:18:19.6188422Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.6203887Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_TfFileWithLocalsOnly_ShouldParseLocals [16 ms]
+2025-06-13T03:18:19.6207905Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_FileDoesNotExist_ShouldReturnError [< 1 ms]
+2025-06-13T03:18:19.6218593Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceTests.ComparePoliciesAsync_DifferentPolicies_ShouldReturnDifferentStatus [15 ms]
+2025-06-13T03:18:19.6233661Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithDifferentStates_ShouldIncludeStateCorrectly(inputState: "enabled", expectedOutputState: "enabled") [15 ms]
+2025-06-13T03:18:19.6239953Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_TfFileWithVariablesOnly_ShouldParseVariables [10 ms]
+2025-06-13T03:18:19.6246260Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_EmptyFile_ShouldReturnEmptyPolicies [2 ms]
+2025-06-13T03:18:19.6248635Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceSpecificMethodTests.CompareJsonToTerraformAsync_DifferentPolicies_ShouldReturnDifferentStatus [13 ms]
+2025-06-13T03:18:19.6284144Z Starting cross-format comparison between '/tmp/CrossFormatTests_717ee09a/source' and '/tmp/CrossFormatTests_717ee09a/reference'
+2025-06-13T03:18:19.6316891Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.6353332Z Starting cross-format comparison between '/tmp/CrossFormatTests_0cb54956/nonexistent-source' and '/tmp/CrossFormatTests_0cb54956/reference'
+2025-06-13T03:18:19.6355652Z Found 0 source policies (Unknown) and 0 reference policies (Mixed)
+2025-06-13T03:18:19.6357986Z Starting cross-format comparison between '/tmp/CrossFormatSpecificTests_e91fa960/nonexistent_source' and '/tmp/CrossFormatSpecificTests_e91fa960/terraform_policies'
+2025-06-13T03:18:19.6361693Z Starting cross-format comparison between '/tmp/CrossFormatTests_85f05a54/source' and '/tmp/CrossFormatTests_85f05a54/reference'
+2025-06-13T03:18:19.6373826Z Validation completed: 0 valid, 1 invalid files
+2025-06-13T03:18:19.6392335Z Processing time: 105ms
+2025-06-13T03:18:19.6393094Z Average speed: 9.5 files/second
+2025-06-13T03:18:19.6396260Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.6400232Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.6401064Z Loading 1 reference policy files using parallel processing...
+2025-06-13T03:18:19.6402124Z Reference file validation failed. Found 1 invalid files out of 1.
+2025-06-13T03:18:19.6403194Z   ✗ policy1.json: 2 errors
+2025-06-13T03:18:19.6404117Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.6405171Z     - Display name is missing or empty.
+2025-06-13T03:18:19.6407441Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithDifferentStates_ShouldIncludeStateCorrectly(inputState: "enabledForReportingButNotEnforced", expectedOutputState: "enabledforreportingbutnotenforced") [8 ms]
+2025-06-13T03:18:19.6411035Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformDirectoryAsync_DirectoryWithMixedFileTypes_ShouldOnlyProcessTerraformFiles [3 ms]
+2025-06-13T03:18:19.6413535Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceTests.ComparePoliciesAsync_ByNameCaseSensitive_ShouldRespectCaseSensitivity [12 ms]
+2025-06-13T03:18:19.6416052Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceSpecificMethodTests.CompareJsonToTerraformAsync_CaseInsensitiveValues_ShouldDetectSemanticEquivalence [8 ms]
+2025-06-13T03:18:19.6418628Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformDirectoryAsync_DirectoryWithMultipleTfFiles_ShouldAggregateAll [11 ms]
+2025-06-13T03:18:19.6420813Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformDirectoryAsync_DirectoryDoesNotExist_ShouldReturnError [< 1 ms]
+2025-06-13T03:18:19.6441491Z Loading reference files: Progress: 1/1 (100.0%) - 165.7 items/sec, ETA: 00:00
+2025-06-13T03:18:19.6446571Z Reference file loading completed: 1 files loaded successfully
+2025-06-13T03:18:19.6450277Z Processing time: 7ms
+2025-06-13T03:18:19.6451211Z Average speed: 152.2 files/second
+2025-06-13T03:18:19.6451913Z Found 1 reference policy files
+2025-06-13T03:18:19.6474768Z Found 0 source policies (Unknown) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.6492133Z Found 1 source policies (Terraform) and 1 reference policies (Json)
+2025-06-13T03:18:19.6510317Z Starting comparison with reference directory: /tmp/test-ref-case-insensitive
+2025-06-13T03:18:19.6511107Z Found 1 policies in Entra export
+2025-06-13T03:18:19.6511831Z Validating reference files...
+2025-06-13T03:18:19.6512488Z Validating reference directory: /tmp/test-ref-case-insensitive
+2025-06-13T03:18:19.6552197Z Validating 1 policy files using parallel processing...
+2025-06-13T03:18:19.6553879Z Starting cross-format comparison between '/tmp/CrossFormatTests_d1f0554c/source' and '/tmp/CrossFormatTests_d1f0554c/reference'
+2025-06-13T03:18:19.6555296Z Validation completed: 0 valid, 1 invalid files
+2025-06-13T03:18:19.6556101Z Processing time: 3ms
+2025-06-13T03:18:19.6556587Z Average speed: 354.4 files/second
+2025-06-13T03:18:19.6557407Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.6558388Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.6559201Z Loading 1 reference policy files using parallel processing...
+2025-06-13T03:18:19.6560045Z Reference file validation failed. Found 1 invalid files out of 1.
+2025-06-13T03:18:19.6561601Z   ✗ policy1.json: 2 errors
+2025-06-13T03:18:19.6562592Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.6563583Z     - Display name is missing or empty.
+2025-06-13T03:18:19.6564443Z Loading reference files: Progress: 1/1 (100.0%) - 1860.1 items/sec, ETA: 00:00
+2025-06-13T03:18:19.6565354Z Reference file loading completed: 1 files loaded successfully
+2025-06-13T03:18:19.6565990Z Processing time: 1ms
+2025-06-13T03:18:19.6566425Z Average speed: 1408.3 files/second
+2025-06-13T03:18:19.6566927Z Found 1 reference policy files
+2025-06-13T03:18:19.6568319Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceTests.ComparePoliciesAsync_IdenticalPolicies_ShouldReturnIdenticalStatus [9 ms]
+2025-06-13T03:18:19.6570733Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceTests.ComparePoliciesAsync_NonExistentSourceDirectory_ShouldHandleGracefully [1 ms]
+2025-06-13T03:18:19.6573748Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceSpecificMethodTests.CompareJsonToTerraformAsync_ValidEntraExportAndTerraformDirectory_ShouldReturnComparisonResult [10 ms]
+2025-06-13T03:18:19.6576412Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_TfFileWithSyntaxErrors_ShouldHandleGracefully [3 ms]
+2025-06-13T03:18:19.6578697Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_MatchingById_DifferentIds_ShouldNotMatch [149 ms]
+2025-06-13T03:18:19.6580908Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceSpecificMethodTests.CompareAsync_NonExistentSourceDirectory_ShouldHandleGracefully [13 ms]
+2025-06-13T03:18:19.6599825Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.6673075Z Terraform parsing error: Directory not found: /tmp/CrossFormatSpecificTests_447d592f/nonexistent
+2025-06-13T03:18:19.6722924Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceTests.ComparePoliciesAsync_TerraformToJson_ShouldDetectFormatsCorrectly [18 ms]
+2025-06-13T03:18:19.6730472Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceSpecificMethodTests.CompareJsonToTerraformAsync_DisableSemanticComparison_ShouldPerformExactComparison [7 ms]
+2025-06-13T03:18:19.6735700Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceSpecificMethodTests.CompareJsonToTerraformAsync_NonExistentTerraformDirectory_ShouldHandleGracefully [1 ms]
+2025-06-13T03:18:19.6748341Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_CaseSensitiveFalse_DifferentCase_ShouldMatch [13 ms]
+2025-06-13T03:18:19.6753054Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithUserConditions_ShouldMapCorrectly [44 ms]
+2025-06-13T03:18:19.6757443Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceTests.ComparePoliciesAsync_JsonToTerraform_ShouldDetectFormatsCorrectly [11 ms]
+2025-06-13T03:18:19.6761742Z Starting cross-format comparison between '/tmp/CrossFormatTests_960f6ea0/source' and '/tmp/CrossFormatTests_960f6ea0/reference'
+2025-06-13T03:18:19.6765713Z Starting cross-format comparison between '/tmp/CrossFormatSpecificTests_8a6eda61/json_policies' and '/tmp/CrossFormatSpecificTests_8a6eda61/terraform_policies'
+2025-06-13T03:18:19.6769168Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.6781922Z Starting comparison with reference directory: /tmp/test-ref-mixed
+2025-06-13T03:18:19.6789674Z Found 3 policies in Entra export
+2025-06-13T03:18:19.6795303Z Validating reference files...
+2025-06-13T03:18:19.6808109Z Validating reference directory: /tmp/test-ref-mixed
+2025-06-13T03:18:19.6815684Z Validating 3 policy files using parallel processing...
+2025-06-13T03:18:19.6838021Z Validation completed: 0 valid, 3 invalid files
+2025-06-13T03:18:19.6845913Z Starting cross-format comparison between '/tmp/CrossFormatSpecificTests_307fe7d4/json_policies' and '/tmp/CrossFormatSpecificTests_307fe7d4/terraform_policies'
+2025-06-13T03:18:19.6856855Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.6908774Z Processing time: 2ms
+2025-06-13T03:18:19.6909842Z Average speed: 1894.1 files/second
+2025-06-13T03:18:19.6910800Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.6912018Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.6913118Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.6914314Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.6915385Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.6916414Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.6917378Z Loading 3 reference policy files using parallel processing...
+2025-06-13T03:18:19.6920201Z Reference file validation failed. Found 3 invalid files out of 3.
+2025-06-13T03:18:19.6921054Z   ✗ policy2.json: 2 errors
+2025-06-13T03:18:19.6922045Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.6923267Z     - Display name is missing or empty.
+2025-06-13T03:18:19.6923770Z   ✗ policy1.json: 2 errors
+2025-06-13T03:18:19.6924554Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.6925418Z     - Display name is missing or empty.
+2025-06-13T03:18:19.6925855Z   ✗ policy4.json: 2 errors
+2025-06-13T03:18:19.6926631Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.6927501Z     - Display name is missing or empty.
+2025-06-13T03:18:19.6944417Z Loading reference files: Progress: 1/3 (33.3%) - 497.8 items/sec, ETA: 00:00
+2025-06-13T03:18:19.6989181Z Loading reference files: Progress: 2/3 (66.7%) - 924.7 items/sec, ETA: 00:00
+2025-06-13T03:18:19.6991089Z Loading reference files: Progress: 3/3 (100.0%) - 1293.6 items/sec, ETA: 00:00
+2025-06-13T03:18:19.6992222Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.6994996Z Reference file loading completed: 3 files loaded successfully
+2025-06-13T03:18:19.6995626Z Processing time: 9ms
+2025-06-13T03:18:19.6996077Z Average speed: 322.9 files/second
+2025-06-13T03:18:19.6996734Z Found 3 reference policy files
+2025-06-13T03:18:19.6997863Z Starting cross-format comparison between '/tmp/CrossFormatTests_61662eda/source' and '/tmp/CrossFormatTests_61662eda/reference'
+2025-06-13T03:18:19.7032817Z Starting cross-format comparison between '/tmp/CrossFormatSpecificTests_307fe7d4/json_policies' and '/tmp/CrossFormatSpecificTests_307fe7d4/terraform_policies'
+2025-06-13T03:18:19.7035461Z Warning: Failed to load JSON file '/tmp/CrossFormatTests_61662eda/source/malformed.json': Invalid character after parsing property name. Expected ':' but got: j. Path '', line 1, position 10.
+2025-06-13T03:18:19.7051999Z Found 1 source policies (Json) and 0 reference policies (Mixed)
+2025-06-13T03:18:19.7063192Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.7074755Z Starting cross-format comparison between '/tmp/CrossFormatSpecificTests_307fe7d4/json_policies' and '/tmp/CrossFormatSpecificTests_307fe7d4/terraform_policies'
+2025-06-13T03:18:19.7124999Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceSpecificMethodTests.CompareJsonToTerraformAsync_IdenticalPolicies_ShouldReturnIdenticalStatus [8 ms]
+2025-06-13T03:18:19.7127512Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceSpecificMethodTests.CompareAsync_ValidDirectories_ShouldReturnComparisonResult [4 ms]
+2025-06-13T03:18:19.7130668Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceSpecificMethodTests.CompareJsonToTerraformAsync_CustomMappingStrategy_ShouldUseCustomMappings [2 ms]
+2025-06-13T03:18:19.7133818Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceSpecificMethodTests.CompareJsonToTerraformAsync_EmptyTerraformDirectory_ShouldReturnSourceOnlyPolicies [2 ms]
+2025-06-13T03:18:19.7136341Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceTests.ComparePoliciesAsync_CustomMapping_ShouldUseCustomMappings [21 ms]
+2025-06-13T03:18:19.7138469Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithMultiplePolicies_ShouldGenerateMultipleResources [24 ms]
+2025-06-13T03:18:19.7140589Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_MultipleDifferenceTypes_ShouldReportCorrectly [40 ms]
+2025-06-13T03:18:19.7141811Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.7190262Z Starting cross-format comparison between '/tmp/CrossFormatSpecificTests_307fe7d4/json_policies' and '/tmp/CrossFormatSpecificTests_307fe7d4/terraform_policies'
+2025-06-13T03:18:19.7200385Z Starting comparison with reference directory: /tmp/test-ref-different
+2025-06-13T03:18:19.7206640Z Found 1 policies in Entra export
+2025-06-13T03:18:19.7208901Z Validating reference files...
+2025-06-13T03:18:19.7209822Z Validating reference directory: /tmp/test-ref-different
+2025-06-13T03:18:19.7210521Z Validating 1 policy files using parallel processing...
+2025-06-13T03:18:19.7225673Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.7248521Z Validation completed: 0 valid, 1 invalid files
+2025-06-13T03:18:19.7249843Z Processing time: 3ms
+2025-06-13T03:18:19.7250275Z Average speed: 348.0 files/second
+2025-06-13T03:18:19.7251018Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.7252143Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.7252909Z Loading 1 reference policy files using parallel processing...
+2025-06-13T03:18:19.7254092Z Starting cross-format comparison between '/tmp/CrossFormatTests_f95f50bc/source' and '/tmp/CrossFormatTests_f95f50bc/reference'
+2025-06-13T03:18:19.7255289Z Reference file validation failed. Found 1 invalid files out of 1.
+2025-06-13T03:18:19.7256293Z   ✗ policy1.json: 2 errors
+2025-06-13T03:18:19.7257224Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.7258211Z     - Display name is missing or empty.
+2025-06-13T03:18:19.7267042Z Loading reference files: Progress: 1/1 (100.0%) - 420.6 items/sec, ETA: 00:00
+2025-06-13T03:18:19.7268281Z Reference file loading completed: 1 files loaded successfully
+2025-06-13T03:18:19.7270216Z Processing time: 3ms
+2025-06-13T03:18:19.7270676Z Average speed: 326.9 files/second
+2025-06-13T03:18:19.7271198Z Found 1 reference policy files
+2025-06-13T03:18:19.7272045Z Found 0 source policies (Mixed) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.7297220Z Starting comparison with reference directory: /tmp/test-ref-custom-mapping
+2025-06-13T03:18:19.7304310Z Found 1 policies in Entra export
+2025-06-13T03:18:19.7309057Z Validating reference files...
+2025-06-13T03:18:19.7332127Z Validating reference directory: /tmp/test-ref-custom-mapping
+2025-06-13T03:18:19.7333235Z Validating 1 policy files using parallel processing...
+2025-06-13T03:18:19.7338683Z Starting cross-format comparison between '/tmp/CrossFormatTests_923370a1/source' and '/tmp/CrossFormatTests_923370a1/reference'
+2025-06-13T03:18:19.7340110Z Validation completed: 0 valid, 1 invalid files
+2025-06-13T03:18:19.7340794Z Processing time: 1ms
+2025-06-13T03:18:19.7341812Z Reference file validation failed. Found 1 invalid files out of 1.
+2025-06-13T03:18:19.7342579Z Average speed: 841.4 files/second
+2025-06-13T03:18:19.7343800Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.7344851Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.7345730Z Loading 1 reference policy files using parallel processing...
+2025-06-13T03:18:19.7346640Z   ✗ reference-policy.json: 2 errors
+2025-06-13T03:18:19.7347740Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.7348796Z     - Display name is missing or empty.
+2025-06-13T03:18:19.7356519Z Reference file loading completed: 1 files loaded successfully
+2025-06-13T03:18:19.7357367Z Processing time: 2ms
+2025-06-13T03:18:19.7357951Z Average speed: 589.7 files/second
+2025-06-13T03:18:19.7358529Z Found 1 reference policy files
+2025-06-13T03:18:19.7359361Z Loading reference files: Progress: 1/1 (100.0%) - 633.0 items/sec, ETA: 00:00
+2025-06-13T03:18:19.7362813Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.7406370Z Starting comparison with reference directory: /tmp/test-timestamp
+2025-06-13T03:18:19.7407218Z Found 0 policies in Entra export
+2025-06-13T03:18:19.7409145Z Validating reference files...
+2025-06-13T03:18:19.7409759Z Validating reference directory: /tmp/test-timestamp
+2025-06-13T03:18:19.7410628Z No JSON files found in directory: /tmp/test-timestamp. No files were processed.
+2025-06-13T03:18:19.7412087Z ✓ All 0 reference files are valid
+2025-06-13T03:18:19.7412677Z No JSON files found in reference directory '/tmp/test-timestamp'
+2025-06-13T03:18:19.7413319Z Found 0 reference policy files
+2025-06-13T03:18:19.7443113Z Starting cross-format comparison between '/tmp/CrossFormatTests_32c84b1d/source' and '/tmp/CrossFormatTests_32c84b1d/nonexistent-reference'
+2025-06-13T03:18:19.7445125Z Found 0 source policies (Mixed) and 0 reference policies (Unknown)
+2025-06-13T03:18:19.7446168Z Starting comparison with reference directory: dummy-path
+2025-06-13T03:18:19.7446866Z Found 2 policies in Entra export
+2025-06-13T03:18:19.7447430Z Validating reference files...
+2025-06-13T03:18:19.7447920Z Validating reference directory: dummy-path
+2025-06-13T03:18:19.7448623Z Reference file validation failed. Found 0 invalid files out of 0.
+2025-06-13T03:18:19.7449363Z Reference directory 'dummy-path' does not exist
+2025-06-13T03:18:19.7449933Z Found 0 reference policy files
+2025-06-13T03:18:19.7481054Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithEmptyPoliciesList_ShouldReturnError [18 ms]
+2025-06-13T03:18:19.7483526Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceTests.ComparePoliciesAsync_MalformedJsonFile_ShouldSkipAndContinue [34 ms]
+2025-06-13T03:18:19.7485833Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceSpecificMethodTests.CompareAsync_DifferentMatchingStrategies_ShouldHandleProperly [44 ms]
+2025-06-13T03:18:19.7488087Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_DifferentPolicies_ShouldReportAsDifferent [21 ms]
+2025-06-13T03:18:19.7490262Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceTests.ComparePoliciesAsync_ReferenceOnlyPolicy_ShouldReturnReferenceOnlyStatus [4 ms]
+2025-06-13T03:18:19.7492778Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithApplicationConditions_ShouldMapCorrectly [23 ms]
+2025-06-13T03:18:19.7494798Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_CustomMapping_ShouldMapCorrectly [10 ms]
+2025-06-13T03:18:19.7496204Z Starting comparison with reference directory: /tmp/test-ref-identical
+2025-06-13T03:18:19.7496926Z Found 1 policies in Entra export
+2025-06-13T03:18:19.7497400Z Validating reference files...
+2025-06-13T03:18:19.7497992Z Validating reference directory: /tmp/test-ref-identical
+2025-06-13T03:18:19.7498693Z Validating 1 policy files using parallel processing...
+2025-06-13T03:18:19.7499610Z Validation completed: 0 valid, 1 invalid files
+2025-06-13T03:18:19.7500204Z Processing time: 3ms
+2025-06-13T03:18:19.7500638Z Average speed: 395.1 files/second
+2025-06-13T03:18:19.7504022Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.7505069Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.7505898Z Loading 1 reference policy files using parallel processing...
+2025-06-13T03:18:19.7506677Z Reference file validation failed. Found 1 invalid files out of 1.
+2025-06-13T03:18:19.7507391Z   ✗ policy1.json: 2 errors
+2025-06-13T03:18:19.7508235Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.7509144Z     - Display name is missing or empty.
+2025-06-13T03:18:19.7509906Z Loading reference files: Progress: 1/1 (100.0%) - 4593.5 items/sec, ETA: 00:00
+2025-06-13T03:18:19.7510712Z Reference file loading completed: 1 files loaded successfully
+2025-06-13T03:18:19.7511258Z Processing time: 0ms
+2025-06-13T03:18:19.7511872Z Average speed: 2383.2 files/second
+2025-06-13T03:18:19.7512313Z Found 1 reference policy files
+2025-06-13T03:18:19.7512992Z Starting comparison with reference directory: /tmp/test-ref-empty-reference
+2025-06-13T03:18:19.7513663Z Found 1 policies in Entra export
+2025-06-13T03:18:19.7514345Z Validating reference files...
+2025-06-13T03:18:19.7514948Z Validating reference directory: /tmp/test-ref-empty-reference
+2025-06-13T03:18:19.7515900Z No JSON files found in directory: /tmp/test-ref-empty-reference. No files were processed.
+2025-06-13T03:18:19.7516792Z ✓ All 0 reference files are valid
+2025-06-13T03:18:19.7517480Z No JSON files found in reference directory '/tmp/test-ref-empty-reference'
+2025-06-13T03:18:19.7518164Z Found 0 reference policy files
+2025-06-13T03:18:19.7700120Z Starting comparison with reference directory: /tmp/test-ref-id-match
+2025-06-13T03:18:19.7701182Z Found 1 policies in Entra export
+2025-06-13T03:18:19.7703012Z Validating reference files...
+2025-06-13T03:18:19.7704112Z Validating reference directory: /tmp/test-ref-id-match
+2025-06-13T03:18:19.7704857Z Validating 1 policy files using parallel processing...
+2025-06-13T03:18:19.7714986Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceTests.ComparePoliciesAsync_ByNameCaseInsensitive_ShouldIgnoreCase [10 ms]
+2025-06-13T03:18:19.7716991Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_ShouldSetComparedAtTimestamp [2 ms]
+2025-06-13T03:18:19.7719010Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceTests.ComparePoliciesAsync_NonExistentReferenceDirectory_ShouldHandleGracefully [3 ms]
+2025-06-13T03:18:19.7721077Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.ParseEntraExport_ValidJObject_ShouldParseCorrectly [1 ms]
+2025-06-13T03:18:19.7723422Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithIncludeComments_ShouldGenerateAppropriateContent(includeComments: True) [9 ms]
+2025-06-13T03:18:19.7726022Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithIncludeComments_ShouldGenerateAppropriateContent(includeComments: False) [2 ms]
+2025-06-13T03:18:19.7728207Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_IdenticalPolicies_ShouldReportAsIdentical [5 ms]
+2025-06-13T03:18:19.7730023Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_EmptyReferenceDirectory_ShouldReportAllAsEntraOnly [1 ms]
+2025-06-13T03:18:19.7759745Z Validation completed: 0 valid, 1 invalid files
+2025-06-13T03:18:19.7760331Z Processing time: 5ms
+2025-06-13T03:18:19.7761999Z Average speed: 221.6 files/second
+2025-06-13T03:18:19.7762646Z Reference file validation failed. Found 1 invalid files out of 1.
+2025-06-13T03:18:19.7768392Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.7769688Z   ✗ policy1.json: 2 errors
+2025-06-13T03:18:19.7774306Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.7775248Z Loading 1 reference policy files using parallel processing...
+2025-06-13T03:18:19.7776415Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.7777438Z     - Display name is missing or empty.
+2025-06-13T03:18:19.7778258Z Loading reference files: Progress: 1/1 (100.0%) - 1088.6 items/sec, ETA: 00:00
+2025-06-13T03:18:19.7789938Z Reference file loading completed: 1 files loaded successfully
+2025-06-13T03:18:19.7791071Z Processing time: 2ms
+2025-06-13T03:18:19.7791839Z Average speed: 535.5 files/second
+2025-06-13T03:18:19.7792464Z Found 1 reference policy files
+2025-06-13T03:18:19.7826153Z Starting comparison with reference directory: /tmp/test-ref-name-match
+2025-06-13T03:18:19.7826865Z Found 1 policies in Entra export
+2025-06-13T03:18:19.7827354Z Validating reference files...
+2025-06-13T03:18:19.7827937Z Validating reference directory: /tmp/test-ref-name-match
+2025-06-13T03:18:19.7828641Z Validating 1 policy files using parallel processing...
+2025-06-13T03:18:19.7831941Z Validation completed: 0 valid, 1 invalid files
+2025-06-13T03:18:19.7839988Z Processing time: 1ms
+2025-06-13T03:18:19.7841159Z Average speed: 1024.0 files/second
+2025-06-13T03:18:19.7877163Z Reference file validation failed. Found 1 invalid files out of 1.
+2025-06-13T03:18:19.7878012Z   ✗ policy1.json: 2 errors
+2025-06-13T03:18:19.7878931Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.7879929Z     - Display name is missing or empty.
+2025-06-13T03:18:19.7880776Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.7882048Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.7882864Z Loading 1 reference policy files using parallel processing...
+2025-06-13T03:18:19.7883740Z Loading reference files: Progress: 1/1 (100.0%) - 4840.3 items/sec, ETA: 00:00
+2025-06-13T03:18:19.7884571Z Reference file loading completed: 1 files loaded successfully
+2025-06-13T03:18:19.7908468Z Processing time: 0ms
+2025-06-13T03:18:19.7909006Z Average speed: 2606.2 files/second
+2025-06-13T03:18:19.7909579Z Found 1 reference policy files
+2025-06-13T03:18:19.7923688Z Starting comparison with reference directory: /tmp/test-ref-only
+2025-06-13T03:18:19.7924686Z Found 0 policies in Entra export
+2025-06-13T03:18:19.7925330Z Validating reference files...
+2025-06-13T03:18:19.7926035Z Validating reference directory: /tmp/test-ref-only
+2025-06-13T03:18:19.7926882Z Validating 1 policy files using parallel processing...
+2025-06-13T03:18:19.7927688Z Validation completed: 0 valid, 1 invalid files
+2025-06-13T03:18:19.7928337Z Processing time: 1ms
+2025-06-13T03:18:19.7928927Z Average speed: 776.7 files/second
+2025-06-13T03:18:19.7929833Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.7930922Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.7932093Z Loading 1 reference policy files using parallel processing...
+2025-06-13T03:18:19.7933047Z Reference file validation failed. Found 1 invalid files out of 1.
+2025-06-13T03:18:19.7933970Z   ✗ policy1.json: 2 errors
+2025-06-13T03:18:19.7935078Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.7938716Z     - Display name is missing or empty.
+2025-06-13T03:18:19.7941853Z Loading reference files: Progress: 1/1 (100.0%) - 3137.7 items/sec, ETA: 00:00
+2025-06-13T03:18:19.7942692Z Reference file loading completed: 1 files loaded successfully
+2025-06-13T03:18:19.7943539Z Processing time: 1ms
+2025-06-13T03:18:19.7944103Z Average speed: 1860.1 files/second
+2025-06-13T03:18:19.7945043Z Found 1 reference policy files
+2025-06-13T03:18:19.7967126Z Found 50 source policies (Json) and 50 reference policies (Terraform)
+2025-06-13T03:18:19.7976160Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.7980287Z Converting policies: Progress: 1/1 (100.0%) - 870.7 items/sec, ETA: 00:00
+2025-06-13T03:18:19.7981075Z Policy conversion completed in 1ms
+2025-06-13T03:18:19.7981859Z Average speed: 715.4 policies/second
+2025-06-13T03:18:19.8017579Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithNullConditions_ShouldHandleGracefully [25 ms]
+2025-06-13T03:18:19.8038811Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_MatchingById_SameId_ShouldMatch [28 ms]
+2025-06-13T03:18:19.8041166Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithGenerateProvider_ShouldCreateProviderFile [9 ms]
+2025-06-13T03:18:19.8045633Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_MatchingByName_SameName_ShouldMatch [7 ms]
+2025-06-13T03:18:19.8047507Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_ReferenceOnlyPolicy_ShouldReportAsReferenceOnly [5 ms]
+2025-06-13T03:18:19.8049537Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_LocationsConditions_ShouldMapCorrectly [393 ms]
+2025-06-13T03:18:19.8052276Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithSpecialCharactersInDisplayName_ShouldSanitizeResourceName [12 ms]
+2025-06-13T03:18:19.8054075Z Starting comparison with reference directory: /tmp/test-ref-malformed
+2025-06-13T03:18:19.8054804Z Found 1 policies in Entra export
+2025-06-13T03:18:19.8055290Z Validating reference files...
+2025-06-13T03:18:19.8055893Z Validating reference directory: /tmp/test-ref-malformed
+2025-06-13T03:18:19.8056637Z Validating 3 policy files using parallel processing...
+2025-06-13T03:18:19.8079585Z Validation completed: 0 valid, 3 invalid files
+2025-06-13T03:18:19.8080410Z Reference file validation failed. Found 3 invalid files out of 3.
+2025-06-13T03:18:19.8081045Z Processing time: 2ms
+2025-06-13T03:18:19.8081835Z   ✗ valid-policy.json: 2 errors
+2025-06-13T03:18:19.8082330Z Average speed: 1623.3 files/second
+2025-06-13T03:18:19.8083349Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.8084667Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.8085517Z     - Display name is missing or empty.
+2025-06-13T03:18:19.8086170Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.8086917Z   ✗ incomplete.json: 1 errors
+2025-06-13T03:18:19.8087846Z     - Invalid JSON syntax: Unexpected character encountered while parsing value: i. Path 'name', line 1, position 10. (line 1)
+2025-06-13T03:18:19.8088991Z   ✗ malformed.json: 1 errors
+2025-06-13T03:18:19.8089732Z       Suggestion: Ensure the JSON is well-formed. Check for missing commas, brackets, or quotes.
+2025-06-13T03:18:19.8090755Z       Suggestion: Ensure the JSON is well-formed. Check for missing commas, brackets, or quotes.
+2025-06-13T03:18:19.8092220Z     - Invalid JSON syntax: Invalid character after parsing property name. Expected ':' but got: j. Path '', line 1, position 10. (line 1)
+2025-06-13T03:18:19.8093443Z Loading 3 reference policy files using parallel processing...
+2025-06-13T03:18:19.8094875Z Starting cross-format comparison between '/tmp/CrossFormatIntegrationTests_6007a072/source' and '/tmp/CrossFormatIntegrationTests_6007a072/reference'
+2025-06-13T03:18:19.8121568Z Loading reference files: Progress: 1/3 (33.3%) - 166.3 items/sec, ETA: 00:00
+2025-06-13T03:18:19.8123725Z Loading reference files: Progress: 2/3 (66.7%) - 307.4 items/sec, ETA: 00:00
+2025-06-13T03:18:19.8125047Z Loading reference files: Progress: 3/3 (100.0%) - 447.0 items/sec, ETA: 00:00
+2025-06-13T03:18:19.8136143Z Failed to load reference file 'incomplete.json': Unexpected character encountered while parsing value: i. Path 'name', line 1, position 10.
+2025-06-13T03:18:19.8148213Z   Invalid JSON syntax at line 1, position 10
+2025-06-13T03:18:19.8149444Z Failed to load reference file 'malformed.json': Invalid character after parsing property name. Expected ':' but got: j. Path '', line 1, position 10.
+2025-06-13T03:18:19.8150549Z   Invalid JSON syntax at line 1, position 10
+2025-06-13T03:18:19.8151222Z   Suggestion: Check the JSON structure for missing commas, brackets, or quotes.
+2025-06-13T03:18:19.8152294Z   Suggestion: Check the JSON structure for missing commas, brackets, or quotes.
+2025-06-13T03:18:19.8153102Z Reference file loading completed: 1 files loaded successfully
+2025-06-13T03:18:19.8153679Z Processing time: 8ms
+2025-06-13T03:18:19.8154111Z Average speed: 375.0 files/second
+2025-06-13T03:18:19.8155098Z Found 1 reference policy files
+2025-06-13T03:18:19.8156015Z Found 2 source policies (Json) and 2 reference policies (Terraform)
+2025-06-13T03:18:19.8213840Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_TfStateWithMultipleInstances_ShouldParseAll [158 ms]
+2025-06-13T03:18:19.8216486Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceIntegrationTests.CompareLargeNumberOfPolicies_ShouldPerformWithinReasonableTime [339 ms]
+2025-06-13T03:18:19.8219364Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithMinimalPolicy_ShouldGenerateCorrectHCL [8 ms]
+2025-06-13T03:18:19.8221920Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_ValidTfStateBackupFile_ShouldParseSuccessfully [7 ms]
+2025-06-13T03:18:19.8224524Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformDirectoryAsync_EmptyDirectory_ShouldReturnEmptyResults [1 ms]
+2025-06-13T03:18:19.8227252Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformDirectoryAsync_DirectoryWithValidAndInvalidFiles_ShouldParseValidOnesAndReportErrors [2 ms]
+2025-06-13T03:18:19.8229919Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_ReferenceDirectoryWithMalformedJson_ShouldSkipMalformedFiles [24 ms]
+2025-06-13T03:18:19.8232004Z Starting comparison with reference directory: /tmp/test-ref-both-empty
+2025-06-13T03:18:19.8233547Z Found 0 policies in Entra export
+2025-06-13T03:18:19.8234234Z Validating reference files...
+2025-06-13T03:18:19.8235518Z Validating reference directory: /tmp/test-ref-both-empty
+2025-06-13T03:18:19.8236761Z No JSON files found in directory: /tmp/test-ref-both-empty. No files were processed.
+2025-06-13T03:18:19.8238622Z ✓ All 0 reference files are valid
+2025-06-13T03:18:19.8239649Z No JSON files found in reference directory '/tmp/test-ref-both-empty'
+2025-06-13T03:18:19.8241058Z Found 0 reference policy files
+2025-06-13T03:18:19.8242888Z Starting cross-format comparison between '/tmp/CrossFormatIntegrationTests_8824e300/source' and '/tmp/CrossFormatIntegrationTests_8824e300/reference'
+2025-06-13T03:18:19.8281053Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.8304500Z Starting comparison with reference directory: /tmp/test-ref-case-sensitive
+2025-06-13T03:18:19.8308590Z Found 1 policies in Entra export
+2025-06-13T03:18:19.8323666Z Validating reference files...
+2025-06-13T03:18:19.8325191Z Validating reference directory: /tmp/test-ref-case-sensitive
+2025-06-13T03:18:19.8327516Z Validating 1 policy files using parallel processing...
+2025-06-13T03:18:19.8329499Z Policy conversion completed in 2ms
+2025-06-13T03:18:19.8329984Z Average speed: 470.1 policies/second
+2025-06-13T03:18:19.8330496Z Validation completed: 0 valid, 1 invalid files
+2025-06-13T03:18:19.8330992Z Processing time: 0ms
+2025-06-13T03:18:19.8331549Z Average speed: 2317.5 files/second
+2025-06-13T03:18:19.8332548Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.8333533Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.8334377Z Reference file validation failed. Found 1 invalid files out of 1.
+2025-06-13T03:18:19.8344177Z   ✗ policy1.json: 2 errors
+2025-06-13T03:18:19.8345185Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.8346181Z     - Display name is missing or empty.
+2025-06-13T03:18:19.8346850Z Loading 1 reference policy files using parallel processing...
+2025-06-13T03:18:19.8347675Z Converting policies: Progress: 1/1 (100.0%) - 710.0 items/sec, ETA: 00:00
+2025-06-13T03:18:19.8348596Z Loading reference files: Progress: 1/1 (100.0%) - 4212.3 items/sec, ETA: 00:00
+2025-06-13T03:18:19.8349411Z Reference file loading completed: 1 files loaded successfully
+2025-06-13T03:18:19.8350036Z Processing time: 0ms
+2025-06-13T03:18:19.8350478Z Average speed: 2241.6 files/second
+2025-06-13T03:18:19.8350983Z Found 1 reference policy files
+2025-06-13T03:18:19.8351840Z Found 4 source policies (Json) and 4 reference policies (Terraform)
+2025-06-13T03:18:19.8377415Z Starting comparison with reference directory: dummy-path
+2025-06-13T03:18:19.8435473Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceIntegrationTests.CompareWithCustomMappings_ComplexScenario_ShouldFollowMappings [10 ms]
+2025-06-13T03:18:19.8438187Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_BothEmpty_ShouldReturnEmptyResult [3 ms]
+2025-06-13T03:18:19.8440332Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_VariableResolution_ShouldResolveCorrectly [28 ms]
+2025-06-13T03:18:19.8442884Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_ValidTfFileWithMultiplePolicies_ShouldParseAll [8 ms]
+2025-06-13T03:18:19.8445150Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_CaseSensitiveTrue_DifferentCase_ShouldNotMatch [12 ms]
+2025-06-13T03:18:19.8448164Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_FullyPopulatedPolicy_ShouldMapAllAttributes [4 ms]
+2025-06-13T03:18:19.8475003Z Starting comparison with reference directory: /tmp/test-ref-custom-mapping-missing
+2025-06-13T03:18:19.8476470Z Found 1 policies in Entra export
+2025-06-13T03:18:19.8477233Z Validating reference files...
+2025-06-13T03:18:19.8478856Z Validating reference directory: /tmp/test-ref-custom-mapping-missing
+2025-06-13T03:18:19.8480164Z No JSON files found in directory: /tmp/test-ref-custom-mapping-missing. No files were processed.
+2025-06-13T03:18:19.8481582Z ✓ All 0 reference files are valid
+2025-06-13T03:18:19.8502517Z No JSON files found in reference directory '/tmp/test-ref-custom-mapping-missing'
+2025-06-13T03:18:19.8503562Z Found 0 reference policy files
+2025-06-13T03:18:19.8504288Z Starting comparison with reference directory: dummy-path
+2025-06-13T03:18:19.8505700Z Starting cross-format comparison between '/tmp/CrossFormatIntegrationTests_08f03c61/source' and '/tmp/CrossFormatIntegrationTests_08f03c61/reference'
+2025-06-13T03:18:19.8523321Z Starting comparison with reference directory: dummy-path
+2025-06-13T03:18:19.8526812Z Found 0 policies in Entra export
+2025-06-13T03:18:19.8530010Z Validating reference files...
+2025-06-13T03:18:19.8532259Z Validating reference directory: dummy-path
+2025-06-13T03:18:19.8534734Z Found 0 reference policy files
+2025-06-13T03:18:19.8558311Z Reference file validation failed. Found 0 invalid files out of 0.
+2025-06-13T03:18:19.8559079Z Reference directory 'dummy-path' does not exist
+2025-06-13T03:18:19.8559806Z Starting comparison with reference directory: dummy-path
+2025-06-13T03:18:19.8560443Z Found 1 policies in Entra export
+2025-06-13T03:18:19.8560928Z Validating reference files...
+2025-06-13T03:18:19.8565144Z Validating reference directory: dummy-path
+2025-06-13T03:18:19.8565766Z Found 0 reference policy files
+2025-06-13T03:18:19.8566435Z Reference file validation failed. Found 0 invalid files out of 0.
+2025-06-13T03:18:19.8567175Z Reference directory 'dummy-path' does not exist
+2025-06-13T03:18:19.8648589Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceIntegrationTests.CompareMixedFormats_MultiplePolicies_ShouldHandleAllCombinations [18 ms]
+2025-06-13T03:18:19.8651092Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_TfFileWithVariableInterpolations_ShouldParseCorrectly [6 ms]
+2025-06-13T03:18:19.8653477Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.ParseEntraExport_InvalidJsonString_ShouldThrowException [10 ms]
+2025-06-13T03:18:19.8655441Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_CustomMapping_NonExistentReference_ShouldReportAsEntraOnly [1 ms]
+2025-06-13T03:18:19.8657504Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithSessionControls_ShouldMapCorrectly [41 ms]
+2025-06-13T03:18:19.8659507Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_TfFileWithComments_ShouldIgnoreComments [7 ms]
+2025-06-13T03:18:19.8660951Z Starting comparison with reference directory: /tmp/test-ref-dir
+2025-06-13T03:18:19.8662105Z Found 0 policies in Entra export
+2025-06-13T03:18:19.8662561Z Validating reference files...
+2025-06-13T03:18:19.8663075Z Validating reference directory: /tmp/test-ref-dir
+2025-06-13T03:18:19.8663824Z No JSON files found in directory: /tmp/test-ref-dir. No files were processed.
+2025-06-13T03:18:19.8664830Z ✓ All 0 reference files are valid
+2025-06-13T03:18:19.8665493Z No JSON files found in reference directory '/tmp/test-ref-dir'
+2025-06-13T03:18:19.8666120Z Found 0 reference policy files
+2025-06-13T03:18:19.8666740Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.8667659Z Starting comparison with reference directory: /tmp/test-ref-mixed-files
+2025-06-13T03:18:19.8669129Z Starting cross-format comparison between '/tmp/CrossFormatIntegrationTests_417e8e34/source' and '/tmp/CrossFormatIntegrationTests_417e8e34/reference'
+2025-06-13T03:18:19.8670198Z Found 1 policies in Entra export
+2025-06-13T03:18:19.8670660Z Validating reference files...
+2025-06-13T03:18:19.8671265Z Validating reference directory: /tmp/test-ref-mixed-files
+2025-06-13T03:18:19.8721947Z Validating 1 policy files using parallel processing...
+2025-06-13T03:18:19.8722637Z Validation completed: 0 valid, 1 invalid files
+2025-06-13T03:18:19.8723131Z Processing time: 2ms
+2025-06-13T03:18:19.8723552Z Average speed: 547.3 files/second
+2025-06-13T03:18:19.8724299Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.8725338Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.8726203Z Loading 1 reference policy files using parallel processing...
+2025-06-13T03:18:19.8727033Z Reference file validation failed. Found 1 invalid files out of 1.
+2025-06-13T03:18:19.8727798Z   ✗ valid-policy.json: 2 errors
+2025-06-13T03:18:19.8728733Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.8729731Z     - Display name is missing or empty.
+2025-06-13T03:18:19.8730526Z Loading reference files: Progress: 1/1 (100.0%) - 5952.4 items/sec, ETA: 00:00
+2025-06-13T03:18:19.8772372Z Reference file loading completed: 1 files loaded successfully
+2025-06-13T03:18:19.8773446Z Processing time: 1ms
+2025-06-13T03:18:19.8780816Z Average speed: 1417.4 files/second
+2025-06-13T03:18:19.8781685Z Found 1 reference policy files
+2025-06-13T03:18:19.8782451Z Starting comparison with reference directory: dummy-path
+2025-06-13T03:18:19.8784317Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithInvalidJson_ShouldHandleErrorGracefully [2 ms]
+2025-06-13T03:18:19.8786431Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.ParseEntraExport_NullInput_ShouldThrowException [4 ms]
+2025-06-13T03:18:19.8788369Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.ParseEntraExport_EmptyPoliciesArray_ShouldHandleGracefully [< 1 ms]
+2025-06-13T03:18:19.8790428Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_ValidTfStateFile_ShouldParseSuccessfully [5 ms]
+2025-06-13T03:18:19.8792701Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.ParseEntraExport_MissingTenantId_ShouldUseEmptyString [2 ms]
+2025-06-13T03:18:19.8794503Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_ShouldSetReferenceDirectoryCorrectly [2 ms]
+2025-06-13T03:18:19.8796638Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceIntegrationTests.CompareWithMixedFileTypes_ShouldIgnoreNonPolicyFiles [18 ms]
+2025-06-13T03:18:19.8817112Z Found 0 policies in Entra export
+2025-06-13T03:18:19.8817824Z Reference file validation failed. Found 0 invalid files out of 0.
+2025-06-13T03:18:19.8818629Z Validating reference files...
+2025-06-13T03:18:19.8819258Z Validating reference directory: dummy-path
+2025-06-13T03:18:19.8819963Z Reference directory 'dummy-path' does not exist
+2025-06-13T03:18:19.8820989Z Found 0 reference policy files
+2025-06-13T03:18:19.8821918Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.8823345Z Starting cross-format comparison between '/tmp/CrossFormatIntegrationTests_a912dbb2/source' and '/tmp/CrossFormatIntegrationTests_a912dbb2/reference'
+2025-06-13T03:18:19.8824772Z Found 0 source policies (Mixed) and 0 reference policies (Mixed)
+2025-06-13T03:18:19.8858965Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.8895270Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_PolicyWithMissingRequiredAttributes_ShouldHandleGracefully [4 ms]
+2025-06-13T03:18:19.8900115Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_UnknownFileExtension_ShouldAttemptHclParsing [1 ms]
+2025-06-13T03:18:19.8914820Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_ReferenceDirectoryWithNonJsonFiles_ShouldIgnoreNonJsonFiles [12 ms]
+2025-06-13T03:18:19.8917649Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformDirectoryAsync_DirectoryWithSubdirectories_ShouldParseRecursively [6 ms]
+2025-06-13T03:18:19.8921232Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithGrantControls_ShouldMapCorrectly [22 ms]
+2025-06-13T03:18:19.8923508Z   Passed ConditionalAccessExporter.Tests.TerraformParsingServiceTests.ParseTerraformFileAsync_TfStateWithNoResources_ShouldReturnEmpty [1 ms]
+2025-06-13T03:18:19.8925478Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.ParseEntraExport_MissingPoliciesProperty_ShouldHandleGracefully [6 ms]
+2025-06-13T03:18:19.8927603Z Starting cross-format comparison between '/tmp/CrossFormatIntegrationTests_4ecc8a2f/source' and '/tmp/CrossFormatIntegrationTests_4ecc8a2f/reference'
+2025-06-13T03:18:19.8943372Z Found 1 source policies (Json) and 1 reference policies (Terraform)
+2025-06-13T03:18:19.8945100Z Converting policies: Progress: 1/1 (100.0%) - 186.2 items/sec, ETA: 00:00
+2025-06-13T03:18:19.8946247Z Policy conversion completed in 5ms
+2025-06-13T03:18:19.8946964Z Average speed: 184.1 policies/second
+2025-06-13T03:18:19.9012908Z Starting comparison with reference directory: /tmp/test-ref-complex
+2025-06-13T03:18:19.9013788Z Found 1 policies in Entra export
+2025-06-13T03:18:19.9014325Z Validating reference files...
+2025-06-13T03:18:19.9014942Z Validating reference directory: /tmp/test-ref-complex
+2025-06-13T03:18:19.9015674Z Validating 1 policy files using parallel processing...
+2025-06-13T03:18:19.9016825Z Validation completed: 0 valid, 1 invalid files
+2025-06-13T03:18:19.9017568Z Processing time: 1ms
+2025-06-13T03:18:19.9018077Z Average speed: 1383.3 files/second
+2025-06-13T03:18:19.9019743Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.9020899Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.9022227Z Loading 1 reference policy files using parallel processing...
+2025-06-13T03:18:19.9023217Z Reference file validation failed. Found 1 invalid files out of 1.
+2025-06-13T03:18:19.9024293Z   ✗ complex-policy.json: 2 errors
+2025-06-13T03:18:19.9025455Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.9026634Z     - Display name is missing or empty.
+2025-06-13T03:18:19.9027650Z Loading reference files: Progress: 1/1 (100.0%) - 3252.0 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9028820Z Reference file loading completed: 1 files loaded successfully
+2025-06-13T03:18:19.9031886Z Processing time: 0ms
+2025-06-13T03:18:19.9032327Z Average speed: 2816.9 files/second
+2025-06-13T03:18:19.9032803Z Found 1 reference policy files
+2025-06-13T03:18:19.9096656Z Starting comparison with reference directory: dummy-path
+2025-06-13T03:18:19.9097601Z Found 1 policies in Entra export
+2025-06-13T03:18:19.9098597Z Validating reference files...
+2025-06-13T03:18:19.9099224Z Validating reference directory: dummy-path
+2025-06-13T03:18:19.9099806Z Found 0 reference policy files
+2025-06-13T03:18:19.9100511Z Reference file validation failed. Found 0 invalid files out of 0.
+2025-06-13T03:18:19.9101285Z Reference directory 'dummy-path' does not exist
+2025-06-13T03:18:19.9103928Z Starting comparison with reference directory: /tmp/test-ref-empty-entra
+2025-06-13T03:18:19.9104666Z Found 0 policies in Entra export
+2025-06-13T03:18:19.9105127Z Validating reference files...
+2025-06-13T03:18:19.9105726Z Validating reference directory: /tmp/test-ref-empty-entra
+2025-06-13T03:18:19.9106454Z Validating 1 policy files using parallel processing...
+2025-06-13T03:18:19.9124007Z Validation completed: 0 valid, 1 invalid files
+2025-06-13T03:18:19.9124760Z Processing time: 0ms
+2025-06-13T03:18:19.9125370Z Average speed: 2242.2 files/second
+2025-06-13T03:18:19.9127653Z       Suggestion: Ensure the policy structure matches the defined schema. Check field names and types.
+2025-06-13T03:18:19.9128946Z       Suggestion: Provide a descriptive display name for the policy.
+2025-06-13T03:18:19.9136811Z Loading 1 reference policy files using parallel processing...
+2025-06-13T03:18:19.9137673Z Reference file validation failed. Found 1 invalid files out of 1.
+2025-06-13T03:18:19.9138624Z   ✗ policy1.json: 2 errors
+2025-06-13T03:18:19.9139547Z     - Required properties are missing from object: displayName, conditions, grantControls, state. Path '', line 1, position 1.
+2025-06-13T03:18:19.9140538Z     - Display name is missing or empty.
+2025-06-13T03:18:19.9141521Z Loading reference files: Progress: 1/1 (100.0%) - 4277.2 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9142401Z Reference file loading completed: 1 files loaded successfully
+2025-06-13T03:18:19.9142992Z Processing time: 0ms
+2025-06-13T03:18:19.9143410Z Average speed: 3422.3 files/second
+2025-06-13T03:18:19.9143908Z Found 1 reference policy files
+2025-06-13T03:18:19.9145473Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceIntegrationTests.CompareComplexPolicies_MultipleConditionsAndControls_ShouldAnalyzeCorrectly [20 ms]
+2025-06-13T03:18:19.9147895Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_GrantControls_ShouldMapCorrectly [56 ms]
+2025-06-13T03:18:19.9150058Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceIntegrationTests.CompareWithEmptyDirectories_ShouldHandleGracefully [6 ms]
+2025-06-13T03:18:19.9152842Z   Passed ConditionalAccessExporter.Tests.JsonToTerraformServiceTests.ConvertJsonToTerraformAsync_WithGenerateVariables_ShouldCreateVariablesFile [14 ms]
+2025-06-13T03:18:19.9155092Z   Passed ConditionalAccessExporter.Tests.CrossFormatPolicyComparisonServiceIntegrationTests.CompareWithDifferentNamingConventions_ShouldDetectSimilarPolicies [7 ms]
+2025-06-13T03:18:19.9157397Z   Passed ConditionalAccessExporter.Tests.ParallelProcessingServiceTests.ProcessInParallelAsync_WithCustomParallelism_RespectsMaxDegreeOfParallelism [402 ms]
+2025-06-13T03:18:19.9158738Z   Standard Output Messages:
+2025-06-13T03:18:19.9159109Z  Max concurrent operations observed: 3
+2025-06-13T03:18:19.9159525Z  Configured max degree of parallelism: 3
+2025-06-13T03:18:19.9159802Z 
+2025-06-13T03:18:19.9159825Z 
+2025-06-13T03:18:19.9160539Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_ComplexNestedDifferences_ShouldDetectCorrectly [28 ms]
+2025-06-13T03:18:19.9162426Z Reference file validation failed. Found 0 invalid files out of 0.
+2025-06-13T03:18:19.9163207Z Reference directory '/tmp/non-existent-directory' does not exist
+2025-06-13T03:18:19.9164080Z Starting comparison with reference directory: /tmp/non-existent-directory
+2025-06-13T03:18:19.9164717Z Found 1 policies in Entra export
+2025-06-13T03:18:19.9165149Z Validating reference files...
+2025-06-13T03:18:19.9165698Z Validating reference directory: /tmp/non-existent-directory
+2025-06-13T03:18:19.9166250Z Found 0 reference policy files
+2025-06-13T03:18:19.9254250Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.9255996Z Converting policies: Progress: 1/1 (100.0%) - 4739.3 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9257019Z Policy conversion completed in 0ms
+2025-06-13T03:18:19.9262656Z Average speed: 3944.8 policies/second
+2025-06-13T03:18:19.9265613Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.9276259Z Converting policies: Progress: 1/1 (100.0%) - 1982.6 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9276936Z Policy conversion completed in 1ms
+2025-06-13T03:18:19.9277473Z Average speed: 1832.8 policies/second
+2025-06-13T03:18:19.9278280Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.9279022Z Policy conversion completed in 0ms
+2025-06-13T03:18:19.9280162Z Average speed: 2773.9 policies/second
+2025-06-13T03:18:19.9281537Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.9286448Z Converting policies: Progress: 1/1 (100.0%) - 11668.6 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9287345Z Converting policies: Progress: 1/1 (100.0%) - 1955.8 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9288016Z Policy conversion completed in 1ms
+2025-06-13T03:18:19.9288538Z Average speed: 1490.3 policies/second
+2025-06-13T03:18:19.9299340Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.9303748Z Converting policies: Progress: 1/1 (100.0%) - 2371.9 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9304463Z Policy conversion completed in 1ms
+2025-06-13T03:18:19.9304988Z Average speed: 1631.1 policies/second
+2025-06-13T03:18:19.9315797Z No Terraform policies found to convert.
+2025-06-13T03:18:19.9325080Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.ParseEntraExport_ValidJsonString_ShouldParseCorrectly [3 ms]
+2025-06-13T03:18:19.9328032Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_EmptyEntraExport_ShouldReportAllAsReferenceOnly [3 ms]
+2025-06-13T03:18:19.9331029Z   Passed ConditionalAccessExporter.Tests.PolicyComparisonServiceTests.CompareAsync_NonExistentReferenceDirectory_ShouldHandleGracefully [3 ms]
+2025-06-13T03:18:19.9335101Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_SingleFullyPopulatedPolicy_ShouldConvertSuccessfully [43 ms]
+2025-06-13T03:18:19.9341094Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_DifferentStates_ShouldMapCorrectly(terraformState: "enabled", expectedState: "enabled") [2 ms]
+2025-06-13T03:18:19.9347770Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_DifferentStates_ShouldMapCorrectly(terraformState: "invalid", expectedState: "disabled") [1 ms]
+2025-06-13T03:18:19.9352798Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_DifferentStates_ShouldMapCorrectly(terraformState: "enabledForReportingButNotEnforced", expectedState: "enabledForReportingButNotEnforced") [< 1 ms]
+2025-06-13T03:18:19.9355901Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_DifferentStates_ShouldMapCorrectly(terraformState: null, expectedState: "disabled") [< 1 ms]
+2025-06-13T03:18:19.9358651Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_DifferentStates_ShouldMapCorrectly(terraformState: "disabled", expectedState: "disabled") [< 1 ms]
+2025-06-13T03:18:19.9360638Z Converting 2 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.9362045Z Converting policies: Progress: 1/2 (50.0%) - 2356.3 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9363076Z Converting policies: Progress: 2/2 (100.0%) - 3969.0 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9363646Z Policy conversion completed in 1ms
+2025-06-13T03:18:19.9364071Z Average speed: 3304.7 policies/second
+2025-06-13T03:18:19.9365071Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.9365897Z Converting policies: Progress: 1/1 (100.0%) - 9871.7 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9366467Z Policy conversion completed in 0ms
+2025-06-13T03:18:19.9366892Z Average speed: 3734.1 policies/second
+2025-06-13T03:18:19.9375534Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.9383683Z Policy conversion completed in 1ms
+2025-06-13T03:18:19.9388330Z Average speed: 1024.7 policies/second
+2025-06-13T03:18:19.9390685Z Converting policies: Progress: 1/1 (100.0%) - 1074.9 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9425749Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.9428465Z Converting policies: Progress: 1/1 (100.0%) - 4340.3 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9429227Z Policy conversion completed in 0ms
+2025-06-13T03:18:19.9435613Z Average speed: 2876.0 policies/second
+2025-06-13T03:18:19.9561112Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.9562963Z Converting policies: Progress: 1/1 (100.0%) - 4319.7 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9564559Z Policy conversion completed in 0ms
+2025-06-13T03:18:19.9568192Z Average speed: 3138.7 policies/second
+2025-06-13T03:18:19.9582285Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.9592306Z Converting policies: Progress: 1/1 (100.0%) - 2384.9 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9593003Z Policy conversion completed in 1ms
+2025-06-13T03:18:19.9612138Z Average speed: 1899.3 policies/second
+2025-06-13T03:18:19.9769626Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.9772786Z Converting policies: Progress: 1/1 (100.0%) - 3830.0 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9778520Z Policy conversion completed in 0ms
+2025-06-13T03:18:19.9779505Z Average speed: 2004.8 policies/second
+2025-06-13T03:18:19.9875060Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.9880281Z Policy conversion completed in 0ms
+2025-06-13T03:18:19.9882481Z Average speed: 2870.3 policies/second
+2025-06-13T03:18:19.9883308Z Converting policies: Progress: 1/1 (100.0%) - 3570.2 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9983677Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:19.9989656Z Converting policies: Progress: 1/1 (100.0%) - 2860.4 items/sec, ETA: 00:00
+2025-06-13T03:18:19.9992074Z Policy conversion completed in 0ms
+2025-06-13T03:18:19.9993473Z Average speed: 2346.3 policies/second
+2025-06-13T03:18:19.9995214Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_EmptyPoliciesList_ShouldReturnEmptyList [2 ms]
+2025-06-13T03:18:19.9999529Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_PolicyConversionFailure_ShouldContinueWithOthers [1 ms]
+2025-06-13T03:18:20.0002068Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_UnresolvedVariables_ShouldGenerateWarnings [1 ms]
+2025-06-13T03:18:20.0005209Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_NullNestedObjects_ShouldHandleGracefully [3 ms]
+2025-06-13T03:18:20.0009787Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_UsersConditions_ShouldMapCorrectly [16 ms]
+2025-06-13T03:18:20.0013817Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_DataSourceReferences_ShouldGenerateWarnings [1 ms]
+2025-06-13T03:18:20.0016077Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_ClientApplicationsConditions_ShouldMapCorrectly [18 ms]
+2025-06-13T03:18:20.0018263Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_PlatformsConditions_ShouldMapCorrectly [9 ms]
+2025-06-13T03:18:20.0020789Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_ApplicationsConditions_ShouldMapCorrectly [10 ms]
+2025-06-13T03:18:20.0022717Z Converting 3 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:20.0023670Z Converting policies: Progress: 1/3 (33.3%) - 4766.4 items/sec, ETA: 00:00
+2025-06-13T03:18:20.0024497Z Converting policies: Progress: 2/3 (66.7%) - 8417.5 items/sec, ETA: 00:00
+2025-06-13T03:18:20.0025382Z Converting policies: Progress: 3/3 (100.0%) - 10799.1 items/sec, ETA: 00:00
+2025-06-13T03:18:20.0026107Z Policy conversion completed in 0ms
+2025-06-13T03:18:20.0026608Z Average speed: 6380.3 policies/second
+2025-06-13T03:18:20.0054153Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:20.0064428Z Converting policies: Progress: 1/1 (100.0%) - 883.0 items/sec, ETA: 00:00
+2025-06-13T03:18:20.0067110Z Policy conversion completed in 1ms
+2025-06-13T03:18:20.0067612Z Average speed: 849.9 policies/second
+2025-06-13T03:18:20.0233719Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:20.0244829Z Converting policies: Progress: 1/1 (100.0%) - 6002.4 items/sec, ETA: 00:00
+2025-06-13T03:18:20.0246458Z Policy conversion completed in 0ms
+2025-06-13T03:18:20.0247663Z Average speed: 4156.3 policies/second
+2025-06-13T03:18:20.0299488Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:20.0300573Z Converting policies: Progress: 1/1 (100.0%) - 8347.2 items/sec, ETA: 00:00
+2025-06-13T03:18:20.0301293Z Policy conversion completed in 0ms
+2025-06-13T03:18:20.0302045Z Average speed: 4793.9 policies/second
+2025-06-13T03:18:20.0343544Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:20.0350837Z Converting policies: Progress: 1/1 (100.0%) - 3362.5 items/sec, ETA: 00:00
+2025-06-13T03:18:20.0353370Z Policy conversion completed in 0ms
+2025-06-13T03:18:20.0353899Z Average speed: 2788.6 policies/second
+2025-06-13T03:18:20.0410718Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:20.0411967Z Converting policies: Progress: 1/1 (100.0%) - 6605.0 items/sec, ETA: 00:00
+2025-06-13T03:18:20.0412639Z Policy conversion completed in 0ms
+2025-06-13T03:18:20.0413107Z Average speed: 4791.6 policies/second
+2025-06-13T03:18:20.0425813Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_LocalResolution_ShouldResolveCorrectly [2 ms]
+2025-06-13T03:18:20.0428558Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_MultiplePolicies_ShouldConvertAll [2 ms]
+2025-06-13T03:18:20.0429716Z   Passed ConditionalAccessExporter.Tests.ParallelProcessingServiceTests.ProcessInParallelAsync_WithCancellation_ThrowsOperationCancelledException [108 ms]
+2025-06-13T03:18:20.0430898Z   Passed ConditionalAccessExporter.Tests.ParallelProcessingServiceTests.ProcessFilesInParallelAsync_WithTestFiles_ProcessesCorrectly [10 ms]
+2025-06-13T03:18:20.0431816Z   Standard Output Messages:
+2025-06-13T03:18:20.0432088Z  Processed 5 files with 5 progress reports
+2025-06-13T03:18:20.0432310Z 
+2025-06-13T03:18:20.0432315Z 
+2025-06-13T03:18:20.0432820Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_SessionControls_ShouldMapCorrectly [20 ms]
+2025-06-13T03:18:20.0433906Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_ClientAppTypes_ShouldMapCorrectly [5 ms]
+2025-06-13T03:18:20.0434962Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_SpecialValues_ShouldMapCorrectly [3 ms]
+2025-06-13T03:18:20.0436008Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_RiskLevels_ShouldMapCorrectly [7 ms]
+2025-06-13T03:18:20.0475164Z Converting 1 Terraform policies to Graph JSON format using parallel processing...
+2025-06-13T03:18:20.0483885Z Converting policies: Progress: 1/1 (100.0%) - 5063.3 items/sec, ETA: 00:00
+2025-06-13T03:18:20.0485412Z Policy conversion completed in 0ms
+2025-06-13T03:18:20.0488434Z Average speed: 4004.8 policies/second
+2025-06-13T03:18:20.1650095Z [xUnit.net 00:00:01.17]       Assert.Equal() Failure: Values differ
+2025-06-13T03:18:20.1653185Z [xUnit.net 00:00:01.17]       Expected: 20
+2025-06-13T03:18:20.1654495Z [xUnit.net 00:00:01.17]       Actual:   15
+2025-06-13T03:18:20.1659924Z [xUnit.net 00:00:01.17]     ConditionalAccessExporter.Tests.ParallelProcessingServiceTests.ProcessInParallelAsync_WithProgressReporting_ReportsProgressCorrectly [FAIL]
+2025-06-13T03:18:20.1666052Z [xUnit.net 00:00:01.17]       Stack Trace:
+2025-06-13T03:18:20.1685097Z Markdown cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/d962d885-8f43-4806-931b-ed9b8d0519fd/cross-format-comparison-20250613-031820.md
+2025-06-13T03:18:20.1688558Z [xUnit.net 00:00:01.17]         /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ParallelProcessingServiceTests.cs(202,0): at ConditionalAccessExporter.Tests.ParallelProcessingServiceTests.ProcessInParallelAsync_WithProgressReporting_ReportsProgressCorrectly()
+2025-06-13T03:18:20.1690859Z [xUnit.net 00:00:01.17]         --- End of stack trace from previous location ---
+2025-06-13T03:18:20.1691806Z [xUnit.net 00:00:01.17]       Output:
+2025-06-13T03:18:20.1692566Z [xUnit.net 00:00:01.17]         Progress: Progress: 5/20 (25.0%) - 250.2 items/sec, ETA: 00:00
+2025-06-13T03:18:20.1693546Z [xUnit.net 00:00:01.17]         Progress: Progress: 10/20 (50.0%) - 328.3 items/sec, ETA: 00:00
+2025-06-13T03:18:20.1694531Z [xUnit.net 00:00:01.17]         Progress: Progress: 15/20 (75.0%) - 367.2 items/sec, ETA: 00:00
+2025-06-13T03:18:20.1695519Z [xUnit.net 00:00:01.17]         Progress: Progress: 20/20 (100.0%) - 390.7 items/sec, ETA: 00:00
+2025-06-13T03:18:20.1809910Z Cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/b3eafeec-e222-4608-a802-ef86c9c0e711/cross-format-comparison-20250613-031820.json
+2025-06-13T03:18:20.1839937Z HTML cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/b3eafeec-e222-4608-a802-ef86c9c0e711/cross-format-comparison-20250613-031820.html
+2025-06-13T03:18:20.1844240Z Markdown cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/b3eafeec-e222-4608-a802-ef86c9c0e711/cross-format-comparison-20250613-031820.md
+2025-06-13T03:18:20.1860548Z CSV cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/b3eafeec-e222-4608-a802-ef86c9c0e711/cross-format-comparison-20250613-031820.csv
+2025-06-13T03:18:20.1912792Z Cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/52b5500e-c1fd-48b9-b144-6657f32a7852/cross-format-comparison-20250613-031820.json
+2025-06-13T03:18:20.1967039Z Cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/6dbfc2b8-70d0-4631-851e-95ad42856f8e/cross-format-comparison-20250613-031820.json
+2025-06-13T03:18:20.1972725Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_GeneralStructure_ShouldBeCorrect [6 ms]
+2025-06-13T03:18:20.1974439Z   Passed ConditionalAccessExporter.Tests.ParallelProcessingServiceTests.ProcessInParallelAsync_WithErrorsAndContinueOnError_HandlesErrorsGracefully [29 ms]
+2025-06-13T03:18:20.1975212Z   Standard Output Messages:
+2025-06-13T03:18:20.1975508Z  Successfully processed 7 out of 10 items
+2025-06-13T03:18:20.1975818Z  Errors encountered: 3
+2025-06-13T03:18:20.1975959Z 
+2025-06-13T03:18:20.1975966Z 
+2025-06-13T03:18:20.1976532Z   Passed ConditionalAccessExporter.Tests.TerraformConversionServiceTests.ConvertToGraphJsonAsync_MinimalRequiredFields_ShouldConvertWithDefaults [3 ms]
+2025-06-13T03:18:20.1977646Z   Passed ConditionalAccessExporter.Tests.ParallelProcessingServiceTests.ProcessInParallelAsync_WithValidItems_ProcessesSuccessfully [45 ms]
+2025-06-13T03:18:20.1978754Z   Standard Output Messages:
+2025-06-13T03:18:20.1978990Z  Processed 10 items in 42.0982ms
+2025-06-13T03:18:20.1979235Z  Average speed: 237.54 items/second
+2025-06-13T03:18:20.1979393Z 
+2025-06-13T03:18:20.1979398Z 
+2025-06-13T03:18:20.1979891Z   Passed ConditionalAccessExporter.Tests.ParallelProcessingServiceTests.GetOptimalDegreeOfParallelism_ReturnsReasonableValue [< 1 ms]
+2025-06-13T03:18:20.1980532Z   Standard Output Messages:
+2025-06-13T03:18:20.1980774Z  Optimal parallelism: 3 (System cores: 4)
+2025-06-13T03:18:20.1980949Z 
+2025-06-13T03:18:20.1980953Z 
+2025-06-13T03:18:20.1981718Z   Failed ConditionalAccessExporter.Tests.ParallelProcessingServiceTests.ProcessInParallelAsync_WithProgressReporting_ReportsProgressCorrectly [53 ms]
+2025-06-13T03:18:20.1982425Z   Error Message:
+2025-06-13T03:18:20.1982644Z    Assert.Equal() Failure: Values differ
+2025-06-13T03:18:20.1982883Z Expected: 20
+2025-06-13T03:18:20.1983064Z Actual:   15
+2025-06-13T03:18:20.1983244Z   Stack Trace:
+2025-06-13T03:18:20.1984254Z      at ConditionalAccessExporter.Tests.ParallelProcessingServiceTests.ProcessInParallelAsync_WithProgressReporting_ReportsProgressCorrectly() in /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ParallelProcessingServiceTests.cs:line 202
+2025-06-13T03:18:20.1985447Z --- End of stack trace from previous location ---
+2025-06-13T03:18:20.1985743Z   Standard Output Messages:
+2025-06-13T03:18:20.1986040Z  Progress: Progress: 5/20 (25.0%) - 250.2 items/sec, ETA: 00:00
+2025-06-13T03:18:20.1986475Z  Progress: Progress: 10/20 (50.0%) - 328.3 items/sec, ETA: 00:00
+2025-06-13T03:18:20.1986844Z  Progress: Progress: 15/20 (75.0%) - 367.2 items/sec, ETA: 00:00
+2025-06-13T03:18:20.1987227Z  Progress: Progress: 20/20 (100.0%) - 390.7 items/sec, ETA: 00:00
+2025-06-13T03:18:20.1987478Z 
+2025-06-13T03:18:20.1987483Z 
+2025-06-13T03:18:20.1987980Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateMarkdownReport_ValidatesMarkdownSyntax [7 ms]
+2025-06-13T03:18:20.1989096Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateReports_AllFormats_ShouldContainSameDataAccuracy [20 ms]
+2025-06-13T03:18:20.1990229Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateJsonReport_WithEmptyResult_ShouldCreateValidJsonFile [4 ms]
+2025-06-13T03:18:20.2178527Z HTML cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/d375bdc7-2a5a-4ad2-8687-ffda5caab28c/cross-format-comparison-20250613-031820.html
+2025-06-13T03:18:20.2198047Z CSV cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/bebf97b4-436a-42cd-b9cc-8dafcd74bc0a/cross-format-comparison-20250613-031820.csv
+2025-06-13T03:18:20.2214436Z Cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/35ebd522-9a8a-423d-84ea-cfa257871cfe/cross-format-comparison-20250613-031820.json
+2025-06-13T03:18:20.2226180Z HTML cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/35ebd522-9a8a-423d-84ea-cfa257871cfe/cross-format-comparison-20250613-031820.html
+2025-06-13T03:18:20.2228621Z Markdown cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/35ebd522-9a8a-423d-84ea-cfa257871cfe/cross-format-comparison-20250613-031820.md
+2025-06-13T03:18:20.2232965Z CSV cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/35ebd522-9a8a-423d-84ea-cfa257871cfe/cross-format-comparison-20250613-031820.csv
+2025-06-13T03:18:20.2240099Z HTML cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/e40ecbf6-9eb4-4ad7-9e5a-15c388d18f1c/cross-format-comparison-20250613-031820.html
+2025-06-13T03:18:20.2254028Z Cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/3bfb1649-4181-4519-835d-4b7700188482/cross-format-comparison-20250613-031820.json
+2025-06-13T03:18:20.2271565Z CSV cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/c5c1ceb5-e2da-46f2-81cf-44c590f31beb/cross-format-comparison-20250613-031820.csv
+2025-06-13T03:18:20.2288710Z HTML cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/0acc9c3d-19d6-4301-8586-170967adf3f2/cross-format-comparison-20250613-031820.html
+2025-06-13T03:18:20.2321218Z Cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/85dac75f-8bf3-439d-95e7-2b693cea1d82/new-directory/cross-format-comparison-20250613-031820.json
+2025-06-13T03:18:20.2345309Z Markdown cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/4d874428-2bd8-4818-8038-f8f66b3fde84/cross-format-comparison-20250613-031820.md
+2025-06-13T03:18:20.2353824Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateReport_WithDefaultFormat_ShouldCreateJsonReport [21 ms]
+2025-06-13T03:18:20.2356180Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateHtmlReport_WithSemanticallyEquivalent_ShouldDisplaySemanticInfo [2 ms]
+2025-06-13T03:18:20.2358704Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateCsvReport_WithConversionSuggestions_ShouldReflectInHasSuggestions [1 ms]
+2025-06-13T03:18:20.2360929Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateReport_WithEmptyResult_ShouldHandleGracefully [2 ms]
+2025-06-13T03:18:20.2363434Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateHtmlReport_WithConversionSuggestions_ShouldDisplaySuggestions [1 ms]
+2025-06-13T03:18:20.2366370Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateReport_WithUnknownFormat_ShouldDefaultToJson [1 ms]
+2025-06-13T03:18:20.2372478Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateCsvReport_WithAllStatuses_ShouldCreateValidCsvFile [1 ms]
+2025-06-13T03:18:20.2374878Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateHtmlReport_WithAllStatuses_ShouldCreateValidHtmlFile [3 ms]
+2025-06-13T03:18:20.2377108Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateReport_CreatesOutputDirectory_WhenNotExists [1 ms]
+2025-06-13T03:18:20.2394717Z Markdown cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/826e7f67-a465-4aa8-a663-1da3a2908c58/cross-format-comparison-20250613-031820.md
+2025-06-13T03:18:20.2410198Z Cross-format comparison report generated: /tmp/CrossFormatReportGenerationTests/459995ad-e15c-4a75-93e8-fb8ad1acae56/cross-format-comparison-20250613-031820.json
+2025-06-13T03:18:21.3251825Z custom_export.json
+2025-06-13T03:18:21.6645313Z Conditional Access Policy Exporter
+2025-06-13T03:18:21.6646429Z ==================================
+2025-06-13T03:18:21.6647938Z Tenant ID: ***
+2025-06-13T03:18:21.6648500Z Client ID: ***
+2025-06-13T03:18:21.6648895Z Client Secret: [HIDDEN]
+2025-06-13T03:18:21.6649336Z Authenticating to Microsoft Graph...
+2025-06-13T03:18:21.6649929Z Fetching Conditional Access Policies...
+2025-06-13T03:18:21.6650446Z Found 1 Conditional Access Policies
+2025-06-13T03:18:21.6650880Z Policy Summary:
+2025-06-13T03:18:21.6651193Z ================
+2025-06-13T03:18:21.6651916Z - notrustisrael (State: Enabled)
+2025-06-13T03:18:21.6652659Z Conditional Access Policies exported successfully to: custom_export.json
+2025-06-13T03:18:21.6653310Z File size: 1.25 KB
+2025-06-13T03:18:21.6653723Z Export completed successfully!
+2025-06-13T03:18:21.6655091Z ConditionalAccessPolicies_20250613_031821.json
+2025-06-13T03:18:21.7366213Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateMarkdownReport_WithAllStatuses_ShouldCreateValidMarkdownFile [2 ms]
+2025-06-13T03:18:21.7368453Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateReports_ShouldLogFileGeneration [2 ms]
+2025-06-13T03:18:21.7370507Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateMarkdownReport_WithSemanticallyEquivalent_ShouldFormatCorrectly [1 ms]
+2025-06-13T03:18:21.7373444Z   Passed ConditionalAccessExporter.Tests.CrossFormatReportGenerationServiceTests.GenerateJsonReport_WithAllStatuses_ShouldCreateValidJsonFile [2 ms]
+2025-06-13T03:18:21.7375297Z   Passed ConditionalAccessExporter.Tests.ProgramTests.CrossFormatComparePoliciesAsync_Success_ReturnsZero [17 ms]
+2025-06-13T03:18:21.7376918Z   Passed ConditionalAccessExporter.Tests.ProgramTests.ExportPoliciesAsync_Exception_HandlesErrorAndReturnsOne [1 s]
+2025-06-13T03:18:21.7378745Z   Passed ConditionalAccessExporter.Tests.ProgramTests.Export_Command_ValidArgs_CallsHandler(args: ["export", "--output", "custom_export.json"]) [340 ms]
+2025-06-13T03:18:21.8270615Z Conditional Access Policy Exporter
+2025-06-13T03:18:21.8271252Z ==================================
+2025-06-13T03:18:21.8272484Z Tenant ID: ***
+2025-06-13T03:18:21.8272974Z Client ID: ***
+2025-06-13T03:18:21.8273468Z Client Secret: [HIDDEN]
+2025-06-13T03:18:21.8274061Z Authenticating to Microsoft Graph...
+2025-06-13T03:18:21.8274740Z Fetching Conditional Access Policies...
+2025-06-13T03:18:21.8275368Z Found 1 Conditional Access Policies
+2025-06-13T03:18:21.8275891Z Policy Summary:
+2025-06-13T03:18:21.8276204Z ================
+2025-06-13T03:18:21.8276494Z - notrustisrael (State: Enabled)
+2025-06-13T03:18:21.8277138Z Conditional Access Policies exported successfully to: ConditionalAccessPolicies_20250613_031821.json
+2025-06-13T03:18:21.8277714Z File size: 1.25 KB
+2025-06-13T03:18:21.8277990Z Export completed successfully!
+2025-06-13T03:18:21.8797708Z   Passed ConditionalAccessExporter.Tests.ProgramTests.Export_Command_ValidArgs_CallsHandler(args: ["export"]) [162 ms]
+2025-06-13T03:18:21.8798870Z   Passed ConditionalAccessExporter.Tests.ProgramTests.ConvertJsonToTerraformAsync_Success_ReturnsZero [11 ms]
+2025-06-13T03:18:21.8799889Z   Passed ConditionalAccessExporter.Tests.ProgramTests.ComparePoliciesAsync_ServiceFailure_ReturnsOne [2 ms]
+2025-06-13T03:18:21.8800895Z   Passed ConditionalAccessExporter.Tests.ProgramTests.JsonToTerraform_Command_MissingInput_ReturnsError [28 ms]
+2025-06-13T03:18:21.8802458Z   Passed ConditionalAccessExporter.Tests.ProgramTests.CrossCompare_Command_MissingRequiredOption_ReturnsError(args: ["cross-compare", "--source-dir", "./src"]) [1 ms]
+2025-06-13T03:18:21.8804064Z   Passed ConditionalAccessExporter.Tests.ProgramTests.CrossCompare_Command_MissingRequiredOption_ReturnsError(args: ["cross-compare", "--reference-dir", "./ref"]) [< 1 ms]
+2025-06-13T03:18:21.8806547Z   Passed ConditionalAccessExporter.Tests.ProgramTests.CrossCompare_Command_ValidArgs_CallsHandler(args: ["cross-compare", "--source-dir", "./src_tf", "--reference-dir", "./ref_json", ···]) [3 ms]
+2025-06-13T03:18:21.8808234Z   Passed ConditionalAccessExporter.Tests.ProgramTests.CrossCompare_Command_ValidArgs_CallsHandler(args: ["cross-compare", "--source-dir", "./src", "--reference-dir", "./ref"]) [< 1 ms]
+2025-06-13T03:18:21.8809565Z   Passed ConditionalAccessExporter.Tests.ProgramTests.Terraform_Command_MissingInput_ReturnsError [1 ms]
+2025-06-13T03:18:22.6199002Z   Passed ConditionalAccessExporter.Tests.ProgramTests.Terraform_Command_ValidArgs_CallsHandler(args: ["terraform", "--input", "file.tf"]) [30 ms]
+2025-06-13T03:18:22.6201890Z   Passed ConditionalAccessExporter.Tests.ProgramTests.Terraform_Command_ValidArgs_CallsHandler(args: ["terraform", "--input", "dir/", "--output", "converted.json", ···]) [< 1 ms]
+2025-06-13T03:18:22.6203748Z   Passed ConditionalAccessExporter.Tests.ProgramTests.ExportPoliciesAsync_Success_ReturnsZero [299 ms]
+2025-06-13T03:18:22.6205329Z   Passed ConditionalAccessExporter.Tests.ProgramTests.ConvertTerraformAsync_ServiceFailure_ReturnsOne [1 ms]
+2025-06-13T03:18:22.6206989Z   Passed ConditionalAccessExporter.Tests.ProgramTests.ConvertJsonToTerraformAsync_ServiceFailure_ReturnsOne [1 ms]
+2025-06-13T03:18:22.6209301Z   Passed ConditionalAccessExporter.Tests.ProgramTests.Compare_Command_ValidArgs_CallsHandler(args: ["compare", "--reference-dir", "./ref", "--entra-file", "entra_export.json", ···]) [6 ms]
+2025-06-13T03:18:22.6211843Z   Passed ConditionalAccessExporter.Tests.ProgramTests.Compare_Command_ValidArgs_CallsHandler(args: ["compare", "--reference-dir", "./ref"]) [389 ms]
+2025-06-13T03:18:22.6213301Z   Passed ConditionalAccessExporter.Tests.ProgramTests.ConvertTerraformAsync_Success_ReturnsZero [2 ms]
+2025-06-13T03:18:22.6214653Z   Passed ConditionalAccessExporter.Tests.ProgramTests.ComparePoliciesAsync_Success_ReturnsZero [6 ms]
+2025-06-13T03:18:23.0162446Z HTML report generated: /tmp/ReportGenerationTests/89e5190e-1f69-4e22-957f-fe1cf10b04c2/CA_Comparison_20250613_031823.html
+2025-06-13T03:18:23.0171110Z   Passed ConditionalAccessExporter.Tests.ProgramTests.JsonToTerraform_Command_ValidArgs_CallsHandler(args: ["json-to-terraform", "--input", "policies.json", "--output-dir", "custom_tf_out", ···]) [1 ms]
+2025-06-13T03:18:23.0174100Z   Passed ConditionalAccessExporter.Tests.ProgramTests.JsonToTerraform_Command_ValidArgs_CallsHandler(args: ["json-to-terraform", "--input", "policies.json"]) [< 1 ms]
+2025-06-13T03:18:23.0175899Z   Passed ConditionalAccessExporter.Tests.ProgramTests.Compare_Command_MissingReferenceDir_ReturnsError [2 ms]
+2025-06-13T03:18:23.0179559Z   Passed ConditionalAccessExporter.Tests.ProgramTests.Help_Option_PrintsHelpText(args: ["--help"]) [2 ms]
+2025-06-13T03:18:23.0180828Z   Passed ConditionalAccessExporter.Tests.ProgramTests.Help_Option_PrintsHelpText(args: ["export", "--help"]) [< 1 ms]
+2025-06-13T03:18:23.0182186Z   Passed ConditionalAccessExporter.Tests.ProgramTests.Main_NoArgs_CallsExportCommand [383 ms]
+2025-06-13T03:18:23.0183539Z   Passed ConditionalAccessExporter.Tests.ProgramTests.CrossFormatComparePoliciesAsync_ServiceFailure_ReturnsOne [1 ms]
+2025-06-13T03:18:23.0185269Z   Passed ConditionalAccessExporter.Tests.ReportGenerationServiceTests.GenerateConsoleReport_WithAllIdentical_ShouldShowAllIdentical [1 ms]
+2025-06-13T03:18:23.0187346Z   Passed ConditionalAccessExporter.Tests.ReportGenerationServiceTests.GenerateConsoleReport_WithAllEntraOnly_ShouldShowEntraOnlySection [< 1 ms]
+2025-06-13T03:18:23.0189301Z JSON report generated: /tmp/ReportGenerationTests/bfed7765-37e7-42ff-be3b-8be2f609b3e8/CA_Comparison_20250613_031823.json
+2025-06-13T03:18:23.0230106Z CSV report generated: /tmp/ReportGenerationTests/1411fd8f-2912-48ed-ba96-a79949c2590b/CA_Comparison_20250613_031823.csv
+2025-06-13T03:18:23.0245741Z JSON report generated: /tmp/ReportGenerationTests/bbab5cbc-109a-48df-bf76-758e1e35c1b8/CA_Comparison_20250613_031823.json
+2025-06-13T03:18:23.0247126Z HTML report generated: /tmp/ReportGenerationTests/bbab5cbc-109a-48df-bf76-758e1e35c1b8/CA_Comparison_20250613_031823.html
+2025-06-13T03:18:23.0251992Z CSV report generated: /tmp/ReportGenerationTests/bbab5cbc-109a-48df-bf76-758e1e35c1b8/CA_Comparison_20250613_031823.csv
+2025-06-13T03:18:23.0278604Z JSON report generated: /tmp/ReportGenerationTests/7175e453-eee6-480d-a7f4-d181e49dd935/CA_Comparison_20250613_031823.json
+2025-06-13T03:18:23.0333948Z JSON report generated: /tmp/ReportGenerationTests/d50fe764-2bfe-491a-a9e0-877a7ba45844/new-directory/CA_Comparison_20250613_031823.json
+2025-06-13T03:18:23.0349038Z JSON report generated: /tmp/ReportGenerationTests/ad9ec969-64c3-4642-95c3-5c1a72464866/CA_Comparison_20250613_031823.json
+2025-06-13T03:18:23.0352297Z HTML report generated: /tmp/ReportGenerationTests/ad9ec969-64c3-4642-95c3-5c1a72464866/CA_Comparison_20250613_031823.html
+2025-06-13T03:18:23.0356593Z CSV report generated: /tmp/ReportGenerationTests/ad9ec969-64c3-4642-95c3-5c1a72464866/CA_Comparison_20250613_031823.csv
+2025-06-13T03:18:23.0358451Z   Passed ConditionalAccessExporter.Tests.ReportGenerationServiceTests.GenerateHtmlReport_WithEmptyResult_ShouldCreateValidHtmlFile [1 ms]
+2025-06-13T03:18:23.0360400Z   Passed ConditionalAccessExporter.Tests.ReportGenerationServiceTests.GenerateJsonReport_WithEmptyResult_ShouldCreateValidJsonFile [4 ms]
+2025-06-13T03:18:23.0364457Z   Passed ConditionalAccessExporter.Tests.ReportGenerationServiceTests.GenerateCsvReport_WithAllStatusTypes_ShouldCreateValidCsvFile [2 ms]
+2025-06-13T03:18:23.0365879Z   Passed ConditionalAccessExporter.Tests.ReportGenerationServiceTests.GenerateReports_WithNullDifferences_ShouldHandleGracefully [2 ms]
+2025-06-13T03:18:23.0366949Z   Passed ConditionalAccessExporter.Tests.ReportGenerationServiceTests.GenerateJsonReport_WithAllStatusTypes_ShouldCreateValidJsonFile [4 ms]
+2025-06-13T03:18:23.0368320Z   Passed ConditionalAccessExporter.Tests.ReportGenerationServiceTests.GenerateReports_WithInvalidFormat_ShouldHandleGracefully [1 ms]
+2025-06-13T03:18:23.0370266Z   Passed ConditionalAccessExporter.Tests.ReportGenerationServiceTests.GenerateConsoleReport_WithEmptyResult_ShouldShowEmptyReport [< 1 ms]
+2025-06-13T03:18:23.0372441Z   Passed ConditionalAccessExporter.Tests.ReportGenerationServiceTests.GenerateConsoleReport_WithAllStatusTypes_ShouldProduceStructuredOutput [< 1 ms]
+2025-06-13T03:18:23.0374385Z   Passed ConditionalAccessExporter.Tests.ReportGenerationServiceTests.GenerateReports_CreatesOutputDirectory_WhenNotExists [1 ms]
+2025-06-13T03:18:23.0376391Z HTML report generated: /tmp/ReportGenerationTests/dd09b21e-8d2e-4882-9ac1-b7cd5a398988/CA_Comparison_20250613_031823.html
+2025-06-13T03:18:23.0419429Z [xUnit.net 00:00:04.05]   Finished:    ConditionalAccessExporter.Tests
+2025-06-13T03:18:24.5364264Z   Passed ConditionalAccessExporter.Tests.ReportGenerationServiceTests.GenerateReports_WithMultipleFormats_ShouldCreateAllFiles [2 ms]
+2025-06-13T03:18:24.5365932Z   Passed ConditionalAccessExporter.Tests.ReportGenerationServiceTests.GenerateHtmlReport_WithAllStatusTypes_ShouldCreateValidHtmlFile [2 ms]
+2025-06-13T03:18:34.1707683Z 
+2025-06-13T03:18:34.1751275Z Test Run Failed.
+2025-06-13T03:18:34.1751887Z Total tests: 204
+2025-06-13T03:18:34.1752089Z      Passed: 203
+2025-06-13T03:18:34.1752288Z      Failed: 1
+2025-06-13T03:18:34.1767015Z  Total time: 17.4414 Seconds
+2025-06-13T03:18:34.1908841Z      1>Project "/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.sln" (1) is building "/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj" (3) on node 2 (VSTest target(s)).
+2025-06-13T03:18:34.1915734Z      3>_VSTestConsole:
+2025-06-13T03:18:34.1916340Z          MSB4181: The "VSTestTask" task returned false but did not log an error.
+2025-06-13T03:18:34.1948680Z      3>Done Building Project "/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj" (VSTest target(s)) -- FAILED.
+2025-06-13T03:18:34.2017690Z      1>Done Building Project "/home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.sln" (VSTest target(s)) -- FAILED.
+2025-06-13T03:18:34.2067924Z 
+2025-06-13T03:18:34.2068974Z Build FAILED.
+2025-06-13T03:18:34.2070164Z     0 Warning(s)
+2025-06-13T03:18:34.2070823Z     0 Error(s)
+2025-06-13T03:18:34.2078459Z 
+2025-06-13T03:18:34.2081998Z Time Elapsed 00:00:18.40
+2025-06-13T03:18:34.3902981Z 
+2025-06-13T03:18:34.3908559Z Attachments:
+2025-06-13T03:18:34.3910428Z   /home/runner/work/CA_Scanner/CA_Scanner/ConditionalAccessExporter.Tests/TestResults/aff3ba91-222e-4c29-a0e5-396964c46794/coverage.cobertura.xml
+2025-06-13T03:18:34.4498139Z ##[error]Process completed with exit code 1.
+2025-06-13T03:18:34.4616624Z Post job cleanup.
+2025-06-13T03:18:34.5359745Z [command]/usr/bin/git version
+2025-06-13T03:18:34.5397688Z git version 2.49.0
+2025-06-13T03:18:34.5446114Z Temporarily overriding HOME='/home/runner/work/_temp/87a6b120-d6b2-48fb-9879-a15a4012379f' before making global git config changes
+2025-06-13T03:18:34.5447142Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-13T03:18:34.5449853Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/CA_Scanner/CA_Scanner
+2025-06-13T03:18:34.5483583Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-13T03:18:34.5515854Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-13T03:18:34.5749513Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-13T03:18:34.5769969Z http.https://github.com/.extraheader
+2025-06-13T03:18:34.5782115Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-06-13T03:18:34.5813095Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-13T03:18:34.6165374Z Cleaning up orphan processes
+2025-06-13T03:18:34.6567117Z Terminate orphan process: pid (2369) (dotnet)
+2025-06-13T03:18:34.6686286Z Terminate orphan process: pid (2453) (dotnet)
