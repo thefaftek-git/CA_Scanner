@@ -493,6 +493,72 @@ namespace ConditionalAccessExporter
                 dryRunOption,
                 backupPoliciesOption);
 
+            // Benchmark command
+            var benchmarkCommand = new Command("benchmark", "Run performance benchmarks and monitoring");
+            var benchmarkTypeOption = new Option<string>(
+                name: "--type",
+                description: "Type of benchmark to run (all, benchmarks, regression, memory)",
+                getDefaultValue: () => "all"
+            );
+            var benchmarkOutputOption = new Option<string?>(
+                name: "--output",
+                description: "Output file for benchmark results",
+                getDefaultValue: () => null
+            );
+            
+            benchmarkCommand.AddOption(benchmarkTypeOption);
+            benchmarkCommand.AddOption(benchmarkOutputOption);
+            
+            benchmarkCommand.SetHandler(async (string benchmarkType, string? outputFile) =>
+            {
+                try
+                {
+                    Logger.WriteInfo("Starting performance benchmarks...");
+                    
+                    var benchmarkArgs = new List<string>();
+                    
+                    switch (benchmarkType.ToLowerInvariant())
+                    {
+                        case "all":
+                            benchmarkArgs.Add("--all");
+                            break;
+                        case "benchmarks":
+                            benchmarkArgs.Add("--benchmarks");
+                            break;
+                        case "regression":
+                            benchmarkArgs.Add("--regression");
+                            break;
+                        case "memory":
+                            benchmarkArgs.Add("--memory");
+                            break;
+                        default:
+                            Logger.WriteError($"Unknown benchmark type: {benchmarkType}");
+                            Logger.WriteInfo("Valid types: all, benchmarks, regression, memory");
+                            return;
+                    }
+                    
+                    if (!string.IsNullOrEmpty(outputFile))
+                    {
+                        benchmarkArgs.AddRange(new[] { "--output", outputFile });
+                    }
+                    
+                    var exitCode = await PerformanceBenchmarkProgram.RunBenchmarksAsync(benchmarkArgs.ToArray());
+                    
+                    if (exitCode == 0)
+                    {
+                        Logger.WriteInfo("Benchmarks completed successfully!");
+                    }
+                    else
+                    {
+                        Logger.WriteError("Benchmarks failed!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    HandleException(ex);
+                }
+            }, benchmarkTypeOption, benchmarkOutputOption);
+
             rootCommand.AddCommand(exportCommand);
             rootCommand.AddCommand(terraformCommand);
             rootCommand.AddCommand(jsonToTerraformCommand);
@@ -502,6 +568,7 @@ namespace ConditionalAccessExporter
             rootCommand.AddCommand(templatesCommand);
             rootCommand.AddCommand(baselineCommand);
             rootCommand.AddCommand(remediateCommand);
+            rootCommand.AddCommand(benchmarkCommand);
 
             // If no arguments provided, default to export for backward compatibility
             if (args.Length == 0)
