@@ -1,6 +1,6 @@
-# Conditional Access Policy Exporter Solution
+# CA_Scanner - Azure Conditional Access Policy Management Tool
 
-A complete .NET 8 solution for exporting Azure Conditional Access policies using Microsoft Graph API with client credential authentication.
+A comprehensive .NET 8 solution for managing, analyzing, and monitoring Azure Conditional Access policies using Microsoft Graph API with enterprise-grade features.
 
 <!-- Updated to trigger CI run - Test fixes applied -->
 
@@ -12,8 +12,18 @@ dotnet build
 
 # Run the application
 cd ConditionalAccessExporter
-dotnet run
+dotnet run export
 ```
+
+## 📚 Documentation
+
+- **[Getting Started](ConditionalAccessExporter/README.md)**: Basic usage and command-line options
+- **[Developer Guide](CONTRIBUTING.md)**: Complete onboarding guide for contributors
+- **[Configuration Reference](CONFIGURATION.md)**: All configuration options and environment variables
+- **[Examples & Use Cases](EXAMPLES.md)**: Practical scenarios and real-world examples
+- **[Troubleshooting Guide](TROUBLESHOOTING.md)**: Common issues and solutions
+- **[Advanced Features](ADVANCED_FEATURES.md)**: In-depth technical documentation
+- **[CI/CD Integration](CICD.md)**: Pipeline setup and automation
 
 ## 📁 Solution Structure
 
@@ -30,18 +40,30 @@ ConditionalAccessExporter/
     └── test-output-example.json            # Example output format
 ```
 
-## ✅ Completed Features
+## ✅ Features Overview
 
-- ✅ **Client Credential Authentication** - Uses Azure service principal for secure authentication
-- ✅ **Policy Export** - Retrieves all Conditional Access policies from Azure AD
-- ✅ **JSON Output** - Exports data in structured JSON format with metadata
-- ✅ **Performance Benchmarking** - Comprehensive performance monitoring and benchmarking suite
-- ✅ **Memory Usage Monitoring** - Track memory consumption and detect potential leaks
-- ✅ **Progress Indicators** - Real-time progress reporting for long-running operations
-- ✅ **Regression Testing** - Automated performance regression detection for CI/CD
-- ✅ **Comprehensive Error Handling** - Detailed error messages and permission guidance
-- ✅ **Security Best Practices** - Follows Azure security recommendations
-- ✅ **Documentation** - Complete documentation with examples and troubleshooting
+### Core Capabilities
+- ✅ **Policy Export** - Retrieve all Conditional Access policies from Azure AD via Microsoft Graph API
+- ✅ **Baseline Generation** - Create reference policy files from current tenant configurations
+- ✅ **Policy Comparison** - Compare live policies against reference JSON files with flexible matching
+- ✅ **Terraform Integration** - Bidirectional conversion between JSON and Terraform formats
+- ✅ **Multi-Format Reports** - Generate detailed reports in console, JSON, HTML, and CSV formats
+- ✅ **Cross-Format Analysis** - Compare JSON policies against Terraform configurations
+
+### Enterprise Features
+- ✅ **Multi-Tenant Support** - Manage policies across multiple Azure tenants
+- ✅ **CI/CD Integration** - GitHub Actions and Azure DevOps pipeline templates
+- ✅ **Performance Optimization** - Parallel processing and memory management for large tenants
+- ✅ **Security & Compliance** - SOC 2, NIST, and ISO27001 compliance reporting
+- ✅ **Automation Ready** - Comprehensive scripting and batch operation capabilities
+- ✅ **Extensible Architecture** - Plugin system for custom integrations
+
+### Technical Excellence
+- ✅ **Client Credential Authentication** - Secure Azure service principal authentication
+- ✅ **Performance Benchmarking** - Built-in performance monitoring and regression testing
+- ✅ **Comprehensive Error Handling** - Detailed error messages and troubleshooting guidance
+- ✅ **Memory Optimization** - Advanced memory management for large datasets
+- ✅ **Async Operations** - Full async/await implementation for optimal performance
 
 ## 🔧 Requirements
 
@@ -106,26 +128,46 @@ The application has been successfully tested and verified:
 
 ## 🏃‍♂️ Running the Application
 
-### Option 1: Using the Solution
+### Basic Usage
 
 ```bash
+# Build and run basic export
 dotnet build
-dotnet run --project ConditionalAccessExporter
+cd ConditionalAccessExporter
+dotnet run export
 ```
 
-### Option 2: Using the Project Directory
+### Advanced Usage Examples
 
 ```bash
-cd ConditionalAccessExporter
-dotnet run
+# Generate baseline reference policies
+dotnet run baseline --output-dir ./policy-baselines --anonymize
+
+# Compare live policies against baseline
+dotnet run compare --reference-dir ./policy-baselines --formats html json csv
+
+# Convert policies to Terraform format
+dotnet run terraform --input exported-policies.json --output terraform/ --extract-variables
+
+# Multi-format comparison (JSON vs Terraform)
+dotnet run cross-format-compare --json-source current.json --terraform-source terraform/
 ```
 
-### Option 3: Using the Convenience Script
+### Enterprise Scenarios
 
 ```bash
-cd ConditionalAccessExporter
-./run.sh
+# Multi-tenant export with compliance reporting
+dotnet run export --output tenant-a.json
+dotnet run compare --reference-dir ./compliance-standards --formats html csv
+
+# CI/CD integration with drift detection
+dotnet run compare --reference-dir ./approved-baselines --fail-on-drift
+
+# Performance benchmarking for large tenants
+dotnet run benchmark --operation export --iterations 5
 ```
+
+**For complete usage examples, see [EXAMPLES.md](EXAMPLES.md)**
 
 ## 📦 Dependencies
 
