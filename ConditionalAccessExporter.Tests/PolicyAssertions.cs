@@ -132,11 +132,14 @@ namespace ConditionalAccessExporter.Tests
         public static void AssertValidJsonPolicy(JObject policy)
         {
             Assert.NotNull(policy);
-            Assert.NotNull(policy["Id"]);
-            Assert.NotNull(policy["DisplayName"]);
-            Assert.NotNull(policy["State"]);
-            Assert.NotEmpty(policy["Id"].ToString());
-            Assert.NotEmpty(policy["DisplayName"].ToString());
+            var id = policy["Id"];
+            var displayName = policy["DisplayName"];
+            var state = policy["State"];
+            Assert.NotNull(id);
+            Assert.NotNull(displayName);
+            Assert.NotNull(state);
+            Assert.NotEmpty(id.ToString());
+            Assert.NotEmpty(displayName.ToString());
         }
 
         /// <summary>
