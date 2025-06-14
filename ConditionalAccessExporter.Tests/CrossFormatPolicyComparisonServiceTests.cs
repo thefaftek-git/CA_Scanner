@@ -557,7 +557,7 @@ namespace ConditionalAccessExporter.Tests
             WriteTerraformPolicyToFile(referenceDir, "policy.tf", terraformPolicy);
 
             // Act
-            var result = await _service.CompareAsync(sourceDir, referenceDir, null);
+            var result = await _service.CompareAsync(sourceDir, referenceDir, new CrossFormatMatchingOptions());
 
             // Assert
             Assert.NotNull(result);

@@ -47,8 +47,8 @@ namespace ConditionalAccessExporter.Tests
         /// Creates a JSON policy with complex conditions
         /// </summary>
         public static JObject CreateComplexJsonPolicy(string id, string displayName, string state = "enabled", 
-            string[] includeUsers = null, string[] excludeUsers = null, 
-            string[] includeApplications = null, string[] excludeApplications = null)
+            string[]? includeUsers = null, string[]? excludeUsers = null, 
+            string[]? includeApplications = null, string[]? excludeApplications = null)
         {
             return JObject.FromObject(new
             {
@@ -132,7 +132,7 @@ resource ""azuread_conditional_access_policy"" ""{resourceName}"" {{
         /// Creates a Terraform policy with complex conditions
         /// </summary>
         public static string CreateComplexTerraformPolicy(string resourceName, string displayName, string state = "enabled",
-            string[] includeUsers = null, string[] excludeUsers = null)
+            string[]? includeUsers = null, string[]? excludeUsers = null)
         {
             var includedUsers = includeUsers != null ? string.Join("\", \"", includeUsers) : "All";
             var excludedUsers = excludeUsers != null ? string.Join("\", \"", excludeUsers) : "";
@@ -243,7 +243,7 @@ resource ""azuread_conditional_access_policy"" ""invalid_policy"" {
             CrossFormatMatchingStrategy strategy = CrossFormatMatchingStrategy.ByName,
             bool caseSensitive = false,
             bool enableSemanticComparison = true,
-            Dictionary<string, string> customMappings = null)
+            Dictionary<string, string>? customMappings = null)
         {
             return new CrossFormatMatchingOptions
             {
