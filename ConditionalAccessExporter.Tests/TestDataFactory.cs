@@ -47,8 +47,8 @@ namespace ConditionalAccessExporter.Tests
         /// Creates a JSON policy with complex conditions
         /// </summary>
         public static JObject CreateComplexJsonPolicy(string id, string displayName, string state = "enabled", 
-            string[] includeUsers = null, string[] excludeUsers = null, 
-            string[] includeApplications = null, string[] excludeApplications = null)
+            string[]? includeUsers = null, string[]? excludeUsers = null, 
+            string[]? includeApplications = null, string[]? excludeApplications = null)
         {
             return JObject.FromObject(new
             {
@@ -132,7 +132,7 @@ resource ""azuread_conditional_access_policy"" ""{resourceName}"" {{
         /// Creates a Terraform policy with complex conditions
         /// </summary>
         public static string CreateComplexTerraformPolicy(string resourceName, string displayName, string state = "enabled",
-            string[] includeUsers = null, string[] excludeUsers = null)
+            string[]? includeUsers = null, string[]? excludeUsers = null)
         {
             var includedUsers = includeUsers != null ? string.Join("\", \"", includeUsers) : "All";
             var excludedUsers = excludeUsers != null ? string.Join("\", \"", excludeUsers) : "";
@@ -243,7 +243,7 @@ resource ""azuread_conditional_access_policy"" ""invalid_policy"" {
             CrossFormatMatchingStrategy strategy = CrossFormatMatchingStrategy.ByName,
             bool caseSensitive = false,
             bool enableSemanticComparison = true,
-            Dictionary<string, string> customMappings = null)
+            Dictionary<string, string>? customMappings = null)
         {
             return new CrossFormatMatchingOptions
             {
@@ -252,6 +252,43 @@ resource ""azuread_conditional_access_policy"" ""invalid_policy"" {
                 EnableSemanticComparison = enableSemanticComparison,
                 CustomMappings = customMappings ?? new Dictionary<string, string>()
             };
+        }
+
+        /// <summary>
+        /// Creates a proper JSON export format for JsonToTerraformService
+        /// </summary>
+        public static JObject CreateJsonPolicyExport(DateTime? exportedAt = null, params JObject[] policies)
+        {
+            return JObject.FromObject(new
+            {
+                ExportedAt = exportedAt ?? DateTime.UtcNow,
+                TenantId = "test-tenant-id",
+                Source = "Test Data Factory",
+                PoliciesCount = policies.Length,
+                Policies = policies
+            });
+        }
+
+        /// <summary>
+        /// Creates a JSON export with a single basic policy
+        /// </summary>
+        public static JObject CreateSinglePolicyExport(string id = "test-policy-id", string displayName = "Test Policy", string state = "enabled")
+        {
+            var policy = CreateBasicJsonPolicy(id, displayName, state);
+            return CreateJsonPolicyExport(null, policy);
+        }
+
+        /// <summary>
+        /// Creates a JSON export with multiple policies
+        /// </summary>
+        public static JObject CreateMultiplePolicyExport(int count = 2)
+        {
+            var policies = new List<JObject>();
+            for (int i = 0; i < count; i++)
+            {
+                policies.Add(CreateBasicJsonPolicy($"policy-{i}", $"Test Policy {i}", i % 2 == 0 ? "enabled" : "disabled"));
+            }
+            return CreateJsonPolicyExport(null, policies.ToArray());
         }
     }
 }
