@@ -209,7 +209,7 @@ namespace ConditionalAccessExporter.Tests
                 new[] { "legacy-app-id" }
             );
 
-            var jsonExport = TestDataFactory.CreateJsonPolicyExport(complexPolicy);
+            var jsonExport = TestDataFactory.CreateJsonPolicyExport(null, complexPolicy);
             await File.WriteAllTextAsync(jsonFilePath, jsonExport.ToString());
 
             // Act

@@ -275,7 +275,7 @@ resource ""azuread_conditional_access_policy"" ""invalid_policy"" {
         public static JObject CreateSinglePolicyExport(string id = "test-policy-id", string displayName = "Test Policy", string state = "enabled")
         {
             var policy = CreateBasicJsonPolicy(id, displayName, state);
-            return CreateJsonPolicyExport(policy);
+            return CreateJsonPolicyExport(null, policy);
         }
 
         /// <summary>
@@ -288,7 +288,7 @@ resource ""azuread_conditional_access_policy"" ""invalid_policy"" {
             {
                 policies.Add(CreateBasicJsonPolicy($"policy-{i}", $"Test Policy {i}", i % 2 == 0 ? "enabled" : "disabled"));
             }
-            return CreateJsonPolicyExport(policies.ToArray());
+            return CreateJsonPolicyExport(null, policies.ToArray());
         }
     }
 }

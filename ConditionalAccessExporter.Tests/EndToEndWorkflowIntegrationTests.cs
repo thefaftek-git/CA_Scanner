@@ -164,7 +164,7 @@ namespace ConditionalAccessExporter.Tests
             var terraformDir = CreateTestDirectory("terraform-output");
 
             var originalPolicy = TestDataFactory.CreateBasicJsonPolicy("terraform-test", "Terraform Conversion Test", "enabled");
-            var jsonExport = TestDataFactory.CreateJsonPolicyExport(originalPolicy);
+            var jsonExport = TestDataFactory.CreateJsonPolicyExport(null, originalPolicy);
             var jsonFilePath = Path.Combine(jsonDir, "test-policy.json");
             await File.WriteAllTextAsync(jsonFilePath, jsonExport.ToString());
 
