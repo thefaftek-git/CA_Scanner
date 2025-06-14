@@ -257,11 +257,11 @@ resource ""azuread_conditional_access_policy"" ""invalid_policy"" {
         /// <summary>
         /// Creates a proper JSON export format for JsonToTerraformService
         /// </summary>
-        public static JObject CreateJsonPolicyExport(params JObject[] policies)
+        public static JObject CreateJsonPolicyExport(DateTime? exportedAt = null, params JObject[] policies)
         {
             return JObject.FromObject(new
             {
-                ExportedAt = DateTime.UtcNow,
+                ExportedAt = exportedAt ?? DateTime.UtcNow,
                 TenantId = "test-tenant-id",
                 Source = "Test Data Factory",
                 PoliciesCount = policies.Length,
