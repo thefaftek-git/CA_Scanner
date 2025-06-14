@@ -4,6 +4,7 @@ using JsonDiffPatchDotNet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
+using Microsoft.Extensions.Logging;
 
 namespace ConditionalAccessExporter.Services
 {
@@ -11,6 +12,7 @@ namespace ConditionalAccessExporter.Services
     {
         private readonly JsonDiffPatch _jsonDiffPatch;
         private readonly PolicyValidationService _validationService;
+        private readonly ILogger<PolicyComparisonService> _logger;
         
         private static readonly string[] DateFormats = 
         {
@@ -25,15 +27,16 @@ namespace ConditionalAccessExporter.Services
         private const int MinDateStringLength = 8;   // Minimum reasonable date string length (e.g., "01/01/24")
         private const int MaxDateStringLength = 30;  // Maximum reasonable date string length (e.g., "2024-01-01T12:00:00.000Z")
 
-        public PolicyComparisonService(PolicyValidationService? validationService = null)
+        public PolicyComparisonService(ILogger<PolicyComparisonService>? logger = null, PolicyValidationService? validationService = null)
         {
             _jsonDiffPatch = new JsonDiffPatch();
             _validationService = validationService ?? new PolicyValidationService();
+            _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<PolicyComparisonService>.Instance;
         }
 
         public async Task<DirectoryValidationResult> ValidateReferenceDirectoryAsync(string referenceDirectory)
         {
-            Logger.WriteInfo($"Validating reference directory: {referenceDirectory}");
+            _logger.LogInformation("Validating reference directory: {ReferenceDirectory}", referenceDirectory);
             return await _validationService.ValidateDirectoryAsync(referenceDirectory);
         }
 
@@ -43,7 +46,7 @@ namespace ConditionalAccessExporter.Services
             MatchingOptions matchingOptions,
             bool skipValidation = false)
         {
-            Logger.WriteInfo($"Starting comparison with reference directory: {referenceDirectory}");
+            _logger.LogInformation("Starting comparison with reference directory: {ReferenceDirectory}", referenceDirectory);
             
             var result = new ComparisonResult
             {
@@ -56,12 +59,12 @@ namespace ConditionalAccessExporter.Services
             result.TenantId = entraData.TenantId;
             result.Summary.TotalEntraPolicies = entraData.Policies.Count;
 
-            Logger.WriteInfo($"Found {entraData.Policies.Count} policies in Entra export");
+            _logger.LogInformation("Found {PolicyCount} policies in Entra export", entraData.Policies.Count);
 
             // Validate reference files before loading (unless skipped)
             if (!skipValidation)
             {
-                Logger.WriteInfo("Validating reference files...");
+                _logger.LogInformation("Validating reference files...");
                 var validationResult = await ValidateReferenceDirectoryAsync(referenceDirectory);
                 if (!validationResult.IsValid)
                 {
@@ -91,7 +94,7 @@ namespace ConditionalAccessExporter.Services
             var referencePolicies = await LoadReferencePoliciesAsync(referenceDirectory);
             result.Summary.TotalReferencePolicies = referencePolicies.Count;
 
-            Logger.WriteInfo($"Found {referencePolicies.Count} reference policy files");
+            _logger.LogInformation("Found {ReferenceFileCount} reference policy files", referencePolicies.Count);
 
             // Perform comparison
             PerformComparison(result, entraData.Policies, referencePolicies, matchingOptions);

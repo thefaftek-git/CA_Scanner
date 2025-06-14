@@ -4,55 +4,24 @@ using Azure.Identity;
 using Newtonsoft.Json;
 using System.Text;
 using System.CommandLine;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using ConditionalAccessExporter.Models;
 using ConditionalAccessExporter.Services;
 using ConditionalAccessExporter.Utils;
 
 namespace ConditionalAccessExporter
 {
-    // Simple logging helper to manage verbose versus quiet output
-    public static class Logger
-    {
-        private static bool _quietMode = false;
-        private static bool _verboseMode = false;
-
-        public static void SetQuietMode(bool quietMode)
-        {
-            _quietMode = quietMode;
-        }
-
-        public static void SetVerboseMode(bool verboseMode)
-        {
-            _verboseMode = verboseMode;
-        }
-
-        public static void WriteInfo(string message)
-        {
-            if (!_quietMode)
-            {
-                Console.WriteLine(message);
-            }
-        }
-
-        public static void WriteError(string message)
-        {
-            // Errors are always written regardless of quiet mode
-            Console.Error.WriteLine(message);
-        }
-
-        public static void WriteVerbose(string message)
-        {
-            if (!_quietMode && _verboseMode)
-            {
-                Console.WriteLine(message);
-            }
-        }
-    }
-
     public class Program
     {
+        private static IServiceProvider? _serviceProvider;
+        private static ILogger<Program>? _logger;
+
         public static async Task<int> Main(string[] args)
         {
+            // Set up dependency injection and logging
+            SetupLogging();
+
             var rootCommand = new RootCommand("Conditional Access Policy Exporter and Comparator");
 
             // Export command
@@ -1096,7 +1065,7 @@ namespace ConditionalAccessExporter
                     CaseSensitive = caseSensitive
                 };
 
-                var comparisonService = new PolicyComparisonService();
+                var comparisonService = GetService<PolicyComparisonService>();
                 var result = await comparisonService.CompareAsync(entraExport, referenceDirectory, matchingOptions, skipValidation);
 
                 // Perform CI/CD analysis
@@ -2185,5 +2154,68 @@ namespace ConditionalAccessExporter
             Logger.WriteInfo($"Stack trace: {ex.StackTrace}");
         }
 
+        /// <summary>
+        /// Set up dependency injection and logging infrastructure
+        /// </summary>
+        private static void SetupLogging()
+        {
+            var services = new ServiceCollection();
+            
+            // Configure logging
+            services.AddLogging(builder =>
+            {
+                builder.ClearProviders();
+                builder.AddConsole(options =>
+                {
+                    options.LogToStandardErrorThreshold = LogLevel.None; // Log everything to stdout
+                });
+                builder.SetMinimumLevel(LogLevel.Information);
+            });
+
+            // Register services
+            services.AddSingleton<ILoggingService, LoggingService>();
+            services.AddTransient<PolicyComparisonService>();
+            services.AddTransient<PolicyValidationService>();
+            services.AddTransient<TerraformConversionService>();
+            services.AddTransient<ReportGenerationService>();
+
+            // Build service provider
+            _serviceProvider = services.BuildServiceProvider();
+            
+            // Initialize structured logger
+            _logger = _serviceProvider.GetRequiredService<ILogger<Program>>();
+            StructuredLogger.Initialize(_logger);
+        }
+
+        /// <summary>
+        /// Get a service from the DI container
+        /// </summary>
+        private static T GetService<T>() where T : class
+        {
+            if (_serviceProvider == null)
+                throw new InvalidOperationException("Service provider not initialized");
+            return _serviceProvider.GetRequiredService<T>();
+        }
+    }
+
+    /// <summary>
+    /// Backward compatibility alias for the old Logger class
+    /// This maintains compatibility with existing code while providing structured logging
+    /// </summary>
+    public static class Logger
+    {
+        public static void SetQuietMode(bool quietMode) => StructuredLogger.SetQuietMode(quietMode);
+        public static void SetVerboseMode(bool verboseMode) => StructuredLogger.SetVerboseMode(verboseMode);
+        public static void WriteInfo(string message) => StructuredLogger.WriteInfo(message);
+        public static void WriteError(string message) => StructuredLogger.WriteError(message);
+        public static void WriteVerbose(string message) => StructuredLogger.WriteVerbose(message);
+        
+        // Additional structured logging methods
+        public static void WriteWarning(string message) => StructuredLogger.WriteWarning(message);
+        public static void LogPerformance(string operation, TimeSpan duration, object? additionalData = null) 
+            => StructuredLogger.LogPerformance(operation, duration, additionalData);
+        public static void LogAudit(string action, string policyName, object? details = null) 
+            => StructuredLogger.LogAudit(action, policyName, details);
+        public static IDisposable? BeginScope(string correlationId) => StructuredLogger.BeginScope(correlationId);
     }
 }
