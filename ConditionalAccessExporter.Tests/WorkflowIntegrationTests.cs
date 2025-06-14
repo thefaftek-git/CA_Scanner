@@ -153,8 +153,8 @@ namespace ConditionalAccessExporter.Tests
             var jsonFilePath = Path.Combine(_testDirectory, "test-policy.json");
             var outputDir = CreateTestDirectory("terraform-output");
 
-            var jsonPolicy = TestDataFactory.CreateBasicJsonPolicy("conversion-test", "Test Conversion Policy", "enabled");
-            await File.WriteAllTextAsync(jsonFilePath, jsonPolicy.ToString());
+            var jsonExport = TestDataFactory.CreateSinglePolicyExport("conversion-test", "Test Conversion Policy", "enabled");
+            await File.WriteAllTextAsync(jsonFilePath, jsonExport.ToString());
 
             // Act
             var conversionService = new JsonToTerraformService();
@@ -209,7 +209,8 @@ namespace ConditionalAccessExporter.Tests
                 new[] { "legacy-app-id" }
             );
 
-            await File.WriteAllTextAsync(jsonFilePath, complexPolicy.ToString());
+            var jsonExport = TestDataFactory.CreateJsonPolicyExport(complexPolicy);
+            await File.WriteAllTextAsync(jsonFilePath, jsonExport.ToString());
 
             // Act
             var conversionService = new JsonToTerraformService();

@@ -253,5 +253,42 @@ resource ""azuread_conditional_access_policy"" ""invalid_policy"" {
                 CustomMappings = customMappings ?? new Dictionary<string, string>()
             };
         }
+
+        /// <summary>
+        /// Creates a proper JSON export format for JsonToTerraformService
+        /// </summary>
+        public static JObject CreateJsonPolicyExport(params JObject[] policies)
+        {
+            return JObject.FromObject(new
+            {
+                ExportedAt = DateTime.UtcNow,
+                TenantId = "test-tenant-id",
+                Source = "Test Data Factory",
+                PoliciesCount = policies.Length,
+                Policies = policies
+            });
+        }
+
+        /// <summary>
+        /// Creates a JSON export with a single basic policy
+        /// </summary>
+        public static JObject CreateSinglePolicyExport(string id = "test-policy-id", string displayName = "Test Policy", string state = "enabled")
+        {
+            var policy = CreateBasicJsonPolicy(id, displayName, state);
+            return CreateJsonPolicyExport(policy);
+        }
+
+        /// <summary>
+        /// Creates a JSON export with multiple policies
+        /// </summary>
+        public static JObject CreateMultiplePolicyExport(int count = 2)
+        {
+            var policies = new List<JObject>();
+            for (int i = 0; i < count; i++)
+            {
+                policies.Add(CreateBasicJsonPolicy($"policy-{i}", $"Test Policy {i}", i % 2 == 0 ? "enabled" : "disabled"));
+            }
+            return CreateJsonPolicyExport(policies.ToArray());
+        }
     }
 }
