@@ -24,7 +24,7 @@ namespace ConditionalAccessExporter.Services
         {
             if (data != null)
             {
-                _logger.LogInformation("{Message} {Data}", string.Format(message, args), data);
+                _logger.LogInformation("{Message} {Data}", message, args, data);
             }
             else
             {
