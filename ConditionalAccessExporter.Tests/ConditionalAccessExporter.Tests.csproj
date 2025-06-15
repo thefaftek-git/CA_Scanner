@@ -12,6 +12,9 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>Recommended</AnalysisMode>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <WarningsNotAsErrors />
     <CodeAnalysisRuleSet>../ConditionalAccessExporter/security.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
