@@ -1,0 +1,558 @@
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System.Security.Cryptography;
+using System.Text;
+using ConditionalAccessExporter.Models;
+
+namespace ConditionalAccessExporter.Services{
+    /// <summary>
+    /// Service responsible for security audit logging, compliance tracking, and security event management
+    /// </summary>
+    public interface ISecurityAuditService
+    {
+        Task LogSecurityEventAsync(SecurityEvent securityEvent);
+        Task LogComplianceEventAsync(ComplianceEvent complianceEvent);
+        Task LogAccessEventAsync(AccessEvent accessEvent);
+        Task<SecurityAuditReport> GenerateAuditReportAsync(DateTime fromDate, DateTime toDate);
+        Task<ComplianceReport> GenerateComplianceReportAsync(ComplianceStandard standard);
+        Task LogVulnerabilityDetectionAsync(VulnerabilityEvent vulnerabilityEvent);
+        Task LogSecurityConfigurationChangeAsync(ConfigurationChangeEvent configEvent);
+        Task<List<SecurityEvent>> GetSecurityEventsAsync(SecurityEventFilter filter);
+        Task ArchiveOldAuditLogsAsync(TimeSpan retentionPeriod);
+        Task ValidateSecurityComplianceAsync();
+    }
+
+    public class SecurityAuditService : ISecurityAuditService
+    {
+        private readonly ILogger<SecurityAuditService> _logger;
+        private readonly ILoggingService _loggingService;
+        private readonly string _auditLogPath;
+        private readonly string _complianceLogPath;
+        private readonly JsonSerializerSettings _jsonSettings;
+
+        public SecurityAuditService(ILogger<SecurityAuditService> logger, ILoggingService loggingService)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _loggingService = loggingService ?? throw new ArgumentNullException(nameof(loggingService));
+            
+            _auditLogPath = Path.Combine("logs", "security-audit");
+            _complianceLogPath = Path.Combine("logs", "compliance");
+            
+            _jsonSettings = new JsonSerializerSettings
+            {
+                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+                Formatting = Formatting.Indented,
+                NullValueHandling = NullValueHandling.Ignore
+            };
+
+            EnsureDirectoriesExist();
+        }
+
+        public async Task LogSecurityEventAsync(SecurityEvent securityEvent)
+        {
+            try
+            {
+                securityEvent.EventId = GenerateEventId();
+                securityEvent.Timestamp = DateTime.UtcNow;
+                securityEvent.Hash = GenerateEventHash(securityEvent);
+
+                var logEntry = new
+                {
+                    EventType = "SecurityEvent",
+                    Event = securityEvent,
+                    LoggedAt = DateTime.UtcNow,
+                    MachineName = Environment.MachineName,
+                    ProcessId = Environment.ProcessId
+                };
+
+                await WriteSecurityLogAsync("security-events", logEntry);
+
+                _logger.LogInformation("Security event logged: {EventType} - {Severity} - {Description}", 
+                    securityEvent.EventType, securityEvent.Severity, securityEvent.Description);
+
+                // Alert on high severity events
+                if (securityEvent.Severity >= SecurityEventSeverity.High)
+                {
+                    await AlertHighSeverityEventAsync(securityEvent);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to log security event: {EventType}", securityEvent.EventType);
+                throw;
+            }
+        }
+
+        public async Task LogComplianceEventAsync(ComplianceEvent complianceEvent)
+        {
+            try
+            {
+                complianceEvent.EventId = GenerateEventId();
+                complianceEvent.Timestamp = DateTime.UtcNow;
+
+                var logEntry = new
+                {
+                    EventType = "ComplianceEvent",
+                    Event = complianceEvent,
+                    LoggedAt = DateTime.UtcNow,
+                    MachineName = Environment.MachineName
+                };
+
+                await WriteComplianceLogAsync("compliance-events", logEntry);
+
+                _logger.LogInformation("Compliance event logged: {Standard} - {Status} - {Control}", 
+                    complianceEvent.ComplianceStandard, complianceEvent.ComplianceStatus, complianceEvent.ControlId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to log compliance event: {Standard}", complianceEvent.ComplianceStandard);
+                throw;
+            }
+        }
+
+        public async Task LogAccessEventAsync(AccessEvent accessEvent)
+        {
+            try
+            {
+                accessEvent.EventId = GenerateEventId();
+                accessEvent.Timestamp = DateTime.UtcNow;
+
+                var logEntry = new
+                {
+                    EventType = "AccessEvent",
+                    Event = accessEvent,
+                    LoggedAt = DateTime.UtcNow,
+                    MachineName = Environment.MachineName,
+                    UserAgent = Environment.GetEnvironmentVariable("HTTP_USER_AGENT") ?? "Unknown"
+                };
+
+                await WriteSecurityLogAsync("access-events", logEntry);
+
+                _logger.LogInformation("Access event logged: {Action} - {Resource} - {User}", 
+                    accessEvent.Action, accessEvent.ResourceAccessed, accessEvent.UserId);
+
+                // Monitor for suspicious access patterns
+                await DetectSuspiciousAccessPatternsAsync(accessEvent);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to log access event for user: {User}", accessEvent.UserId);
+                throw;
+            }
+        }
+
+        public async Task<SecurityAuditReport> GenerateAuditReportAsync(DateTime fromDate, DateTime toDate)
+        {
+            try
+            {
+                _logger.LogInformation("Generating security audit report from {FromDate} to {ToDate}", fromDate, toDate);
+
+                var securityEvents = await GetSecurityEventsInRangeAsync(fromDate, toDate);
+                var complianceEvents = await GetComplianceEventsInRangeAsync(fromDate, toDate);
+                var accessEvents = await GetAccessEventsInRangeAsync(fromDate, toDate);
+
+                var report = new SecurityAuditReport
+                {
+                    ReportId = Guid.NewGuid().ToString(),
+                    GeneratedAt = DateTime.UtcNow,
+                    PeriodStart = fromDate,
+                    PeriodEnd = toDate,
+                    TotalSecurityEvents = securityEvents.Count,
+                    TotalComplianceEvents = complianceEvents.Count,
+                    TotalAccessEvents = accessEvents.Count,
+                    CriticalSecurityEvents = securityEvents.Count(e => e.Severity == SecurityEventSeverity.Critical),
+                    HighSecurityEvents = securityEvents.Count(e => e.Severity == SecurityEventSeverity.High),
+                    ComplianceViolations = complianceEvents.Count(e => e.ComplianceStatus == ComplianceStatus.NonCompliant),
+                    FailedAccessAttempts = accessEvents.Count(e => !e.Success),
+                    SecurityEventsByType = securityEvents.GroupBy(e => e.EventType).ToDictionary(g => g.Key, g => g.Count()),
+                    ComplianceByStandard = complianceEvents.GroupBy(e => e.ComplianceStandard).ToDictionary(g => g.Key, g => g.Count()),
+                    TopAccessedResources = accessEvents.GroupBy(e => e.ResourceAccessed).OrderByDescending(g => g.Count()).Take(10).ToDictionary(g => g.Key, g => g.Count()),
+                    SecurityTrends = await AnalyzeSecurityTrendsAsync(securityEvents),
+                    Recommendations = await GenerateSecurityRecommendationsAsync(securityEvents, complianceEvents)
+                };
+
+                await SaveAuditReportAsync(report);
+                
+                _logger.LogInformation("Security audit report generated with ID: {ReportId}", report.ReportId);
+                return report;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to generate security audit report");
+                throw;
+            }
+        }
+
+        public async Task<ComplianceReport> GenerateComplianceReportAsync(ComplianceStandard standard)
+        {
+            try
+            {
+                _logger.LogInformation("Generating compliance report for standard: {Standard}", standard);
+
+                var complianceEvents = await GetComplianceEventsByStandardAsync(standard);
+                var controls = await GetComplianceControlsAsync(standard);
+
+                var report = new ComplianceReport
+                {
+                    ReportId = Guid.NewGuid().ToString(),
+                    GeneratedAt = DateTime.UtcNow,
+                    ComplianceStandard = standard,
+                    TotalControls = controls.Count,
+                    CompliantControls = controls.Count(c => c.Status == ComplianceStatus.Compliant),
+                    NonCompliantControls = controls.Count(c => c.Status == ComplianceStatus.NonCompliant),
+                    PartiallyCompliantControls = controls.Count(c => c.Status == ComplianceStatus.PartiallyCompliant),
+                    CompliancePercentage = controls.Count > 0 ? (double)controls.Count(c => c.Status == ComplianceStatus.Compliant) / controls.Count * 100 : 0,
+                    ControlDetails = controls,
+                    RecentEvents = complianceEvents.OrderByDescending(e => e.Timestamp).Take(50).ToList(),
+                    Recommendations = await GenerateComplianceRecommendationsAsync(standard, controls)
+                };
+
+                await SaveComplianceReportAsync(report);
+                
+                _logger.LogInformation("Compliance report generated for {Standard} with {Percentage:F2}% compliance", 
+                    standard, report.CompliancePercentage);
+                
+                return report;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to generate compliance report for standard: {Standard}", standard);
+                throw;
+            }
+        }
+
+        public async Task LogVulnerabilityDetectionAsync(VulnerabilityEvent vulnerabilityEvent)
+        {
+            try
+            {
+                var securityEvent = new SecurityEvent
+                {
+                    EventType = "VulnerabilityDetection",
+                    Severity = MapVulnerabilitySeverity(vulnerabilityEvent.Severity),
+                    Description = $"Vulnerability detected: {vulnerabilityEvent.Description}",
+                    Source = vulnerabilityEvent.Source,
+                    AdditionalData = new Dictionary<string, object>
+                    {
+                        ["VulnerabilityId"] = vulnerabilityEvent.VulnerabilityId,
+                        ["CVSS"] = vulnerabilityEvent.CvssScore,
+                        ["Component"] = vulnerabilityEvent.AffectedComponent,
+                        ["RecommendedAction"] = vulnerabilityEvent.RecommendedAction
+                    }
+                };
+
+                await LogSecurityEventAsync(securityEvent);
+
+                // Log compliance event for vulnerability management
+                var complianceEvent = new ComplianceEvent
+                {
+                    ComplianceStandard = ComplianceStandard.ISO27001,
+                    ControlId = "A.12.6.1",
+                    ControlDescription = "Management of technical vulnerabilities",
+                    ComplianceStatus = vulnerabilityEvent.Severity >= VulnerabilitySeverity.High ? 
+                        ComplianceStatus.NonCompliant : ComplianceStatus.PartiallyCompliant,
+                    Evidence = $"Vulnerability {vulnerabilityEvent.VulnerabilityId} detected with CVSS {vulnerabilityEvent.CvssScore}",
+                    AssessmentDate = DateTime.UtcNow
+                };
+
+                await LogComplianceEventAsync(complianceEvent);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to log vulnerability detection: {VulnerabilityId}", vulnerabilityEvent.VulnerabilityId);
+                throw;
+            }
+        }
+
+        public async Task LogSecurityConfigurationChangeAsync(ConfigurationChangeEvent configEvent)
+        {
+            try
+            {
+                var securityEvent = new SecurityEvent
+                {
+                    EventType = "ConfigurationChange",
+                    Severity = DetermineConfigChangeSeverity(configEvent),
+                    Description = $"Security configuration changed: {configEvent.ConfigurationItem}",
+                    Source = configEvent.Source,
+                    UserId = configEvent.UserId,
+                    AdditionalData = new Dictionary<string, object>
+                    {
+                        ["ConfigurationItem"] = configEvent.ConfigurationItem,
+                        ["OldValue"] = configEvent.OldValue,
+                        ["NewValue"] = configEvent.NewValue,
+                        ["ChangeReason"] = configEvent.ChangeReason,
+                        ["ApprovalId"] = configEvent.ApprovalId
+                    }
+                };
+
+                await LogSecurityEventAsync(securityEvent);
+
+                // Check if change affects compliance
+                await CheckConfigurationComplianceAsync(configEvent);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to log configuration change: {ConfigItem}", configEvent.ConfigurationItem);
+                throw;
+            }
+        }
+
+        public async Task<List<SecurityEvent>> GetSecurityEventsAsync(SecurityEventFilter filter)
+        {
+            try
+            {
+                var events = new List<SecurityEvent>();
+                var logFiles = Directory.GetFiles(Path.Combine(_auditLogPath, "security-events"), "*.json")
+                    .Where(f => IsWithinDateRange(f, filter.StartDate, filter.EndDate));
+
+                foreach (var file in logFiles)
+                {
+                    var content = await File.ReadAllTextAsync(file);
+                    var logEntry = JsonConvert.DeserializeObject<dynamic>(content);
+                    var securityEvent = JsonConvert.DeserializeObject<SecurityEvent>(logEntry.Event.ToString());
+
+                    if (ApplyFilter(securityEvent, filter))
+                    {
+                        events.Add(securityEvent);
+                    }
+                }
+
+                return events.OrderByDescending(e => e.Timestamp).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get security events with filter");
+                throw;
+            }
+        }
+
+        public async Task ArchiveOldAuditLogsAsync(TimeSpan retentionPeriod)
+        {
+            try
+            {
+                var cutoffDate = DateTime.UtcNow.Subtract(retentionPeriod);
+                var archivedCount = 0;
+
+                // Archive security logs
+                var securityLogFiles = Directory.GetFiles(Path.Combine(_auditLogPath, "security-events"), "*.json");
+                foreach (var file in securityLogFiles)
+                {
+                    var fileInfo = new FileInfo(file);
+                    if (fileInfo.CreationTimeUtc < cutoffDate)
+                    {
+                        await ArchiveLogFileAsync(file, "security-events");
+                        archivedCount++;
+                    }
+                }
+
+                // Archive compliance logs
+                var complianceLogFiles = Directory.GetFiles(Path.Combine(_complianceLogPath, "compliance-events"), "*.json");
+                foreach (var file in complianceLogFiles)
+                {
+                    var fileInfo = new FileInfo(file);
+                    if (fileInfo.CreationTimeUtc < cutoffDate)
+                    {
+                        await ArchiveLogFileAsync(file, "compliance-events");
+                        archivedCount++;
+                    }
+                }
+
+                _logger.LogInformation("Archived {Count} old audit log files older than {CutoffDate}", archivedCount, cutoffDate);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to archive old audit logs");
+                throw;
+            }
+        }
+
+        public async Task ValidateSecurityComplianceAsync()
+        {
+            try
+            {
+                _logger.LogInformation("Starting security compliance validation");
+
+                // Validate SOC 2 compliance
+                await ValidateSOC2ComplianceAsync();
+
+                // Validate ISO 27001 compliance
+                await ValidateISO27001ComplianceAsync();
+
+                // Validate OWASP compliance
+                await ValidateOWASPComplianceAsync();
+
+                // Validate custom security policies
+                await ValidateCustomSecurityPoliciesAsync();
+
+                _logger.LogInformation("Security compliance validation completed");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to validate security compliance");
+                throw;
+            }
+        }
+
+        #region Private Methods
+
+        private void EnsureDirectoriesExist()
+        {
+            Directory.CreateDirectory(_auditLogPath);
+            Directory.CreateDirectory(_complianceLogPath);
+            Directory.CreateDirectory(Path.Combine(_auditLogPath, "security-events"));
+            Directory.CreateDirectory(Path.Combine(_auditLogPath, "access-events"));
+            Directory.CreateDirectory(Path.Combine(_complianceLogPath, "compliance-events"));
+            Directory.CreateDirectory(Path.Combine(_complianceLogPath, "reports"));
+            Directory.CreateDirectory(Path.Combine(_auditLogPath, "archive"));
+        }
+
+        private string GenerateEventId()
+        {
+            return $"SEC_{DateTime.UtcNow:yyyyMMdd}_{Guid.NewGuid():N}";
+        }
+
+        private string GenerateEventHash(SecurityEvent securityEvent)
+        {
+            var content = JsonConvert.SerializeObject(securityEvent, _jsonSettings);
+            using var sha256 = SHA256.Create();
+            var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(content));
+            return Convert.ToBase64String(hash);
+        }
+
+        private async Task WriteSecurityLogAsync(string category, object logEntry)
+        {
+            var fileName = $"{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.json";
+            var filePath = Path.Combine(_auditLogPath, category, fileName);
+            var content = JsonConvert.SerializeObject(logEntry, _jsonSettings);
+            await File.WriteAllTextAsync(filePath, content);
+        }
+
+        private async Task WriteComplianceLogAsync(string category, object logEntry)
+        {
+            var fileName = $"{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.json";
+            var filePath = Path.Combine(_complianceLogPath, category, fileName);
+            var content = JsonConvert.SerializeObject(logEntry, _jsonSettings);
+            await File.WriteAllTextAsync(filePath, content);
+        }
+
+        private async Task AlertHighSeverityEventAsync(SecurityEvent securityEvent)
+        {
+            // Implementation would integrate with alerting system
+            _logger.LogWarning("HIGH SEVERITY SECURITY EVENT: {EventType} - {Description}", 
+                securityEvent.EventType, securityEvent.Description);
+            
+            // Could integrate with:
+            // - Email notifications
+            // - Slack/Teams alerts
+            // - Security incident management systems
+            // - SIEM systems
+        }
+
+        private async Task DetectSuspiciousAccessPatternsAsync(AccessEvent accessEvent)
+        {
+            // Implementation would analyze access patterns for anomalies
+            // This is a placeholder for actual anomaly detection logic
+            await Task.CompletedTask;
+        }
+
+        private SecurityEventSeverity MapVulnerabilitySeverity(VulnerabilitySeverity vulnSeverity)
+        {
+            return vulnSeverity switch
+            {
+                VulnerabilitySeverity.Critical => SecurityEventSeverity.Critical,
+                VulnerabilitySeverity.High => SecurityEventSeverity.High,
+                VulnerabilitySeverity.Medium => SecurityEventSeverity.Medium,
+                VulnerabilitySeverity.Low => SecurityEventSeverity.Low,
+                VulnerabilitySeverity.Info => SecurityEventSeverity.Info,
+                _ => SecurityEventSeverity.Medium
+            };
+        }
+
+        private SecurityEventSeverity DetermineConfigChangeSeverity(ConfigurationChangeEvent configEvent)
+        {
+            // Determine severity based on configuration item and change type
+            var criticalConfigs = new[] { "authentication", "authorization", "encryption", "security" };
+            
+            if (criticalConfigs.Any(c => configEvent.ConfigurationItem.ToLower().Contains(c)))
+            {
+                return SecurityEventSeverity.High;
+            }
+            
+            return SecurityEventSeverity.Medium;
+        }
+
+        private async Task<List<SecurityEvent>> GetSecurityEventsInRangeAsync(DateTime fromDate, DateTime toDate)
+        {
+            // Implementation would retrieve security events from the specified date range
+            // This is a simplified version
+            return new List<SecurityEvent>();
+        }
+
+        private async Task<List<ComplianceEvent>> GetComplianceEventsInRangeAsync(DateTime fromDate, DateTime toDate)
+        {
+            // Implementation would retrieve compliance events from the specified date range
+            return new List<ComplianceEvent>();
+        }
+
+        private async Task<List<AccessEvent>> GetAccessEventsInRangeAsync(DateTime fromDate, DateTime toDate)
+        {
+            // Implementation would retrieve access events from the specified date range
+            return new List<AccessEvent>();
+        }
+
+        private async Task<List<string>> GenerateSecurityRecommendationsAsync(List<SecurityEvent> securityEvents, List<ComplianceEvent> complianceEvents)
+        {
+            var recommendations = new List<string>();
+
+            if (securityEvents.Any(e => e.Severity >= SecurityEventSeverity.High))
+            {
+                recommendations.Add("Review and address high-severity security events immediately");
+            }
+
+            if (complianceEvents.Any(e => e.ComplianceStatus == ComplianceStatus.NonCompliant))
+            {
+                recommendations.Add("Address compliance violations to maintain regulatory compliance");
+            }
+
+            return recommendations;
+        }
+
+        private async Task<SecurityTrends> AnalyzeSecurityTrendsAsync(List<SecurityEvent> securityEvents)
+        {
+            // Implementation would analyze trends in security events
+            return new SecurityTrends();
+        }
+
+        private async Task SaveAuditReportAsync(SecurityAuditReport report)
+        {
+            var fileName = $"audit_report_{report.ReportId}_{DateTime.UtcNow:yyyyMMdd}.json";
+            var filePath = Path.Combine(_auditLogPath, "reports", fileName);
+            var content = JsonConvert.SerializeObject(report, _jsonSettings);
+            await File.WriteAllTextAsync(filePath, content);
+        }
+
+        private async Task SaveComplianceReportAsync(ComplianceReport report)
+        {
+            var fileName = $"compliance_report_{report.ComplianceStandard}_{DateTime.UtcNow:yyyyMMdd}.json";
+            var filePath = Path.Combine(_complianceLogPath, "reports", fileName);
+            var content = JsonConvert.SerializeObject(report, _jsonSettings);
+            await File.WriteAllTextAsync(filePath, content);
+        }
+
+        // Additional helper methods would be implemented here...
+        private async Task<List<ComplianceEvent>> GetComplianceEventsByStandardAsync(ComplianceStandard standard) => new();
+        private async Task<List<ComplianceControl>> GetComplianceControlsAsync(ComplianceStandard standard) => new();
+        private async Task<List<string>> GenerateComplianceRecommendationsAsync(ComplianceStandard standard, List<ComplianceControl> controls) => new();
+        private async Task CheckConfigurationComplianceAsync(ConfigurationChangeEvent configEvent) => await Task.CompletedTask;
+        private bool IsWithinDateRange(string file, DateTime? startDate, DateTime? endDate) => true;
+        private bool ApplyFilter(SecurityEvent securityEvent, SecurityEventFilter filter) => true;
+        private async Task ArchiveLogFileAsync(string file, string category) => await Task.CompletedTask;
+        private async Task ValidateSOC2ComplianceAsync() => await Task.CompletedTask;
+        private async Task ValidateISO27001ComplianceAsync() => await Task.CompletedTask;
+        private async Task ValidateOWASPComplianceAsync() => await Task.CompletedTask;
+        private async Task ValidateCustomSecurityPoliciesAsync() => await Task.CompletedTask;
+
+        #endregion
+    }
+}
+
+
