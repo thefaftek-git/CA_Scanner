@@ -181,23 +181,15 @@ namespace ConditionalAccessExporter.Tests
         {
             // This will test Issue Test Case 3.1 and 3.2
             // Arrange - Capture console output
-            string? capturedOutput = null;
+            string capturedOutput = "";
             
-            try
+            // Act
+            capturedOutput = await ProgramTestHelper.CaptureConsoleOutputAsync(async () =>
             {
-                // Act
-                capturedOutput = await ProgramTestHelper.CaptureConsoleOutputAsync(async () =>
-                {
-                    await ProgramTestHelper.InvokeMainAsync(args);
-                });
-            }
-            catch (Exception)
-            {
-                // The test might fail due to file access issues
-                // We're just testing that the command path is invoked
-            }
+                await ProgramTestHelper.InvokeMainAsync(args);
+            });
 
-            // Assert
+            // Assert - The command should at least start and show the header
             Assert.NotNull(capturedOutput);
             Assert.Contains("JSON to Terraform Conversion", capturedOutput);
             

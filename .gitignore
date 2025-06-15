@@ -88,5 +88,15 @@ paket-files/
 # Cake - C# Make
 tools/
 
+# CI/CD artifacts and build logs
+build-and-test/
+*_build-and-test.txt
+*workflow_logs.zip
+*latest_workflow_logs.zip
+
+# Debug and temporary files
+debug_test.cs
+debug_*.cs
+
 # Output files from the application
 ConditionalAccessPolicies_*.json
