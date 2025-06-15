@@ -1,0 +1,32 @@
+name: "CA_Scanner CodeQL Config"
+
+disable-default-queries: false
+
+queries:
+  - uses: security-and-quality
+  - uses: security-extended
+
+paths-ignore:
+  - "**/bin/"
+  - "**/obj/"
+  - "**/packages/"
+  - "**/*.Designer.cs"
+  - "**/*.generated.cs"
+
+paths:
+  - ConditionalAccessExporter/
+  - ConditionalAccessExporter.Tests/
+
+# Enable additional security queries
+query-filters:
+  - include:
+      kind: problem
+      severity: error
+  - include:
+      kind: problem
+      severity: warning
+  - include:
+      kind: problem
+      severity: recommendation
+      tags:
+        - security

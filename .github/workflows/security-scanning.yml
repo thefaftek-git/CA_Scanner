@@ -1,0 +1,146 @@
+
+name: Security Scanning
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly on Mondays at 2:00 AM UTC
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Install dotnet list package --vulnerable
+      run: dotnet list package --vulnerable --include-transitive
+
+    - name: Install security audit tools
+      run: |
+        dotnet tool install --global dotnet-outdated-tool
+        dotnet tool install --global security-scan
+
+    - name: Run security audit
+      run: |
+        echo "Running dependency vulnerability scan..."
+        dotnet list package --outdated --include-transitive || true
+        
+    - name: Upload vulnerability scan results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: dependency-scan-results
+        path: |
+          **/*vulnerability*
+          **/*security*
+        retention-days: 30
+
+  secrets-scan:
+    name: Secrets Detection
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for better secret detection
+
+    - name: Run TruffleHog OSS
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+        extra_args: --debug --only-verified
+
+    - name: Run GitLeaks
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE}}
+
+  dotnet-security-analyzers:
+    name: .NET Security Analyzers
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Add Security Analyzers
+      run: |
+        dotnet add ConditionalAccessExporter/ConditionalAccessExporter.csproj package Microsoft.CodeAnalysis.NetAnalyzers
+        dotnet add ConditionalAccessExporter/ConditionalAccessExporter.csproj package SonarAnalyzer.CSharp
+        dotnet add ConditionalAccessExporter/ConditionalAccessExporter.csproj package SecurityCodeScan.VS2019
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build with security analysis
+      run: dotnet build --no-restore --verbosity normal --configuration Release
+
+    - name: Upload build logs
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-analysis-logs
+        path: |
+          **/*.binlog
+          **/msbuild.log
+        retention-days: 30
+
+  license-compliance:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Install license detection tool
+      run: dotnet tool install --global dotnet-project-licenses
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Generate license report
+      run: |
+        dotnet-project-licenses --input ConditionalAccessExporter.sln --output-format json --output licenses-report.json --allowed-license-types MIT Apache-2.0 BSD-3-Clause ISC
+        cat licenses-report.json
+
+    - name: Upload license report
+      uses: actions/upload-artifact@v4
+      with:
+        name: license-compliance-report
+        path: licenses-report.json
+        retention-days: 90
+

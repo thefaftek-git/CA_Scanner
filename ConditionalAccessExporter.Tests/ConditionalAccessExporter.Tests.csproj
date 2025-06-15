@@ -7,6 +7,12 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    
+    <!-- Security Analysis Configuration -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <CodeAnalysisRuleSet>../ConditionalAccessExporter/security.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>

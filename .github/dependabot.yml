@@ -1,0 +1,49 @@
+
+version: 2
+updates:
+  # Enable version updates for NuGet
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "thefaftek-git"
+    assignees:
+      - "thefaftek-git"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+    # Allow both minor and patch updates for security
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    # Security updates take priority
+    allow:
+      - dependency-type: "all"
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "thefaftek-git"
+    assignees:
+      - "thefaftek-git"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "github-actions"
+      - "dependencies"
+
