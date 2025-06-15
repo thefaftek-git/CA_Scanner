@@ -17,16 +17,27 @@ namespace ConditionalAccessExporter.Services
             else
             {
                 // Try to find reference-templates directory in common locations
-                var possiblePaths = new[]
+                var possiblePaths = new List<string>();
+                
+                // Safe method to get current directory
+                try
                 {
-                    Path.Combine(Directory.GetCurrentDirectory(), "reference-templates"),
-                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "reference-templates"),
-                    Path.Combine(Directory.GetCurrentDirectory(), "..", "reference-templates"),
-                    Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? "", "reference-templates")
-                };
-
+                    var currentDir = Directory.GetCurrentDirectory();
+                    possiblePaths.Add(Path.Combine(currentDir, "reference-templates"));
+                    possiblePaths.Add(Path.Combine(currentDir, "..", "reference-templates"));
+                }
+                catch
+                {
+                    // Ignore if GetCurrentDirectory fails in containerized environments
+                }
+                
+                // Add other safe paths
+                possiblePaths.Add(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "reference-templates"));
+                possiblePaths.Add(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? "", "reference-templates"));
+                
+                // Use first existing directory or fallback to a temp directory
                 _templateBaseDirectory = possiblePaths.FirstOrDefault(Directory.Exists) 
-                    ?? Path.Combine(Directory.GetCurrentDirectory(), "reference-templates");
+                    ?? Path.Combine(Path.GetTempPath(), "reference-templates");
             }
         }
 

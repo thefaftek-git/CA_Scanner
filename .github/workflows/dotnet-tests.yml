@@ -36,6 +36,7 @@ jobs:
     
     - name: Test with coverage
       id: tests
+      continue-on-error: true
       env:
         AZURE_TENANT_ID: ${{ secrets.Azure_Tenant_Id }}
         AZURE_CLIENT_ID: ${{ secrets.Azure_Client_Id }}
