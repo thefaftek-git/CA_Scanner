@@ -47,7 +47,7 @@ namespace ConditionalAccessExporter.Services{
                 NullValueHandling = NullValueHandling.Ignore
             };
 
-            EnsureDirectoriesExist();
+            // Defer directory creation until actually needed to avoid constructor failures
         }
 
         public async Task LogSecurityEventAsync(SecurityEvent securityEvent)
@@ -57,6 +57,8 @@ namespace ConditionalAccessExporter.Services{
 
             try
             {
+                EnsureDirectoriesExist();
+                
                 securityEvent.EventId = GenerateEventId();
                 securityEvent.Timestamp = DateTime.UtcNow;
                 securityEvent.Hash = GenerateEventHash(securityEvent);
@@ -92,6 +94,8 @@ namespace ConditionalAccessExporter.Services{
         {
             try
             {
+                EnsureDirectoriesExist();
+                
                 complianceEvent.EventId = GenerateEventId();
                 complianceEvent.Timestamp = DateTime.UtcNow;
 
@@ -119,6 +123,8 @@ namespace ConditionalAccessExporter.Services{
         {
             try
             {
+                EnsureDirectoriesExist();
+                
                 accessEvent.EventId = GenerateEventId();
                 accessEvent.Timestamp = DateTime.UtcNow;
 
@@ -150,6 +156,8 @@ namespace ConditionalAccessExporter.Services{
         {
             try
             {
+                EnsureDirectoriesExist();
+                
                 _logger.LogInformation("Generating security audit report from {FromDate} to {ToDate}", fromDate, toDate);
 
                 var securityEvents = await GetSecurityEventsInRangeAsync(fromDate, toDate);
@@ -192,6 +200,8 @@ namespace ConditionalAccessExporter.Services{
         {
             try
             {
+                EnsureDirectoriesExist();
+                
                 _logger.LogInformation("Generating compliance report for standard: {Standard}", standard);
 
                 var complianceEvents = await GetComplianceEventsByStandardAsync(standard);
@@ -336,6 +346,8 @@ namespace ConditionalAccessExporter.Services{
         {
             try
             {
+                EnsureDirectoriesExist();
+                
                 var cutoffDate = DateTime.UtcNow.Subtract(retentionPeriod);
                 var archivedCount = 0;
 
