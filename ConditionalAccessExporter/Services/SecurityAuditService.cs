@@ -234,9 +234,29 @@ namespace ConditionalAccessExporter.Services{
                 _logger.LogInformation("Security audit report generated with ID: {ReportId}", report.ReportId);
                 return report;
             }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "IO error occurred while generating security audit report");
+                throw;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogError(ex, "Access denied while generating security audit report");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Invalid operation while generating security audit report");
+                throw;
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Invalid argument provided to security audit report generation");
+                throw;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to generate security audit report");
+                _logger.LogCritical(ex, "Unexpected error occurred while generating security audit report");
                 throw;
             }
         }
@@ -274,9 +294,29 @@ namespace ConditionalAccessExporter.Services{
                 
                 return report;
             }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "IO error occurred while generating compliance report for standard: {Standard}", standard);
+                throw;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogError(ex, "Access denied while generating compliance report for standard: {Standard}", standard);
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Invalid operation while generating compliance report for standard: {Standard}", standard);
+                throw;
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Invalid argument provided to compliance report generation for standard: {Standard}", standard);
+                throw;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to generate compliance report for standard: {Standard}", standard);
+                _logger.LogCritical(ex, "Unexpected error occurred while generating compliance report for standard: {Standard}", standard);
                 throw;
             }
         }
@@ -316,9 +356,24 @@ namespace ConditionalAccessExporter.Services{
 
                 await LogComplianceEventAsync(complianceEvent);
             }
+            catch (ArgumentNullException ex)
+            {
+                _logger.LogError(ex, "Null vulnerability event provided for logging: {VulnerabilityId}", vulnerabilityEvent?.VulnerabilityId);
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Invalid operation while logging vulnerability detection: {VulnerabilityId}", vulnerabilityEvent.VulnerabilityId);
+                throw;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "IO error occurred while logging vulnerability detection: {VulnerabilityId}", vulnerabilityEvent.VulnerabilityId);
+                throw;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to log vulnerability detection: {VulnerabilityId}", vulnerabilityEvent.VulnerabilityId);
+                _logger.LogCritical(ex, "Unexpected error occurred while logging vulnerability detection: {VulnerabilityId}", vulnerabilityEvent.VulnerabilityId);
                 throw;
             }
         }
@@ -349,9 +404,24 @@ namespace ConditionalAccessExporter.Services{
                 // Check if change affects compliance
                 await CheckConfigurationComplianceAsync(configEvent);
             }
+            catch (ArgumentNullException ex)
+            {
+                _logger.LogError(ex, "Null configuration event provided for logging: {ConfigItem}", configEvent?.ConfigurationItem);
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Invalid operation while logging configuration change: {ConfigItem}", configEvent.ConfigurationItem);
+                throw;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "IO error occurred while logging configuration change: {ConfigItem}", configEvent.ConfigurationItem);
+                throw;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to log configuration change: {ConfigItem}", configEvent.ConfigurationItem);
+                _logger.LogCritical(ex, "Unexpected error occurred while logging configuration change: {ConfigItem}", configEvent.ConfigurationItem);
                 throw;
             }
         }
@@ -380,9 +450,29 @@ namespace ConditionalAccessExporter.Services{
 
                 return events.OrderByDescending(e => e.Timestamp).ToList();
             }
+            catch (DirectoryNotFoundException ex)
+            {
+                _logger.LogError(ex, "Security events directory not found while filtering events");
+                throw;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogError(ex, "Access denied while retrieving security events with filter");
+                throw;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "IO error occurred while retrieving security events with filter");
+                throw;
+            }
+            catch (Newtonsoft.Json.JsonException ex)
+            {
+                _logger.LogError(ex, "JSON parsing error while retrieving security events with filter");
+                throw;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get security events with filter");
+                _logger.LogCritical(ex, "Unexpected error occurred while retrieving security events with filter");
                 throw;
             }
         }
@@ -439,7 +529,7 @@ namespace ConditionalAccessExporter.Services{
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error occurred while archiving old audit logs");
+                _logger.LogCritical(ex, "Unexpected error occurred while archiving old audit logs");
                 throw;
             }
         }
@@ -464,9 +554,24 @@ namespace ConditionalAccessExporter.Services{
 
                 _logger.LogInformation("Security compliance validation completed");
             }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Invalid operation during security compliance validation");
+                throw;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "IO error occurred during security compliance validation");
+                throw;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogError(ex, "Access denied during security compliance validation");
+                throw;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to validate security compliance");
+                _logger.LogCritical(ex, "Unexpected error occurred during security compliance validation");
                 throw;
             }
         }

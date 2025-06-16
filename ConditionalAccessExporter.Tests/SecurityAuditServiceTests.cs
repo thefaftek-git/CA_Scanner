@@ -505,12 +505,41 @@ namespace ConditionalAccessExporter.Tests
         {
             _mockLogger = new Mock<ILogger<SecurityAuditService>>();
             _mockLoggingService = new Mock<ILoggingService>();
-            _tempTestDirectory = Path.Combine(Path.GetTempPath(), "SecurityAuditTests", Guid.NewGuid().ToString());
+            _tempTestDirectory = GetSanitizedTestPath(Path.GetTempPath(), "SecurityAuditTests", Guid.NewGuid().ToString());
             
             Directory.CreateDirectory(_tempTestDirectory);
             Environment.CurrentDirectory = _tempTestDirectory;
 
             _securityAuditService = new SecurityAuditService(_mockLogger.Object, _mockLoggingService.Object);
+        }
+
+        /// <summary>
+        /// Safely combines path components for testing and validates the result to prevent path traversal attacks
+        /// </summary>
+        private static string GetSanitizedTestPath(params string[] pathComponents)
+        {
+            if (pathComponents == null || pathComponents.Length == 0)
+                throw new ArgumentException("Path components cannot be null or empty", nameof(pathComponents));
+
+            // Filter out null or empty components
+            var validComponents = pathComponents.Where(p => !string.IsNullOrEmpty(p)).ToArray();
+            if (validComponents.Length == 0)
+                throw new ArgumentException("No valid path components provided", nameof(pathComponents));
+
+            // Combine paths safely
+            var combinedPath = Path.Join(validComponents);
+            
+            // Get the full path to normalize it and prevent traversal attacks
+            var fullPath = Path.GetFullPath(combinedPath);
+            
+            // Additional validation to ensure the path doesn't contain dangerous sequences
+            var normalizedPath = Path.GetFullPath(fullPath);
+            if (normalizedPath.Contains("..") || normalizedPath.Contains("~"))
+            {
+                throw new InvalidOperationException("Path contains potentially dangerous sequences");
+            }
+            
+            return normalizedPath;
         }
 
         [Fact]
