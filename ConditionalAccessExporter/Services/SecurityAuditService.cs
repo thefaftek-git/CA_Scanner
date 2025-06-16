@@ -395,11 +395,11 @@ namespace ConditionalAccessExporter.Services{
                     UserId = configEvent?.UserId ?? "Unknown",
                     AdditionalData = new Dictionary<string, object>
                     {
-                        ["ConfigurationItem"] = configEvent.ConfigurationItem,
-                        ["OldValue"] = configEvent.OldValue ?? string.Empty,
-                        ["NewValue"] = configEvent.NewValue ?? string.Empty,
-                        ["ChangeReason"] = configEvent.ChangeReason ?? string.Empty,
-                        ["ApprovalId"] = configEvent.ApprovalId ?? string.Empty
+                        ["ConfigurationItem"] = configEvent?.ConfigurationItem ?? "Unknown",
+                        ["OldValue"] = configEvent?.OldValue ?? string.Empty,
+                        ["NewValue"] = configEvent?.NewValue ?? string.Empty,
+                        ["ChangeReason"] = configEvent?.ChangeReason ?? string.Empty,
+                        ["ApprovalId"] = configEvent?.ApprovalId ?? string.Empty
                     }
                 };
 
