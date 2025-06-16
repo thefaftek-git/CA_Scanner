@@ -254,7 +254,7 @@ namespace ConditionalAccessExporter.Services{
                 _logger.LogError(ex, "Invalid argument provided to security audit report generation");
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is ArgumentException))
             {
                 _logger.LogCritical(ex, "Unexpected error occurred while generating security audit report");
                 throw;
@@ -314,7 +314,7 @@ namespace ConditionalAccessExporter.Services{
                 _logger.LogError(ex, "Invalid argument provided to compliance report generation for standard: {Standard}", standard);
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is ArgumentException))
             {
                 _logger.LogCritical(ex, "Unexpected error occurred while generating compliance report for standard: {Standard}", standard);
                 throw;
@@ -373,7 +373,7 @@ namespace ConditionalAccessExporter.Services{
                 _logger.LogError(ex, "IO error occurred while logging vulnerability detection: {VulnerabilityId}", vulnerabilityEvent.VulnerabilityId);
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is ArgumentNullException || ex is InvalidOperationException || ex is IOException))
             {
                 _logger.LogCritical(ex, "Unexpected error occurred while logging vulnerability detection: {VulnerabilityId}", vulnerabilityEvent.VulnerabilityId);
                 throw;
@@ -418,12 +418,27 @@ namespace ConditionalAccessExporter.Services{
                 _logger.LogError(ex, "Invalid operation while logging configuration change: {ConfigItem}", configEvent?.ConfigurationItem);
                 throw;
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogError(ex, "Access denied while logging configuration change: {ConfigItem}", configEvent?.ConfigurationItem);
+                throw;
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                _logger.LogError(ex, "Directory not found while logging configuration change: {ConfigItem}", configEvent?.ConfigurationItem);
+                throw;
+            }
             catch (IOException ex)
             {
                 _logger.LogError(ex, "IO error occurred while logging configuration change: {ConfigItem}", configEvent?.ConfigurationItem);
                 throw;
             }
-            catch (Exception ex)
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "JSON serialization error while logging configuration change: {ConfigItem}", configEvent?.ConfigurationItem);
+                throw;
+            }
+            catch (Exception ex) when (!(ex is ArgumentNullException || ex is InvalidOperationException || ex is IOException || ex is UnauthorizedAccessException || ex is DirectoryNotFoundException || ex is JsonException))
             {
                 _logger.LogCritical(ex, "Unexpected error occurred while logging configuration change: {ConfigItem}", configEvent?.ConfigurationItem);
                 throw;
@@ -477,7 +492,7 @@ namespace ConditionalAccessExporter.Services{
                 _logger.LogError(ex, "JSON parsing error while retrieving security events with filter");
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is Newtonsoft.Json.JsonException))
             {
                 _logger.LogCritical(ex, "Unexpected error occurred while retrieving security events with filter");
                 throw;
@@ -534,7 +549,7 @@ namespace ConditionalAccessExporter.Services{
                 _logger.LogError(ex, "I/O error occurred while archiving old audit logs");
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is IOException))
             {
                 _logger.LogCritical(ex, "Unexpected error occurred while archiving old audit logs");
                 throw;
@@ -576,7 +591,7 @@ namespace ConditionalAccessExporter.Services{
                 _logger.LogError(ex, "Access denied during security compliance validation");
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is UnauthorizedAccessException))
             {
                 _logger.LogCritical(ex, "Unexpected error occurred during security compliance validation");
                 throw;
