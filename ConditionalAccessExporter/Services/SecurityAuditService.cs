@@ -415,17 +415,17 @@ namespace ConditionalAccessExporter.Services{
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogError(ex, "Invalid operation while logging configuration change: {ConfigItem}", configEvent.ConfigurationItem);
+                _logger.LogError(ex, "Invalid operation while logging configuration change: {ConfigItem}", configEvent?.ConfigurationItem);
                 throw;
             }
             catch (IOException ex)
             {
-                _logger.LogError(ex, "IO error occurred while logging configuration change: {ConfigItem}", configEvent.ConfigurationItem);
+                _logger.LogError(ex, "IO error occurred while logging configuration change: {ConfigItem}", configEvent?.ConfigurationItem);
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, "Unexpected error occurred while logging configuration change: {ConfigItem}", configEvent.ConfigurationItem);
+                _logger.LogCritical(ex, "Unexpected error occurred while logging configuration change: {ConfigItem}", configEvent?.ConfigurationItem);
                 throw;
             }
         }
