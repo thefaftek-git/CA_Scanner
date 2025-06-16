@@ -171,13 +171,16 @@ jobs:
       run: |
         echo "🔍 Checking dependencies for known vulnerabilities..."
         
-        # Restore dependencies
-        dotnet restore
+        # Restore dependencies with timeout
+        timeout 300 dotnet restore || {
+          echo "⚠️ Dependency restoration timed out or failed"
+          exit 1
+        }
         
-        # Check for vulnerable packages
-        dotnet list package --vulnerable --include-transitive > vulnerability-report.txt 2>&1 || true
+        # Check for vulnerable packages with timeout
+        timeout 120 dotnet list package --vulnerable --include-transitive > vulnerability-report.txt 2>&1 || true
         
-        if grep -q "has the following vulnerable packages" vulnerability-report.txt; then
+        if [[ -f vulnerability-report.txt ]] && grep -q "has the following vulnerable packages" vulnerability-report.txt; then
           echo "❌ Vulnerable dependencies detected:"
           cat vulnerability-report.txt
           echo ""
