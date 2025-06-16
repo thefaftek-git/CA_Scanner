@@ -342,16 +342,27 @@ jobs:
         path: security-policy-report.md
         retention-days: 30
 
+    - name: Run Tests
+      id: test
+      continue-on-error: true
+      run: |
+        echo "🧪 Running tests to check for failures..."
+        dotnet test --no-restore --verbosity normal || echo "test_failed=true" >> $GITHUB_OUTPUT
+
     - name: Comment on Pull Request
-      if: github.event_name == 'pull_request'
+      if: github.event_name == 'pull_request' && steps.test.outputs.test_failed == 'true'
       uses: actions/github-script@v7
       with:
         script: |
           const fs = require('fs');
           
-          let reportContent = "## 🔒 Security Policy Enforcement Report\n\n";
-          reportContent += "✅ **Security policy checks completed successfully**\n\n";
-          reportContent += "### Security Features Verified:\n";
+          let reportContent = "## ⚠️ Security Policy Enforcement Report - Test Failures Detected\n\n";
+          reportContent += "❌ **Tests have failed - Security review required**\n\n";
+          reportContent += "### Action Required:\n";
+          reportContent += "- Review test failures and fix any security-related issues\n";
+          reportContent += "- Ensure all security tests are passing before merge\n";
+          reportContent += "- Verify security features are working correctly\n\n";
+          reportContent += "### Security Features Configured:\n";
           reportContent += "- CodeQL security analysis configured\n";
           reportContent += "- Dependency vulnerability scanning enabled\n";
           reportContent += "- Secrets detection implemented\n";
@@ -362,7 +373,7 @@ jobs:
           reportContent += "- SOC 2 Type II preparation ✅\n";
           reportContent += "- ISO 27001 alignment ✅\n";
           reportContent += "- OWASP Top 10 protection ✅\n\n";
-          reportContent += "*This automated check ensures all security policies are properly implemented and enforced.*";
+          reportContent += "*This automated check triggered due to test failures. Please address failing tests before proceeding.*";
           
           github.rest.issues.createComment({
             issue_number: context.issue.number,
