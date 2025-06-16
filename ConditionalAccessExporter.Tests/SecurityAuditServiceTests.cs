@@ -617,9 +617,13 @@ namespace ConditionalAccessExporter.Tests
                     Directory.Delete(_tempTestDirectory, true);
                 }
             }
-            catch
+            catch (UnauthorizedAccessException)
             {
-                // Ignore cleanup errors in tests
+                // Ignore access denied errors during test cleanup
+            }
+            catch (IOException)
+            {
+                // Ignore I/O errors during test cleanup - files may be locked or directory doesn't exist
             }
         }
     }

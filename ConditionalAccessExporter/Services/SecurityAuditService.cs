@@ -323,6 +323,8 @@ namespace ConditionalAccessExporter.Services{
 
         public async Task LogVulnerabilityDetectionAsync(VulnerabilityEvent vulnerabilityEvent)
         {
+            ArgumentNullException.ThrowIfNull(vulnerabilityEvent);
+            
             try
             {
                 var securityEvent = new SecurityEvent
@@ -380,6 +382,8 @@ namespace ConditionalAccessExporter.Services{
 
         public async Task LogSecurityConfigurationChangeAsync(ConfigurationChangeEvent configEvent)
         {
+            ArgumentNullException.ThrowIfNull(configEvent);
+            
             try
             {
                 var securityEvent = new SecurityEvent
@@ -430,11 +434,10 @@ namespace ConditionalAccessExporter.Services{
         {
             try
             {
-                var events = new List<SecurityEvent>();
                 var logFiles = Directory.GetFiles(GetSanitizedPath(_auditLogPath, "security-events"), "*.json")
                     .Where(f => IsWithinDateRange(f, filter.StartDate, filter.EndDate));
 
-                foreach (var file in logFiles)
+                var eventTasks = logFiles.Select(async file =>
                 {
                     var content = await File.ReadAllTextAsync(file);
                     var logEntry = JsonConvert.DeserializeObject<dynamic>(content);
@@ -443,10 +446,14 @@ namespace ConditionalAccessExporter.Services{
                         var securityEvent = JsonConvert.DeserializeObject<SecurityEvent>(logEntry.Event.ToString());
                         if (securityEvent != null && ApplyFilter(securityEvent, filter))
                         {
-                            events.Add(securityEvent);
+                            return securityEvent;
                         }
                     }
-                }
+                    return null;
+                });
+
+                var eventsArray = await Task.WhenAll(eventTasks);
+                var events = eventsArray.Where(e => e != null).Cast<SecurityEvent>().ToList();
 
                 return events.OrderByDescending(e => e.Timestamp).ToList();
             }
