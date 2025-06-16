@@ -98,7 +98,7 @@ jobs:
           "api_key\s*=\s*[\"'][^\"']+[\"']"
           "client_secret\s*=\s*[\"'][^\"']+[\"']"
           "private_key\s*=\s*[\"'][^\"']+[\"']"
-          "-----BEGIN\s+(RSA\s+)?PRIVATE\s+KEY-----"
+          "\-\-\-\-\-BEGIN\s+(RSA\s+)?PRIVATE\s+KEY\-\-\-\-\-"
         )
         
         found_secrets=false
