@@ -83,9 +83,24 @@ namespace ConditionalAccessExporter.Services{
                     await AlertHighSeverityEventAsync(securityEvent);
                 }
             }
-            catch (Exception ex)
+            catch (UnauthorizedAccessException ex)
             {
-                _logger.LogError(ex, "Failed to log security event: {EventType}", securityEvent.EventType);
+                _logger.LogError(ex, "Access denied while logging security event: {EventType}", securityEvent.EventType);
+                throw;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "I/O error while logging security event: {EventType}", securityEvent.EventType);
+                throw;
+            }
+            catch (JsonSerializationException ex)
+            {
+                _logger.LogError(ex, "JSON serialization error while logging security event: {EventType}", securityEvent.EventType);
+                throw;
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Operation cancelled while logging security event: {EventType}", securityEvent.EventType);
                 throw;
             }
         }
@@ -112,9 +127,24 @@ namespace ConditionalAccessExporter.Services{
                 _logger.LogInformation("Compliance event logged: {Standard} - {Status} - {Control}", 
                     complianceEvent.ComplianceStandard, complianceEvent.ComplianceStatus, complianceEvent.ControlId);
             }
-            catch (Exception ex)
+            catch (UnauthorizedAccessException ex)
             {
-                _logger.LogError(ex, "Failed to log compliance event: {Standard}", complianceEvent.ComplianceStandard);
+                _logger.LogError(ex, "Access denied while logging compliance event: {Standard}", complianceEvent.ComplianceStandard);
+                throw;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "I/O error while logging compliance event: {Standard}", complianceEvent.ComplianceStandard);
+                throw;
+            }
+            catch (JsonSerializationException ex)
+            {
+                _logger.LogError(ex, "JSON serialization error while logging compliance event: {Standard}", complianceEvent.ComplianceStandard);
+                throw;
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Operation cancelled while logging compliance event: {Standard}", complianceEvent.ComplianceStandard);
                 throw;
             }
         }
@@ -145,9 +175,24 @@ namespace ConditionalAccessExporter.Services{
                 // Monitor for suspicious access patterns
                 await DetectSuspiciousAccessPatternsAsync(accessEvent);
             }
-            catch (Exception ex)
+            catch (UnauthorizedAccessException ex)
             {
-                _logger.LogError(ex, "Failed to log access event for user: {User}", accessEvent.UserId);
+                _logger.LogError(ex, "Access denied while logging access event for user: {User}", accessEvent.UserId);
+                throw;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "I/O error while logging access event for user: {User}", accessEvent.UserId);
+                throw;
+            }
+            catch (JsonSerializationException ex)
+            {
+                _logger.LogError(ex, "JSON serialization error while logging access event for user: {User}", accessEvent.UserId);
+                throw;
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Operation cancelled while logging access event for user: {User}", accessEvent.UserId);
                 throw;
             }
         }
@@ -426,9 +471,21 @@ namespace ConditionalAccessExporter.Services{
                 Directory.CreateDirectory(Path.Combine(_auditLogPath, "archive"));
                 Directory.CreateDirectory(Path.Combine(_auditLogPath, "reports"));
             }
-            catch (Exception ex)
+            catch (UnauthorizedAccessException ex)
             {
-                _logger.LogWarning(ex, "Failed to create audit log directories. Some features may not work correctly.");
+                _logger.LogWarning(ex, "Access denied while creating audit log directories. Some features may not work correctly.");
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Base directory not found while creating audit log directories. Some features may not work correctly.");
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "I/O error occurred while creating audit log directories. Some features may not work correctly.");
+            }
+            catch (NotSupportedException ex)
+            {
+                _logger.LogWarning(ex, "Operation not supported while creating audit log directories. Some features may not work correctly.");
             }
         }
 

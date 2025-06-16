@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using System.Text;
 using ConditionalAccessExporter.Models;
+using System.Security;
 
 namespace ConditionalAccessExporter.Services
 {
@@ -23,21 +24,38 @@ namespace ConditionalAccessExporter.Services
                 try
                 {
                     var currentDir = Directory.GetCurrentDirectory();
-                    possiblePaths.Add(Path.Combine(currentDir, "reference-templates"));
-                    possiblePaths.Add(Path.Combine(currentDir, "..", "reference-templates"));
+                    possiblePaths.Add(GetSanitizedPath(currentDir, "reference-templates"));
+                    possiblePaths.Add(GetSanitizedPath(currentDir, "..", "reference-templates"));
                 }
-                catch
+                catch (SecurityException)
+                {
+                    // Ignore if GetCurrentDirectory fails due to security restrictions
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // Ignore if GetCurrentDirectory fails due to access restrictions
+                }
+                catch (FileNotFoundException)
+                {
+                    // Ignore if GetCurrentDirectory fails in test environments
+                }
+                catch (DirectoryNotFoundException)
                 {
                     // Ignore if GetCurrentDirectory fails in containerized environments
                 }
                 
                 // Add other safe paths
-                possiblePaths.Add(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "reference-templates"));
-                possiblePaths.Add(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? "", "reference-templates"));
+                possiblePaths.Add(GetSanitizedPath(AppDomain.CurrentDomain.BaseDirectory, "reference-templates"));
+                
+                var assemblyLocation = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                if (!string.IsNullOrEmpty(assemblyLocation))
+                {
+                    possiblePaths.Add(GetSanitizedPath(assemblyLocation, "reference-templates"));
+                }
                 
                 // Use first existing directory or fallback to a temp directory
                 _templateBaseDirectory = possiblePaths.FirstOrDefault(Directory.Exists) 
-                    ?? Path.Combine(Path.GetTempPath(), "reference-templates");
+                    ?? GetSanitizedPath(Path.GetTempPath(), "reference-templates");
             }
         }
 
@@ -256,6 +274,28 @@ namespace ConditionalAccessExporter.Services
 
             // Return basic template info if no documentation file exists
             return $"Template: {templateName}\nNo additional documentation available.";
+        }
+
+        /// <summary>
+        /// Safely combines path components and validates the result to prevent path traversal attacks
+        /// </summary>
+        private static string GetSanitizedPath(params string[] pathComponents)
+        {
+            if (pathComponents == null || pathComponents.Length == 0)
+                throw new ArgumentException("Path components cannot be null or empty", nameof(pathComponents));
+
+            // Filter out null or empty components
+            var validComponents = pathComponents.Where(p => !string.IsNullOrEmpty(p)).ToArray();
+            if (validComponents.Length == 0)
+                throw new ArgumentException("No valid path components provided", nameof(pathComponents));
+
+            // Combine paths safely
+            var combinedPath = Path.Combine(validComponents);
+            
+            // Get the full path to normalize it and prevent traversal attacks
+            var fullPath = Path.GetFullPath(combinedPath);
+            
+            return fullPath;
         }
     }
 }

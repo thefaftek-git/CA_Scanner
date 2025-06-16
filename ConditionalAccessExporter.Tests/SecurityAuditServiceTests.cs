@@ -22,14 +22,31 @@ namespace ConditionalAccessExporter.Tests
             _mockLogger = new Mock<ILogger<SecurityAuditService>>();
             _mockLoggingService = new Mock<ILoggingService>();
             _mockFileSystem = new MockFileSystem();
-            _tempDirectory = Path.GetTempPath();
+            _tempDirectory = GetSanitizedTempPath();
 
-            // Setup test directories
-            _mockFileSystem.AddDirectory(Path.Combine(_tempDirectory, "logs", "security-audit", "security-events"));
-            _mockFileSystem.AddDirectory(Path.Combine(_tempDirectory, "logs", "security-audit", "access-events"));
-            _mockFileSystem.AddDirectory(Path.Combine(_tempDirectory, "logs", "compliance", "compliance-events"));
+            // Setup test directories with sanitized paths
+            SetupTestDirectories();
 
             _securityAuditService = new SecurityAuditService(_mockLogger.Object, _mockLoggingService.Object);
+        }
+
+        private string GetSanitizedTempPath()
+        {
+            var tempPath = Path.GetTempPath();
+            // Ensure the path is properly normalized and validated
+            return Path.GetFullPath(tempPath);
+        }
+
+        private void SetupTestDirectories()
+        {
+            // Create test directories with validated paths
+            var securityEventsPath = Path.GetFullPath(Path.Combine(_tempDirectory, "logs", "security-audit", "security-events"));
+            var accessEventsPath = Path.GetFullPath(Path.Combine(_tempDirectory, "logs", "security-audit", "access-events"));
+            var complianceEventsPath = Path.GetFullPath(Path.Combine(_tempDirectory, "logs", "compliance", "compliance-events"));
+
+            _mockFileSystem.AddDirectory(securityEventsPath);
+            _mockFileSystem.AddDirectory(accessEventsPath);
+            _mockFileSystem.AddDirectory(complianceEventsPath);
         }
 
         [Fact]
