@@ -360,7 +360,7 @@ namespace ConditionalAccessExporter.Services{
             }
             catch (ArgumentNullException ex)
             {
-                _logger.LogError(ex, "Null vulnerability event provided for logging: {VulnerabilityId}", vulnerabilityEvent?.VulnerabilityId);
+                _logger.LogError(ex, "Null vulnerability event provided for logging: {VulnerabilityId}", vulnerabilityEvent.VulnerabilityId);
                 throw;
             }
             catch (InvalidOperationException ex)
