@@ -36,9 +36,9 @@ namespace ConditionalAccessExporter.Services{
             _loggingService = loggingService ?? throw new ArgumentNullException(nameof(loggingService));
             
             // Use absolute path based on temp directory for better test compatibility
-            var baseLogPath = Path.Combine(Path.GetTempPath(), "ca-scanner-logs");
-            _auditLogPath = Path.Combine(baseLogPath, "security-audit");
-            _complianceLogPath = Path.Combine(baseLogPath, "compliance");
+            var baseLogPath = GetSanitizedPath(Path.GetTempPath(), "ca-scanner-logs");
+            _auditLogPath = GetSanitizedPath(baseLogPath, "security-audit");
+            _complianceLogPath = GetSanitizedPath(baseLogPath, "compliance");
             
             _jsonSettings = new JsonSerializerSettings
             {
@@ -361,7 +361,7 @@ namespace ConditionalAccessExporter.Services{
             try
             {
                 var events = new List<SecurityEvent>();
-                var logFiles = Directory.GetFiles(Path.Combine(_auditLogPath, "security-events"), "*.json")
+                var logFiles = Directory.GetFiles(GetSanitizedPath(_auditLogPath, "security-events"), "*.json")
                     .Where(f => IsWithinDateRange(f, filter.StartDate, filter.EndDate));
 
                 foreach (var file in logFiles)
@@ -397,7 +397,7 @@ namespace ConditionalAccessExporter.Services{
                 var archivedCount = 0;
 
                 // Archive security logs
-                var securityLogFiles = Directory.GetFiles(Path.Combine(_auditLogPath, "security-events"), "*.json");
+                var securityLogFiles = Directory.GetFiles(GetSanitizedPath(_auditLogPath, "security-events"), "*.json");
                 foreach (var file in securityLogFiles)
                 {
                     var fileInfo = new FileInfo(file);
@@ -409,7 +409,7 @@ namespace ConditionalAccessExporter.Services{
                 }
 
                 // Archive compliance logs
-                var complianceLogFiles = Directory.GetFiles(Path.Combine(_complianceLogPath, "compliance-events"), "*.json");
+                var complianceLogFiles = Directory.GetFiles(GetSanitizedPath(_complianceLogPath, "compliance-events"), "*.json");
                 foreach (var file in complianceLogFiles)
                 {
                     var fileInfo = new FileInfo(file);
@@ -422,9 +422,24 @@ namespace ConditionalAccessExporter.Services{
 
                 _logger.LogInformation("Archived {Count} old audit log files older than {CutoffDate}", archivedCount, cutoffDate);
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogError(ex, "Access denied while archiving old audit logs");
+                throw;
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                _logger.LogError(ex, "Directory not found while archiving old audit logs");
+                throw;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "I/O error occurred while archiving old audit logs");
+                throw;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to archive old audit logs");
+                _logger.LogError(ex, "Unexpected error occurred while archiving old audit logs");
                 throw;
             }
         }
@@ -464,12 +479,12 @@ namespace ConditionalAccessExporter.Services{
             {
                 Directory.CreateDirectory(_auditLogPath);
                 Directory.CreateDirectory(_complianceLogPath);
-                Directory.CreateDirectory(Path.Combine(_auditLogPath, "security-events"));
-                Directory.CreateDirectory(Path.Combine(_auditLogPath, "access-events"));
-                Directory.CreateDirectory(Path.Combine(_complianceLogPath, "compliance-events"));
-                Directory.CreateDirectory(Path.Combine(_complianceLogPath, "reports"));
-                Directory.CreateDirectory(Path.Combine(_auditLogPath, "archive"));
-                Directory.CreateDirectory(Path.Combine(_auditLogPath, "reports"));
+                Directory.CreateDirectory(GetSanitizedPath(_auditLogPath, "security-events"));
+                Directory.CreateDirectory(GetSanitizedPath(_auditLogPath, "access-events"));
+                Directory.CreateDirectory(GetSanitizedPath(_complianceLogPath, "compliance-events"));
+                Directory.CreateDirectory(GetSanitizedPath(_complianceLogPath, "reports"));
+                Directory.CreateDirectory(GetSanitizedPath(_auditLogPath, "archive"));
+                Directory.CreateDirectory(GetSanitizedPath(_auditLogPath, "reports"));
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -505,7 +520,7 @@ namespace ConditionalAccessExporter.Services{
         private async Task WriteSecurityLogAsync(string category, object logEntry)
         {
             var fileName = $"{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.json";
-            var filePath = Path.Combine(_auditLogPath, category, fileName);
+            var filePath = GetSanitizedPath(_auditLogPath, category, fileName);
             var content = JsonConvert.SerializeObject(logEntry, _jsonSettings);
             await File.WriteAllTextAsync(filePath, content);
         }
@@ -513,7 +528,7 @@ namespace ConditionalAccessExporter.Services{
         private async Task WriteComplianceLogAsync(string category, object logEntry)
         {
             var fileName = $"{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.json";
-            var filePath = Path.Combine(_complianceLogPath, category, fileName);
+            var filePath = GetSanitizedPath(_complianceLogPath, category, fileName);
             var content = JsonConvert.SerializeObject(logEntry, _jsonSettings);
             await File.WriteAllTextAsync(filePath, content);
         }
@@ -616,7 +631,7 @@ namespace ConditionalAccessExporter.Services{
         private async Task SaveAuditReportAsync(SecurityAuditReport report)
         {
             var fileName = $"audit_report_{report.ReportId}_{DateTime.UtcNow:yyyyMMdd}.json";
-            var filePath = Path.Combine(_auditLogPath, "reports", fileName);
+            var filePath = GetSanitizedPath(_auditLogPath, "reports", fileName);
             var content = JsonConvert.SerializeObject(report, _jsonSettings);
             await File.WriteAllTextAsync(filePath, content);
         }
@@ -624,7 +639,7 @@ namespace ConditionalAccessExporter.Services{
         private async Task SaveComplianceReportAsync(ComplianceReport report)
         {
             var fileName = $"compliance_report_{report.ComplianceStandard}_{DateTime.UtcNow:yyyyMMdd}.json";
-            var filePath = Path.Combine(_complianceLogPath, "reports", fileName);
+            var filePath = GetSanitizedPath(_complianceLogPath, "reports", fileName);
             var content = JsonConvert.SerializeObject(report, _jsonSettings);
             await File.WriteAllTextAsync(filePath, content);
         }
@@ -655,6 +670,35 @@ namespace ConditionalAccessExporter.Services{
         private async Task ValidateISO27001ComplianceAsync() => await Task.CompletedTask;
         private async Task ValidateOWASPComplianceAsync() => await Task.CompletedTask;
         private async Task ValidateCustomSecurityPoliciesAsync() => await Task.CompletedTask;
+
+        /// <summary>
+        /// Safely combines path components and validates the result to prevent path traversal attacks
+        /// </summary>
+        private static string GetSanitizedPath(params string[] pathComponents)
+        {
+            if (pathComponents == null || pathComponents.Length == 0)
+                throw new ArgumentException("Path components cannot be null or empty", nameof(pathComponents));
+
+            // Filter out null or empty components
+            var validComponents = pathComponents.Where(p => !string.IsNullOrEmpty(p)).ToArray();
+            if (validComponents.Length == 0)
+                throw new ArgumentException("No valid path components provided", nameof(pathComponents));
+
+            // Combine paths safely
+            var combinedPath = Path.Combine(validComponents);
+            
+            // Get the full path to normalize it and prevent traversal attacks
+            var fullPath = Path.GetFullPath(combinedPath);
+            
+            // Additional validation to ensure the path doesn't contain dangerous sequences
+            var normalizedPath = Path.GetFullPath(fullPath);
+            if (normalizedPath.Contains("..") || normalizedPath.Contains("~"))
+            {
+                throw new InvalidOperationException("Path contains potentially dangerous sequences");
+            }
+            
+            return normalizedPath;
+        }
 
         #endregion
     }

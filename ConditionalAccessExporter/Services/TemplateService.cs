@@ -295,7 +295,14 @@ namespace ConditionalAccessExporter.Services
             // Get the full path to normalize it and prevent traversal attacks
             var fullPath = Path.GetFullPath(combinedPath);
             
-            return fullPath;
+            // Additional validation to ensure the path doesn't contain dangerous sequences
+            var normalizedPath = Path.GetFullPath(fullPath);
+            if (normalizedPath.Contains("..") || normalizedPath.Contains("~"))
+            {
+                throw new InvalidOperationException("Path contains potentially dangerous sequences");
+            }
+            
+            return normalizedPath;
         }
     }
 }
