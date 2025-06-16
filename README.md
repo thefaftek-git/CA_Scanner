@@ -18,6 +18,7 @@ dotnet run export
 ## 📚 Documentation
 
 - **[Getting Started](ConditionalAccessExporter/README.md)**: Basic usage and command-line options
+- **[Policy Validation Engine](POLICY_VALIDATION_ENGINE.md)**: Comprehensive policy validation, security assessment, and compliance reporting ⭐ NEW
 - **[Developer Guide](CONTRIBUTING.md)**: Complete onboarding guide for contributors
 - **[Configuration Reference](CONFIGURATION.md)**: All configuration options and environment variables
 - **[Examples & Use Cases](EXAMPLES.md)**: Practical scenarios and real-world examples
@@ -48,6 +49,15 @@ ConditionalAccessExporter/
 - ✅ **Policy Comparison** - Compare live policies against reference JSON files with flexible matching
 - ✅ **Terraform Integration** - Bidirectional conversion between JSON and Terraform formats
 - ✅ **Multi-Format Reports** - Generate detailed reports in console, JSON, HTML, and CSV formats
+- ⭐ **Policy Validation Engine** - Comprehensive validation framework with security assessment and compliance reporting
+
+### 🔒 Policy Validation & Security Assessment
+- ✅ **Extensible Rule Framework** - Built-in security, governance, and compliance rules
+- ✅ **Security Posture Scoring** - Automated security assessment with 0-100 scoring
+- ✅ **Compliance Reporting** - NIST, ISO27001, and SOC2 compliance validation
+- ✅ **Risk Assessment** - Identifies security vulnerabilities and policy gaps
+- ✅ **Actionable Recommendations** - Detailed suggestions for policy improvements
+- ✅ **Custom Rule Configuration** - Organization-specific validation rules and thresholds
 - ✅ **Cross-Format Analysis** - Compare JSON policies against Terraform configurations
 
 ### Enterprise Features
