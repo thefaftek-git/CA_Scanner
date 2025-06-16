@@ -35,7 +35,12 @@ jobs:
 
     - name: Validate Security Configuration
       run: |
+        set -x # Enable debug output
         echo "🔍 Validating security configuration..."
+        pwd
+        ls -la
+        ls -la .github/workflows/
+        ls -la ConditionalAccessExporter/
         
         # Check for required security files
         echo "Checking for required security files..."
@@ -50,8 +55,12 @@ jobs:
         
         missing_files=()
         for file in "${required_files[@]}"; do
+          echo "Checking for file: $file"
           if [[ ! -f "$file" ]]; then
+            echo "File $file not found!"
             missing_files+=("$file")
+          else
+            echo "File $file found."
           fi
         done
         
@@ -62,6 +71,7 @@ jobs:
         fi
         
         echo "✅ All required security files present"
+        set +x # Disable debug output
 
     - name: Validate Security Analyzers Configuration
       run: |
