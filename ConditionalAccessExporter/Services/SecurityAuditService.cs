@@ -685,7 +685,7 @@ namespace ConditionalAccessExporter.Services{
                 throw new ArgumentException("No valid path components provided", nameof(pathComponents));
 
             // Combine paths safely
-            var combinedPath = Path.Combine(validComponents);
+            var combinedPath = Path.Join(validComponents);
             
             // Get the full path to normalize it and prevent traversal attacks
             var fullPath = Path.GetFullPath(combinedPath);
