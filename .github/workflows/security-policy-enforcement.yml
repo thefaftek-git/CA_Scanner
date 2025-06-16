@@ -82,21 +82,21 @@ jobs:
         
         if grep -q "Microsoft.CodeAnalysis.NetAnalyzers" ConditionalAccessExporter/ConditionalAccessExporter.csproj; then
           echo "✅ Microsoft.CodeAnalysis.NetAnalyzers found in project file"
-          ((analyzers_found++))
+          analyzers_found=$((analyzers_found + 1))
         else
           echo "⚠️ Microsoft.CodeAnalysis.NetAnalyzers not found in project file"
         fi
         
         if grep -q "SonarAnalyzer.CSharp" ConditionalAccessExporter/ConditionalAccessExporter.csproj; then
           echo "✅ SonarAnalyzer.CSharp found in project file"
-          ((analyzers_found++))
+          analyzers_found=$((analyzers_found + 1))
         else
           echo "⚠️ SonarAnalyzer.CSharp not found in project file"
         fi
         
         if grep -q "SecurityCodeScan.VS2019" ConditionalAccessExporter/ConditionalAccessExporter.csproj; then
           echo "✅ SecurityCodeScan.VS2019 found in project file"
-          ((analyzers_found++))
+          analyzers_found=$((analyzers_found + 1))
         else
           echo "⚠️ SecurityCodeScan.VS2019 not found in project file"
         fi
