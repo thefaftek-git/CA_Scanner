@@ -40,9 +40,9 @@ namespace ConditionalAccessExporter.Tests
         private void SetupTestDirectories()
         {
             // Create test directories with validated paths
-            var securityEventsPath = Path.GetFullPath(Path.Combine(_tempDirectory, "logs", "security-audit", "security-events"));
-            var accessEventsPath = Path.GetFullPath(Path.Combine(_tempDirectory, "logs", "security-audit", "access-events"));
-            var complianceEventsPath = Path.GetFullPath(Path.Combine(_tempDirectory, "logs", "compliance", "compliance-events"));
+            var securityEventsPath = Path.GetFullPath(Path.Join(_tempDirectory, "logs", "security-audit", "security-events"));
+            var accessEventsPath = Path.GetFullPath(Path.Join(_tempDirectory, "logs", "security-audit", "access-events"));
+            var complianceEventsPath = Path.GetFullPath(Path.Join(_tempDirectory, "logs", "compliance", "compliance-events"));
 
             _mockFileSystem.AddDirectory(securityEventsPath);
             _mockFileSystem.AddDirectory(accessEventsPath);
