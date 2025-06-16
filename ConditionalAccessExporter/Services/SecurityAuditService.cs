@@ -390,7 +390,7 @@ namespace ConditionalAccessExporter.Services{
                 {
                     EventType = "ConfigurationChange",
                     Severity = DetermineConfigChangeSeverity(configEvent),
-                    Description = $"Security configuration changed: {configEvent.ConfigurationItem}",
+                    Description = $"Security configuration changed: {(configEvent?.ConfigurationItem ?? "Unknown")}",
                     Source = configEvent.Source,
                     UserId = configEvent.UserId,
                     AdditionalData = new Dictionary<string, object>
