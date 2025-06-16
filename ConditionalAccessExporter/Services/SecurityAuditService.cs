@@ -391,8 +391,8 @@ namespace ConditionalAccessExporter.Services{
                     EventType = "ConfigurationChange",
                     Severity = DetermineConfigChangeSeverity(configEvent),
                     Description = $"Security configuration changed: {(configEvent?.ConfigurationItem ?? "Unknown")}",
-                    Source = configEvent.Source,
-                    UserId = configEvent.UserId,
+                    Source = configEvent?.Source ?? "Unknown",
+                    UserId = configEvent?.UserId ?? "Unknown",
                     AdditionalData = new Dictionary<string, object>
                     {
                         ["ConfigurationItem"] = configEvent.ConfigurationItem,
