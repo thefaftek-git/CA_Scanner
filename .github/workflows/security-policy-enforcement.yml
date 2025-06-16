@@ -403,37 +403,37 @@ jobs:
             "access-control")
               if [[ -f ".github/workflows/codeql-analysis.yml" ]]; then
                 echo "✅ Access control monitoring: CodeQL analysis configured"
-                ((compliance_score++))
+                compliance_score=$((compliance_score + 1))
               fi
               ;;
             "data-encryption")
               if grep -r "Azure.Identity\|DefaultAzureCredential" ConditionalAccessExporter/ --include="*.cs"; then
                 echo "✅ Data encryption: Secure Azure authentication configured"
-                ((compliance_score++))
+                compliance_score=$((compliance_score + 1))
               fi
               ;;
             "audit-logging")
               if [[ -f "ConditionalAccessExporter/Services/SecurityAuditService.cs" ]]; then
                 echo "✅ Audit logging: Security audit service implemented"
-                ((compliance_score++))
+                compliance_score=$((compliance_score + 1))
               fi
               ;;
             "incident-response")
               if [[ -f "SECURITY_INCIDENT_RESPONSE.md" ]]; then
                 echo "✅ Incident response: Response plan documented"
-                ((compliance_score++))
+                compliance_score=$((compliance_score + 1))
               fi
               ;;
             "vulnerability-management")
               if [[ -f ".github/dependabot.yml" ]]; then
                 echo "✅ Vulnerability management: Dependabot configured"
-                ((compliance_score++))
+                compliance_score=$((compliance_score + 1))
               fi
               ;;
             "change-management")
               if [[ -f ".github/workflows/security-policy-enforcement.yml" ]]; then
                 echo "✅ Change management: Security policy enforcement configured"
-                ((compliance_score++))
+                compliance_score=$((compliance_score + 1))
               fi
               ;;
           esac
