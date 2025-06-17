@@ -64,13 +64,43 @@ jobs:
       with:
         fetch-depth: 0  # Full history for better secret detection
 
+    - name: Check if commits are different
+      id: check_commits
+      run: |
+        BASE_COMMIT=$(git rev-parse origin/main 2>/dev/null) || { echo "❌ Error: Failed to retrieve BASE_COMMIT from origin/main"; exit 1; }
+        HEAD_COMMIT=$(git rev-parse HEAD 2>/dev/null) || { echo "❌ Error: Failed to retrieve HEAD_COMMIT"; exit 1; }
+        
+        echo "Base commit: $BASE_COMMIT"
+        echo "Head commit: $HEAD_COMMIT"
+        
+        if [ "$BASE_COMMIT" = "$HEAD_COMMIT" ]; then
+          echo "commits_different=false" >> $GITHUB_OUTPUT
+          echo "⚠️ Base and HEAD commits are the same ($BASE_COMMIT)"
+          echo "TruffleHog scan will be skipped as there are no changes to scan."
+        else
+          echo "commits_different=true" >> $GITHUB_OUTPUT
+          echo "✅ Base and HEAD commits are different, proceeding with TruffleHog scan."
+        fi
+
     - name: Run TruffleHog OSS
+      if: steps.check_commits.outputs.commits_different == 'true'
       uses: trufflesecurity/trufflehog@main
       with:
         path: ./
         base: main
         head: HEAD
         extra_args: --debug --only-verified
+
+    - name: TruffleHog scan skipped
+      if: steps.check_commits.outputs.commits_different == 'false'
+      run: |
+        echo "🔍 TruffleHog scan was skipped because base and HEAD commits are identical."
+        echo "This is normal for scenarios like:"
+        echo "  - Re-running workflows on the same commit"
+        echo "  - Scheduled runs without new changes"
+        echo "  - Manual workflow triggers"
+        echo ""
+        echo "ℹ️ To perform a secrets scan, ensure there are commits between base and HEAD."
 
     - name: Run GitLeaks
       uses: gitleaks/gitleaks-action@v2
