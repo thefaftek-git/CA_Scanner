@@ -7,16 +7,16 @@
   <Rules AnalyzerId="Microsoft.CodeAnalysis.NetAnalyzers" RuleNamespace="Microsoft.CodeAnalysis.NetAnalyzers">
     <!-- Security Rules -->
     <Rule Id="CA1001" Action="Warning" /> <!-- Types that own disposable fields should be disposable -->
-    <Rule Id="CA1031" Action="Warning" /> <!-- Do not catch general exception types -->
+    <Rule Id="CA1031" Action="None" /> <!-- Do not catch general exception types -->
     <Rule Id="CA1054" Action="Warning" /> <!-- URI parameters should not be strings -->
     <Rule Id="CA1055" Action="Warning" /> <!-- URI return values should not be strings -->
     <Rule Id="CA1056" Action="Warning" /> <!-- URI properties should not be strings -->
     <Rule Id="CA1303" Action="None" />   <!-- Do not pass literals as localized parameters -->
     <Rule Id="CA1304" Action="Warning" /> <!-- Specify CultureInfo -->
-    <Rule Id="CA1305" Action="Warning" /> <!-- Specify IFormatProvider -->
-    <Rule Id="CA1307" Action="Warning" /> <!-- Specify StringComparison -->
+    <Rule Id="CA1305" Action="None" /> <!-- Specify IFormatProvider -->
+    <Rule Id="CA1307" Action="None" /> <!-- Specify StringComparison -->
     <Rule Id="CA1309" Action="Warning" /> <!-- Use ordinal StringComparison -->
-    <Rule Id="CA1707" Action="Warning" /> <!-- Identifiers should not contain underscores -->
+    <Rule Id="CA1707" Action="None" /> <!-- Identifiers should not contain underscores -->
     <Rule Id="CA1720" Action="Warning" /> <!-- Identifier contains type name -->
     <Rule Id="CA1801" Action="Warning" /> <!-- Review unused parameters -->
     <Rule Id="CA1806" Action="Warning" /> <!-- Do not ignore method results -->
@@ -24,12 +24,20 @@
     <Rule Id="CA1812" Action="Warning" /> <!-- Avoid uninstantiated internal classes -->
     <Rule Id="CA1813" Action="Warning" /> <!-- Avoid unsealed attributes -->
     <Rule Id="CA1815" Action="Warning" /> <!-- Override equals and operator equals on value types -->
+    <Rule Id="CA1816" Action="None" /> <!-- Dispose methods should call GC.SuppressFinalize -->
     <Rule Id="CA1819" Action="Warning" /> <!-- Properties should not return arrays -->
-    <Rule Id="CA1822" Action="Warning" /> <!-- Mark members as static -->
+    <Rule Id="CA1822" Action="None" /> <!-- Mark members as static -->
     <Rule Id="CA1823" Action="Warning" /> <!-- Avoid unused private fields -->
+    <Rule Id="CA1825" Action="None" /> <!-- Avoid unnecessary zero-length array allocations -->
+    <Rule Id="CA1861" Action="None" /> <!-- Prefer 'static readonly' fields over constant array arguments -->
+    <Rule Id="CA1805" Action="None" /> <!-- Member is explicitly initialized to its default value -->
+    <Rule Id="CA1310" Action="None" /> <!-- Specify StringComparison for clarity -->
+    <Rule Id="CA1860" Action="None" /> <!-- Prefer comparing 'Count' to 0 rather than using 'Any()' -->
+    <Rule Id="CA1866" Action="None" /> <!-- Use char overload -->
+    <Rule Id="CA2227" Action="None" /> <!-- Collection properties should be read only -->
     <Rule Id="CA2000" Action="Warning" /> <!-- Dispose objects before losing scope -->
     <Rule Id="CA2002" Action="Warning" /> <!-- Do not lock on objects with weak identity -->
-    <Rule Id="CA2007" Action="Warning" /> <!-- Consider calling ConfigureAwait on the awaited task -->
+    <Rule Id="CA2007" Action="None" /> <!-- Consider calling ConfigureAwait on the awaited task -->
     <Rule Id="CA2100" Action="Warning" /> <!-- Review SQL queries for security vulnerabilities -->
     <Rule Id="CA2101" Action="Warning" /> <!-- Specify marshaling for P/Invoke string arguments -->
     <Rule Id="CA2109" Action="Warning" /> <!-- Review visible event handlers -->
@@ -45,7 +53,7 @@
     <Rule Id="CA2219" Action="Warning" /> <!-- Do not raise exceptions in finally clauses -->
     <Rule Id="CA2225" Action="Warning" /> <!-- Operator overloads have named alternates -->
     <Rule Id="CA2226" Action="Warning" /> <!-- Operators should have symmetrical overloads -->
-    <Rule Id="CA2227" Action="Warning" /> <!-- Collection properties should be read only -->
+
     <Rule Id="CA2229" Action="Warning" /> <!-- Implement serialization constructors -->
     <Rule Id="CA2231" Action="Warning" /> <!-- Overload operator equals on overriding value type Equals -->
     <Rule Id="CA2234" Action="Warning" /> <!-- Pass system uri objects instead of strings -->
