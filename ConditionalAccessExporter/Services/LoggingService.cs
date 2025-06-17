@@ -85,7 +85,7 @@ namespace ConditionalAccessExporter.Services
             return _logger.BeginScope("CorrelationId: {CorrelationId}", correlationId) ?? new NullScope();
         }
 
-        private class NullScope : IDisposable
+        private sealed class NullScope : IDisposable
         {
             public void Dispose() { }
         }

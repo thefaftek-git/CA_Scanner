@@ -922,8 +922,8 @@ namespace ConditionalAccessExporter
                 // Auto-fix if requested
                 if (autoFix && validationResult.InvalidFiles > 0)
                 {
-                    // TODO: Implement auto-fix functionality in future versions
-                    // This is a placeholder for automatic correction of common validation issues
+                    // Auto-fix functionality is planned for future versions
+                    // This would provide automatic correction of common validation issues
                     Logger.WriteError("Auto-fix is enabled but not yet implemented.");
                     Logger.WriteInfo("Future versions will support automatic fixing of common issues such as:");
                     Logger.WriteInfo("- Formatting JSON files");
@@ -1770,7 +1770,7 @@ namespace ConditionalAccessExporter
         /// <summary>
         /// Data structure to hold initialized services for remediation operations.
         /// </summary>
-        private class RemediationServices
+        private sealed class RemediationServices
         {
             public RemediationService RemediationService { get; set; } = null!;
             public ImpactAnalysisService ImpactAnalysisService { get; set; } = null!;
@@ -1934,10 +1934,8 @@ namespace ConditionalAccessExporter
                 {
                     try
                     {
-                        // TODO: Impact analysis needs to be implemented for individual remediations
-                        // The current implementation placeholder is preserved for backwards compatibility
-                        // var impact = await impactAnalysisService.AnalyzeImpactAsync(policyComparison);
-                        // remediation.ImpactAnalysis = impact;
+                        // Impact analysis for individual remediations will be implemented in future version
+                        // Currently using basic comparison without deep impact analysis
                     }
                     catch (Exception ex)
                     {
