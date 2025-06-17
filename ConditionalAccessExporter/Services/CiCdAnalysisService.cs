@@ -101,8 +101,10 @@ namespace ConditionalAccessExporter.Services
             // Update summary statistics
             result.Summary.CriticalDifferences = analysis.CriticalDifferences;
             result.Summary.NonCriticalDifferences = analysis.NonCriticalDifferences;
-            result.Summary.CriticalChangeTypes = analysis.GetAllCriticalChangeTypes();
-            result.Summary.NonCriticalChangeTypes = analysis.GetAllNonCriticalChangeTypes();
+            result.Summary.CriticalChangeTypes.Clear();
+            result.Summary.CriticalChangeTypes.AddRange(analysis.GetAllCriticalChangeTypes());
+            result.Summary.NonCriticalChangeTypes.Clear();
+            result.Summary.NonCriticalChangeTypes.AddRange(analysis.GetAllNonCriticalChangeTypes());
 
             // Determine exit code and status
             analysis.ExitCode = DetermineExitCode(analysis, options);

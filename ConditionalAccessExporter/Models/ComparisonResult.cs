@@ -8,7 +8,7 @@ namespace ConditionalAccessExporter.Models
         public string TenantId { get; set; } = string.Empty;
         public string ReferenceDirectory { get; set; } = string.Empty;
         public ComparisonSummary Summary { get; set; } = new();
-        public List<PolicyComparison> PolicyComparisons { get; set; } = new();
+        public List<PolicyComparison> PolicyComparisons { get; } = new();
     }
 
     public class ComparisonSummary
@@ -21,8 +21,8 @@ namespace ConditionalAccessExporter.Models
         public int TotalReferencePolicies { get; set; }
         public int CriticalDifferences { get; set; }
         public int NonCriticalDifferences { get; set; }
-        public List<string> CriticalChangeTypes { get; set; } = new();
-        public List<string> NonCriticalChangeTypes { get; set; } = new();
+        public List<string> CriticalChangeTypes { get; } = new();
+        public List<string> NonCriticalChangeTypes { get; } = new();
     }
 
     public class PolicyComparison
@@ -35,9 +35,9 @@ namespace ConditionalAccessExporter.Models
         public object? ReferencePolicy { get; set; }
         public object? Differences { get; set; }
         public bool HasCriticalDifferences { get; set; }
-        public List<string> CriticalDifferenceTypes { get; set; } = new();
-        public List<string> NonCriticalDifferenceTypes { get; set; } = new();
-        public List<string> IgnoredDifferenceTypes { get; set; } = new();
+        public List<string> CriticalDifferenceTypes { get; } = new();
+        public List<string> NonCriticalDifferenceTypes { get; } = new();
+        public List<string> IgnoredDifferenceTypes { get; } = new();
     }
 
     public enum ComparisonStatus
@@ -51,8 +51,8 @@ namespace ConditionalAccessExporter.Models
     public class MatchingOptions
     {
         public MatchingStrategy Strategy { get; set; } = MatchingStrategy.ByName;
-        public bool CaseSensitive { get; set; } = false;
-        public Dictionary<string, string> CustomMappings { get; set; } = new();
+        public bool CaseSensitive { get; set; }
+        public Dictionary<string, string> CustomMappings { get; } = new();
     }
 
     public enum MatchingStrategy
@@ -71,7 +71,7 @@ namespace ConditionalAccessExporter.Models
         public PolicyFormat SourceFormat { get; set; }
         public PolicyFormat ReferenceFormat { get; set; }
         public CrossFormatComparisonSummary Summary { get; set; } = new();
-        public List<CrossFormatPolicyComparison> PolicyComparisons { get; set; } = new();
+        public List<CrossFormatPolicyComparison> PolicyComparisons { get; } = new();
     }
 
     public class CrossFormatComparisonSummary
@@ -117,10 +117,10 @@ namespace ConditionalAccessExporter.Models
     public class CrossFormatMatchingOptions
     {
         public CrossFormatMatchingStrategy Strategy { get; set; } = CrossFormatMatchingStrategy.ByName;
-        public bool CaseSensitive { get; set; } = false;
+        public bool CaseSensitive { get; set; }
         public bool EnableSemanticComparison { get; set; } = true;
         public double SemanticSimilarityThreshold { get; set; } = 0.8;
-        public Dictionary<string, string> CustomMappings { get; set; } = new();
+        public Dictionary<string, string> CustomMappings { get; } = new();
     }
 
     public enum CrossFormatMatchingStrategy

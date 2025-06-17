@@ -12,7 +12,7 @@ namespace ConditionalAccessExporter;
 /// <summary>
 /// Standalone program for running performance benchmarks
 /// </summary>
-public class PerformanceBenchmarkProgram
+public static class PerformanceBenchmarkProgram
 {
     public static async Task<int> RunBenchmarksAsync(string[] args)
     {

@@ -308,8 +308,8 @@ namespace ConditionalAccessExporter.Services
     public class BaselineGenerationOptions
     {
         public string OutputDirectory { get; set; } = string.Empty;
-        public bool Anonymize { get; set; } = false;
-        public bool FilterEnabledOnly { get; set; } = false;
+        public bool Anonymize { get; set; }
+        public bool FilterEnabledOnly { get; set; }
         public List<string>? PolicyNames { get; set; }
     }
 }
