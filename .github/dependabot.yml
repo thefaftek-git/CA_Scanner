@@ -20,13 +20,61 @@ updates:
     labels:
       - "dependencies"
       - "security"
+    # Group related packages together for easier review
+    groups:
+      microsoft-extensions:
+        patterns:
+          - "Microsoft.Extensions.*"
+        update-types:
+          - "minor"
+          - "patch"
+      microsoft-graph:
+        patterns:
+          - "Microsoft.Graph*"
+          - "Azure.Identity"
+        update-types:
+          - "minor"
+          - "patch"
+      security-analyzers:
+        patterns:
+          - "Microsoft.CodeAnalysis.*"
+          - "SonarAnalyzer.*"
+          - "SecurityCodeScan.*"
+        update-types:
+          - "minor"
+          - "patch"
+      test-frameworks:
+        patterns:
+          - "xunit*"
+          - "Microsoft.NET.Test.*"
+          - "coverlet.*"
+          - "Moq"
+          - "System.IO.Abstractions*"
+        update-types:
+          - "minor"
+          - "patch"
+      json-yaml-processing:
+        patterns:
+          - "Newtonsoft.Json*"
+          - "YamlDotNet"
+          - "JsonDiffPatch.Net"
+          - "System.Text.Json"
+        update-types:
+          - "minor"
+          - "patch"
     # Allow both minor and patch updates for security
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
-    # Security updates take priority
+      # Ignore beta/preview versions except for System.CommandLine
+      - dependency-name: "*"
+        versions: ["*-beta*", "*-preview*", "*-alpha*", "*-rc*"]
+    # Security updates and specific allowances take priority
     allow:
       - dependency-type: "all"
+      # Allow System.CommandLine beta updates since no stable version exists
+      - dependency-name: "System.CommandLine"
+        update-types: ["version-update:semver-patch", "version-update:semver-minor"]
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"

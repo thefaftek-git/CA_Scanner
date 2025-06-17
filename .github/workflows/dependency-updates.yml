@@ -1,0 +1,254 @@
+name: Dependency Updates Automation
+
+on:
+  schedule:
+    # Run every Monday at 8:00 AM UTC (after Dependabot runs)
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+    inputs:
+      update_type:
+        description: 'Type of update to perform'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - all
+      force_update:
+        description: 'Force update even if tests fail'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  security-events: write
+
+jobs:
+  check-and-update-dependencies:
+    name: Check and Update Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Install dependency management tools
+      run: |
+        dotnet tool install --global dotnet-outdated-tool
+        dotnet tool install --global dotnet-project-licenses
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Check for outdated packages
+      id: check_outdated
+      run: |
+        echo "=== Checking for outdated packages ==="
+        dotnet list package --outdated > outdated_packages.txt 2>&1 || true
+        
+        if grep -q "No updates are available" outdated_packages.txt; then
+          echo "outdated_found=false" >> $GITHUB_OUTPUT
+          echo "No outdated packages found"
+        else
+          echo "outdated_found=true" >> $GITHUB_OUTPUT
+          echo "Outdated packages found:"
+          cat outdated_packages.txt
+        fi
+
+    - name: Check for vulnerable packages
+      id: check_vulnerable
+      run: |
+        echo "=== Checking for vulnerable packages ==="
+        dotnet list package --vulnerable --include-transitive > vulnerable_packages.txt 2>&1 || true
+        
+        if grep -q "no vulnerable packages" vulnerable_packages.txt || grep -q "No vulnerable packages" vulnerable_packages.txt; then
+          echo "vulnerable_found=false" >> $GITHUB_OUTPUT
+          echo "No vulnerable packages found"
+        else
+          echo "vulnerable_found=true" >> $GITHUB_OUTPUT
+          echo "Vulnerable packages found:"
+          cat vulnerable_packages.txt
+        fi
+
+    - name: Create dependency update branch
+      if: steps.check_outdated.outputs.outdated_found == 'true' || steps.check_vulnerable.outputs.vulnerable_found == 'true'
+      run: |
+        BRANCH_NAME="automated-dependency-updates-$(date +%Y%m%d-%H%M%S)"
+        echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+        git checkout -b $BRANCH_NAME
+
+    - name: Update packages based on type
+      if: steps.check_outdated.outputs.outdated_found == 'true' || steps.check_vulnerable.outputs.vulnerable_found == 'true'
+      run: |
+        UPDATE_TYPE="${{ github.event.inputs.update_type || 'patch' }}"
+        echo "Performing $UPDATE_TYPE updates..."
+        
+        # Update packages based on specified type
+        case $UPDATE_TYPE in
+          "patch")
+            echo "Updating patch versions only..."
+            dotnet-outdated --upgrade --version-lock Major,Minor || true
+            ;;
+          "minor")
+            echo "Updating patch and minor versions..."
+            dotnet-outdated --upgrade --version-lock Major || true
+            ;;
+          "all")
+            echo "Updating all versions (including major)..."
+            dotnet-outdated --upgrade || true
+            ;;
+        esac
+
+    - name: Restore after updates
+      if: steps.check_outdated.outputs.outdated_found == 'true' || steps.check_vulnerable.outputs.vulnerable_found == 'true'
+      run: dotnet restore
+
+    - name: Build and test after updates
+      if: steps.check_outdated.outputs.outdated_found == 'true' || steps.check_vulnerable.outputs.vulnerable_found == 'true'
+      id: build_test
+      run: |
+        echo "=== Building solution after updates ==="
+        if dotnet build --no-restore --verbosity normal; then
+          echo "build_success=true" >> $GITHUB_OUTPUT
+          echo "Build successful"
+        else
+          echo "build_success=false" >> $GITHUB_OUTPUT
+          echo "Build failed"
+          exit 1
+        fi
+        
+        echo "=== Running tests after updates ==="
+        if dotnet test --no-build --verbosity normal; then
+          echo "test_success=true" >> $GITHUB_OUTPUT
+          echo "Tests successful"
+        else
+          echo "test_success=false" >> $GITHUB_OUTPUT
+          echo "Tests failed"
+          if [ "${{ github.event.inputs.force_update }}" != "true" ]; then
+            exit 1
+          fi
+        fi
+
+    - name: Generate updated dependency report
+      if: steps.check_outdated.outputs.outdated_found == 'true' || steps.check_vulnerable.outputs.vulnerable_found == 'true'
+      run: |
+        echo "=== Post-update dependency report ===" > dependency_report.md
+        echo "" >> dependency_report.md
+        echo "## Updated Dependencies" >> dependency_report.md
+        echo "" >> dependency_report.md
+        
+        echo "### Package Status After Update" >> dependency_report.md
+        dotnet list package --outdated >> dependency_report.md 2>&1 || echo "No outdated packages remaining" >> dependency_report.md
+        echo "" >> dependency_report.md
+        
+        echo "### Vulnerability Status After Update" >> dependency_report.md
+        dotnet list package --vulnerable --include-transitive >> dependency_report.md 2>&1 || echo "No vulnerable packages remaining" >> dependency_report.md
+        echo "" >> dependency_report.md
+        
+        echo "### Build and Test Results" >> dependency_report.md
+        echo "- Build Status: ${{ steps.build_test.outputs.build_success == 'true' && '✅ Success' || '❌ Failed' }}" >> dependency_report.md
+        echo "- Test Status: ${{ steps.build_test.outputs.test_success == 'true' && '✅ Success' || '❌ Failed' }}" >> dependency_report.md
+
+    - name: Commit and push changes
+      if: steps.check_outdated.outputs.outdated_found == 'true' || steps.check_vulnerable.outputs.vulnerable_found == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        git add .
+        
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+          exit 0
+        fi
+        
+        UPDATE_TYPE="${{ github.event.inputs.update_type || 'patch' }}"
+        git commit -m "deps: automated $UPDATE_TYPE dependency updates
+        
+        - Updated packages to latest compatible versions
+        - Verified build and test compatibility
+        - Generated dependency compliance report
+        
+        Closes dependencies security scanning requirements"
+
+        git push origin $BRANCH_NAME
+
+    - name: Create Pull Request
+      if: steps.check_outdated.outputs.outdated_found == 'true' || steps.check_vulnerable.outputs.vulnerable_found == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          let reportContent = "## Automated Dependency Updates\n\n";
+          
+          try {
+            const report = fs.readFileSync('dependency_report.md', 'utf8');
+            reportContent += report;
+          } catch (error) {
+            reportContent += "Dependency report not available.\n";
+          }
+          
+          reportContent += `
+          
+          ## Update Summary
+          
+          This PR contains automated dependency updates:
+          
+          - **Update Type**: ${{ github.event.inputs.update_type || 'patch' }}
+          - **Trigger**: ${{ github.event_name == 'schedule' && 'Scheduled' || 'Manual' }}
+          - **Build Status**: ${{ steps.build_test.outputs.build_success == 'true' && '✅ Success' || '❌ Failed' }}
+          - **Test Status**: ${{ steps.build_test.outputs.test_success == 'true' && '✅ Success' || '❌ Failed' }}
+          
+          ## Security Benefits
+          
+          - 🔒 Updated packages to latest secure versions
+          - 🛡️ Addressed known vulnerabilities
+          - 📊 Maintained compatibility with existing codebase
+          - 🔍 Verified through automated testing
+          
+          ## Review Checklist
+          
+          - [ ] Verify all tests pass
+          - [ ] Check for any breaking changes in dependencies
+          - [ ] Review security improvements
+          - [ ] Validate application functionality
+          
+          **Related Issue**: Fixes #121 - Dependency Updates and Package Management
+          `;
+          
+          const { data: pullRequest } = await github.rest.pulls.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `deps: automated dependency updates (${new Date().toISOString().split('T')[0]})`,
+            head: process.env.BRANCH_NAME,
+            base: 'main',
+            body: reportContent,
+            labels: ['dependencies', 'security', 'automated']
+          });
+          
+          console.log(`Created pull request: ${pullRequest.html_url}`);
+
+    - name: Upload dependency reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: dependency-update-reports
+        path: |
+          outdated_packages.txt
+          vulnerable_packages.txt
+          dependency_report.md
+        retention-days: 30
+

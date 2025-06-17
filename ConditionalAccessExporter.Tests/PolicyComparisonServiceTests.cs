@@ -1117,23 +1117,23 @@ public class PolicyComparisonServiceTests
     }
 
     [Fact]
-    public void ParseEntraExport_InvalidJsonString_ShouldThrowException()
+    public async Task ParseEntraExport_InvalidJsonString_ShouldThrowException()
     {
         // Arrange
         var invalidJson = "{ invalid json structure";
 
         // Act & Assert
-        Assert.ThrowsAsync<JsonReaderException>(async () =>
+        await Assert.ThrowsAsync<ArgumentException>(async () =>
         {
             await _service.CompareAsync(invalidJson, "dummy-path", new MatchingOptions());
         });
     }
 
     [Fact]
-    public void ParseEntraExport_NullInput_ShouldThrowException()
+    public async Task ParseEntraExport_NullInput_ShouldThrowException()
     {
         // Act & Assert
-        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
         {
             await _service.CompareAsync(null!, "dummy-path", new MatchingOptions());
         });
