@@ -246,9 +246,34 @@ namespace ConditionalAccessExporter.Models
         public bool IsValid { get; set; }
         public List<ValidationError> Errors { get; set; } = new();
         public List<ValidationWarning> Warnings { get; set; } = new();
+        public List<ValidationRecommendation> Recommendations { get; set; } = new();
         public string FilePath { get; set; } = string.Empty;
         public string FileName { get; set; } = string.Empty;
+        public string PolicyId { get; set; } = string.Empty;
+        public string PolicyName { get; set; } = string.Empty;
         public DateTime ValidatedAt { get; set; } = DateTime.UtcNow;
+        public double SecurityScore { get; set; }
+        public double ComplianceScore { get; set; }
+        public ValidationSeverity HighestSeverity => GetHighestSeverity();
+        public Dictionary<string, object> Metadata { get; set; } = new();
+
+        private ValidationSeverity GetHighestSeverity()
+        {
+            var maxSeverity = ValidationSeverity.Info;
+            
+            foreach (var error in Errors)
+            {
+                if (error.Type == ValidationErrorType.SecurityIssue)
+                    maxSeverity = ValidationSeverity.Critical;
+                else if (maxSeverity < ValidationSeverity.Error)
+                    maxSeverity = ValidationSeverity.Error;
+            }
+            
+            if (maxSeverity < ValidationSeverity.Error && Warnings.Any())
+                maxSeverity = ValidationSeverity.Warning;
+                
+            return maxSeverity;
+        }
     }
 
     public class ValidationError
@@ -292,6 +317,102 @@ namespace ConditionalAccessExporter.Models
         DeprecatedField,
         UnknownField
     }
+
+    public enum ValidationSeverity
+    {
+        Info = 0,
+        Warning = 1,
+        Error = 2,
+        Critical = 3
+    }
+
+    public class ValidationRecommendation
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public ValidationSeverity Severity { get; set; }
+        public string Category { get; set; } = string.Empty;
+        public string Field { get; set; } = string.Empty;
+        public string CurrentValue { get; set; } = string.Empty;
+        public string RecommendedValue { get; set; } = string.Empty;
+        public string Rationale { get; set; } = string.Empty;
+        public List<string> References { get; set; } = new();
+        public double ImpactScore { get; set; }
+        public string AutomationScript { get; set; } = string.Empty;
+    }
+
+    public class PolicyValidationReport
+    {
+        public string ReportId { get; set; } = Guid.NewGuid().ToString();
+        public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
+        public string GeneratedBy { get; set; } = "PolicyValidationEngine";
+        public int TotalPolicies { get; set; }
+        public int ValidPolicies { get; set; }
+        public int InvalidPolicies { get; set; }
+        public int PoliciesWithWarnings { get; set; }
+        public double OverallComplianceScore { get; set; }
+        public double SecurityPostureScore { get; set; }
+        public List<ValidationResult> PolicyResults { get; set; } = new();
+        public List<ValidationRecommendation> Recommendations { get; set; } = new();
+        public Dictionary<string, int> ErrorsByType { get; set; } = new();
+        public Dictionary<string, int> WarningsByType { get; set; } = new();
+        public SecurityAssessment SecurityAssessment { get; set; } = new();
+        public ComplianceAssessment ComplianceAssessment { get; set; } = new();
+    }
+
+    public class SecurityAssessment
+    {
+        public double OverallScore { get; set; }
+        public Dictionary<string, double> CategoryScores { get; set; } = new();
+        public List<SecurityRisk> IdentifiedRisks { get; set; } = new();
+        public List<SecurityStrength> Strengths { get; set; } = new();
+        public int CriticalFindings { get; set; }
+        public int HighRiskFindings { get; set; }
+        public int MediumRiskFindings { get; set; }
+        public int LowRiskFindings { get; set; }
+    }
+
+    public class ComplianceAssessment
+    {
+        public double OverallScore { get; set; }
+        public Dictionary<string, ComplianceFrameworkScore> FrameworkScores { get; set; } = new();
+        public List<ComplianceGap> Gaps { get; set; } = new();
+        public DateTime LastAssessment { get; set; } = DateTime.UtcNow;
+        public DateTime NextRecommendedAssessment { get; set; }
+    }
+
+    public class ComplianceFrameworkScore
+    {
+        public string Framework { get; set; } = string.Empty;
+        public double Score { get; set; }
+        public int TotalControls { get; set; }
+        public int PassingControls { get; set; }
+        public int FailingControls { get; set; }
+        public List<string> NonCompliantControls { get; set; } = new();
+    }
+
+    public class SecurityRisk
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public ValidationSeverity Severity { get; set; }
+        public string Category { get; set; } = string.Empty;
+        public List<string> AffectedPolicies { get; set; } = new();
+        public string Mitigation { get; set; } = string.Empty;
+        public double RiskScore { get; set; }
+    }
+
+    public class SecurityStrength
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public List<string> EvidencePolicies { get; set; } = new();
+    }
+
+
 
     public class DirectoryValidationResult
     {

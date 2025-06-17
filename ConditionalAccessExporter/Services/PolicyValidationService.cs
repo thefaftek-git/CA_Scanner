@@ -1,5 +1,6 @@
 
 using ConditionalAccessExporter.Models;
+using ConditionalAccessExporter.Services.ValidationRules;
 using ConditionalAccessExporter.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -17,9 +18,14 @@ namespace ConditionalAccessExporter.Services
     public class PolicyValidationService
     {
         private readonly JSchema _policySchema;
+        private readonly PolicyValidationEngine _validationEngine;
+        private readonly ILoggingService? _loggingService;
 
-        public PolicyValidationService()
+        public PolicyValidationService(ILoggingService? loggingService = null)
         {
+            _loggingService = loggingService;
+            _validationEngine = new PolicyValidationEngine(loggingService);
+            
             // In a real application, load this from a file or embedded resource
             // This is a simplified schema for demonstration
             var schemaJson = @"{
@@ -286,6 +292,133 @@ namespace ConditionalAccessExporter.Services
                      Suggestion = "Ensure the policy targets the intended users, groups, or roles."
                  });
             }
+        }
+
+        /// <summary>
+        /// Validates policies using the enhanced validation engine with comprehensive rule system
+        /// </summary>
+        public async Task<PolicyValidationReport> ValidateWithEngineAsync(
+            string directoryPath,
+            ValidationOptions? options = null,
+            IProgress<ParallelProcessingProgress>? progress = null,
+            CancellationToken cancellationToken = default)
+        {
+            _loggingService?.LogInformation($"Starting enhanced policy validation for directory: {directoryPath}");
+            return await _validationEngine.ValidateDirectoryAsync(directoryPath, options, progress, cancellationToken);
+        }
+
+        /// <summary>
+        /// Validates a single policy file using the enhanced validation engine
+        /// </summary>
+        public async Task<ValidationResult?> ValidatePolicyWithEngineAsync(
+            string filePath,
+            ValidationOptions? options = null,
+            CancellationToken cancellationToken = default)
+        {
+            options ??= new ValidationOptions();
+            var context = new ValidationContext
+            {
+                FilePath = Path.GetDirectoryName(filePath),
+                Options = options
+            };
+
+            return await _validationEngine.ValidatePolicyFileAsync(filePath, context, options, cancellationToken);
+        }
+
+        /// <summary>
+        /// Generates a comprehensive validation report with security and compliance assessments
+        /// </summary>
+        public async Task<PolicyValidationReport> GenerateComprehensiveReportAsync(
+            string directoryPath,
+            bool includeRecommendations = true,
+            bool generateRemediationScripts = false,
+            CancellationToken cancellationToken = default)
+        {
+            var options = new ValidationOptions
+            {
+                IncludeRecommendations = includeRecommendations,
+                GenerateRemediationScripts = generateRemediationScripts,
+                StrictMode = false
+            };
+
+            return await ValidateWithEngineAsync(directoryPath, options, null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Validates policies against specific compliance frameworks
+        /// </summary>
+        public async Task<Dictionary<string, ComplianceFrameworkScore>> ValidateComplianceAsync(
+            string directoryPath,
+            string[]? frameworks = null,
+            CancellationToken cancellationToken = default)
+        {
+            frameworks ??= new[] { "NIST", "ISO27001", "SOC2" };
+            
+            var options = new ValidationOptions
+            {
+                IncludeRecommendations = true,
+                StrictMode = true
+            };
+
+            // Add framework-specific configuration
+            foreach (var framework in frameworks)
+            {
+                options.Configuration[$"compliance.{framework}"] = true;
+            }
+
+            var report = await ValidateWithEngineAsync(directoryPath, options, null, cancellationToken);
+            return report.ComplianceAssessment.FrameworkScores;
+        }
+
+        /// <summary>
+        /// Performs a security audit of policies
+        /// </summary>
+        public async Task<SecurityAssessment> PerformSecurityAuditAsync(
+            string directoryPath,
+            bool includeDetailedAnalysis = true,
+            CancellationToken cancellationToken = default)
+        {
+            var options = new ValidationOptions
+            {
+                StrictMode = true,
+                IncludeRecommendations = includeDetailedAnalysis
+            };
+
+            // Enable all security rules
+            options.Configuration["security.strict"] = true;
+            options.Configuration["security.detailed"] = includeDetailedAnalysis;
+
+            var report = await ValidateWithEngineAsync(directoryPath, options, null, cancellationToken);
+            return report.SecurityAssessment;
+        }
+
+        /// <summary>
+        /// Gets available validation rules and their statistics
+        /// </summary>
+        public ValidationRuleStatistics GetValidationRuleStatistics()
+        {
+            // Access the rule registry from the validation engine
+            var registry = new ValidationRuleRegistry();
+            return registry.GetStatistics();
+        }
+
+        /// <summary>
+        /// Validates policies with custom rule configuration
+        /// </summary>
+        public async Task<PolicyValidationReport> ValidateWithCustomRulesAsync(
+            string directoryPath,
+            Dictionary<string, object> customRuleConfig,
+            string[]? disabledRules = null,
+            CancellationToken cancellationToken = default)
+        {
+            var options = new ValidationOptions
+            {
+                Configuration = customRuleConfig,
+                DisabledRules = disabledRules?.ToList() ?? new List<string>(),
+                IncludeRecommendations = true
+            };
+
+            return await ValidateWithEngineAsync(directoryPath, options, null, cancellationToken);
         }
     }
 }
