@@ -8,7 +8,7 @@ namespace ConditionalAccessExporter.Models
         public string TenantId { get; set; } = string.Empty;
         public string ReferenceDirectory { get; set; } = string.Empty;
         public ComparisonSummary Summary { get; set; } = new();
-        public List<PolicyComparison> PolicyComparisons { get; } = new();
+        public List<PolicyComparison> PolicyComparisons { get; set; } = new();
     }
 
     public class ComparisonSummary
@@ -52,7 +52,7 @@ namespace ConditionalAccessExporter.Models
     {
         public MatchingStrategy Strategy { get; set; } = MatchingStrategy.ByName;
         public bool CaseSensitive { get; set; }
-        public Dictionary<string, string> CustomMappings { get; } = new();
+        public Dictionary<string, string> CustomMappings { get; set; } = new();
     }
 
     public enum MatchingStrategy
@@ -71,7 +71,7 @@ namespace ConditionalAccessExporter.Models
         public PolicyFormat SourceFormat { get; set; }
         public PolicyFormat ReferenceFormat { get; set; }
         public CrossFormatComparisonSummary Summary { get; set; } = new();
-        public List<CrossFormatPolicyComparison> PolicyComparisons { get; } = new();
+        public List<CrossFormatPolicyComparison> PolicyComparisons { get; set; } = new();
     }
 
     public class CrossFormatComparisonSummary
@@ -120,7 +120,7 @@ namespace ConditionalAccessExporter.Models
         public bool CaseSensitive { get; set; }
         public bool EnableSemanticComparison { get; set; } = true;
         public double SemanticSimilarityThreshold { get; set; } = 0.8;
-        public Dictionary<string, string> CustomMappings { get; } = new();
+        public Dictionary<string, string> CustomMappings { get; set; } = new();
     }
 
     public enum CrossFormatMatchingStrategy
