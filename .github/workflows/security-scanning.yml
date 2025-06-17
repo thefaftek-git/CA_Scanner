@@ -67,8 +67,8 @@ jobs:
     - name: Check if commits are different
       id: check_commits
       run: |
-        BASE_COMMIT=$(git rev-parse origin/main)
-        HEAD_COMMIT=$(git rev-parse HEAD)
+        BASE_COMMIT=$(git rev-parse origin/main 2>/dev/null) || { echo "❌ Error: Failed to retrieve BASE_COMMIT from origin/main"; exit 1; }
+        HEAD_COMMIT=$(git rev-parse HEAD 2>/dev/null) || { echo "❌ Error: Failed to retrieve HEAD_COMMIT"; exit 1; }
         
         echo "Base commit: $BASE_COMMIT"
         echo "Head commit: $HEAD_COMMIT"
