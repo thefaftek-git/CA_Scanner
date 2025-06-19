@@ -14,11 +14,6 @@ CA_Scanner is a .NET 8 Azure Conditional Access Policy management tool designed 
 - **Report Generation**: Generate detailed reports in multiple formats (console, JSON, HTML, CSV)
 - **Remediation**: Handle policy remediation workflows with comprehensive analysis
 
-### Target Audience
-- Azure administrators managing Conditional Access policies
-- DevOps engineers implementing Infrastructure as Code
-- Security teams conducting policy analysis and compliance verification
-
 ## Architecture Guide
 
 ### Main Project Structure
@@ -82,18 +77,8 @@ The application follows a service-oriented architecture with 15+ specialized ser
 - **Azure Identity**: Secure authentication using service principal credentials
 - **System.CommandLine**: Modern CLI interface with structured command hierarchy
 
-### Dependencies
-- **Microsoft.Graph (5.79.0)**: Microsoft Graph API client library
-- **Azure.Identity (1.14.0)**: Azure authentication and identity management
-- **Newtonsoft.Json (13.0.3)**: JSON serialization and deserialization
-- **Newtonsoft.Json.Schema (3.0.15)**: JSON schema validation
-- **JsonDiffPatch.Net (2.3.0)**: JSON comparison and patching
-- **YamlDotNet (13.7.1)**: YAML parsing and generation
-- **xUnit**: Primary testing framework
-
 ### Authentication
 - Client credential authentication flow using Azure service principal
-- Requires Azure App Registration with `Policy.Read.All` permissions
 - Environment variable-based configuration for security
 
 ## Common Development Workflows
@@ -165,7 +150,7 @@ AZURE_CLIENT_SECRET=your-client-secret-here
 ```
 
 ### Installation Script
-- **dotnet-install.sh**: Automated .NET 8 SDK installation for Debian-based systems
+- **dotnet-install.sh**: Automated .NET 8 SDK installation for Debian-based systems. Do not attempt to read this script, only execute it. The script may take up to 5 minutes to complete.
 - Handles package manager configuration and dependency installation
 
 ## Service Architecture Deep Dive
@@ -224,7 +209,7 @@ All services follow consistent patterns:
 - **Coverage reporting** integrated with CI/CD
 
 ### Best Practices
-- Run tests before making changes to ensure stability
+- Progress.md should be used to make a plan before code changes are started. This should be updated as each plan step is completed.
 - Write tests for new features following established patterns
 - Mock external dependencies to ensure reliable, fast tests
 - Use realistic test data that reflects actual Azure policy structures
@@ -245,38 +230,3 @@ All services follow consistent patterns:
 - **Policy Field Mappings**: Detailed explanations of Azure policy numeric codes and string values
 - **Terraform Examples**: Sample configurations and conversion patterns
 - **API Documentation**: Microsoft Graph integration examples
-
-## Benefits for OpenHands
-
-This microagent enables OpenHands to:
-
-### Immediate Understanding
-- Quickly grasp the project's service-oriented architecture
-- Understand the relationship between services and their responsibilities
-- Navigate the codebase efficiently using established patterns
-
-### Development Guidance
-- Follow established coding patterns and conventions
-- Understand authentication and security requirements
-- Know which services to modify for specific functionality
-- Set up the development environment correctly
-
-### Testing and Quality
-- Understand the comprehensive testing approach
-- Follow established mocking and test data patterns
-- Ensure changes maintain system stability
-- Integrate with existing CI/CD workflows
-
-### Architecture Awareness
-- Understand the separation between core logic, services, and models
-- Know how to extend functionality following existing patterns
-- Understand async/await patterns used throughout the codebase
-- Maintain consistency with established error handling approaches
-
-### External Integration
-- Understand Microsoft Graph API integration patterns
-- Know how Azure authentication is implemented
-- Understand Terraform conversion workflows
-- Follow established report generation patterns
-
-This comprehensive guidance ensures OpenHands can work effectively within the established architecture while maintaining code quality and following project conventions.
