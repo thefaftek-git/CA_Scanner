@@ -128,7 +128,7 @@ namespace ConditionalAccessExporter.Services
 
             // Shorter circuit breaker settings
             config.CircuitBreaker.FailureThreshold = 3;
-            config.CircuitBreaker.DurationOfBreakSeconds = 15;
+            config.CircuitBreaker.RecoveryTimeSeconds = 15;
 
             // Higher rate limits for development
             config.RateLimiting.MaxRequestsPerMinute = 1200;
@@ -154,7 +154,7 @@ namespace ConditionalAccessExporter.Services
 
             // Standard circuit breaker settings
             config.CircuitBreaker.FailureThreshold = 5;
-            config.CircuitBreaker.DurationOfBreakSeconds = 30;
+            config.CircuitBreaker.RecoveryTimeSeconds = 30;
 
             // Moderate rate limits
             config.RateLimiting.MaxRequestsPerMinute = 800;
@@ -180,7 +180,7 @@ namespace ConditionalAccessExporter.Services
 
             // Conservative circuit breaker settings
             config.CircuitBreaker.FailureThreshold = 5;
-            config.CircuitBreaker.DurationOfBreakSeconds = 60;
+            config.CircuitBreaker.RecoveryTimeSeconds = 60;
             config.CircuitBreaker.MinimumThroughput = 10;
 
             // Conservative rate limits to avoid throttling
