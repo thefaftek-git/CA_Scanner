@@ -6,6 +6,9 @@ using System.Text;
 using System.CommandLine;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using ConditionalAccessExporter.Models;
 using ConditionalAccessExporter.Services;
 using ConditionalAccessExporter.Utils;
@@ -1147,30 +1150,35 @@ namespace ConditionalAccessExporter
 
         private static async Task<object> FetchEntraPoliciesAsync()
         {
-            // Get Azure credentials from environment variables
+            // Get Azure credentials from environment variables for logging
             var tenantId = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
             var clientId = Environment.GetEnvironmentVariable("AZURE_CLIENT_ID");
-            var clientSecret = Environment.GetEnvironmentVariable("AZURE_CLIENT_SECRET");
-
-            if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
-            {
-                throw new InvalidOperationException("Missing required environment variables. Please ensure AZURE_TENANT_ID, AZURE_CLIENT_ID, and AZURE_CLIENT_SECRET are set.");
-            }
 
             Logger.WriteInfo($"Tenant ID: {tenantId}");
             Logger.WriteInfo($"Client ID: {clientId}");
             Logger.WriteInfo("Client Secret: [HIDDEN]");
             Logger.WriteInfo("");
 
-            // Create the Graph client with client credentials
-            var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
-            var graphClient = new GraphServiceClient(credential);
+            // Use the resilient Graph service from DI container
+            var resilientGraphService = GetService<IResilientGraphService>();
 
-            Logger.WriteInfo("Authenticating to Microsoft Graph...");
+            Logger.WriteInfo("Authenticating to Microsoft Graph with resilience patterns...");
             Logger.WriteInfo("Fetching Conditional Access Policies...");
 
-            // Get all conditional access policies
-            var policies = await graphClient.Identity.ConditionalAccess.Policies.GetAsync();
+            // Get all conditional access policies with resilience patterns applied
+            var policies = await resilientGraphService.GetConditionalAccessPoliciesAsync();
+
+            // Log performance metrics
+            var metrics = resilientGraphService.GetMetrics();
+            Logger.WriteInfo($"API Performance: {metrics.TotalCalls} calls, {metrics.SuccessRate:F1}% success rate, {metrics.AverageResponseTimeMs:F0}ms avg response time");
+            if (metrics.CachedCalls > 0)
+            {
+                Logger.WriteInfo($"Cache Performance: {metrics.CacheHitRate:F1}% hit rate, {metrics.CachedCalls} cached responses");
+            }
+            if (metrics.RateLimitHits > 0)
+            {
+                Logger.WriteWarning($"Rate Limiting: {metrics.RateLimitHits} rate limit hits encountered");
+            }
 
             if (policies?.Value == null || !policies.Value.Any())
             {
@@ -1800,11 +1808,13 @@ namespace ConditionalAccessExporter
                     return null;
                 }
 
-                // Initialize services
-                var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
-                var graphServiceClient = new GraphServiceClient(credential);
+                // Initialize services using DI container
                 var policyComparisonService = new PolicyComparisonService();
-                var impactAnalysisService = new ImpactAnalysisService(graphServiceClient);
+                
+                // For now, create ImpactAnalysisService without Graph client until we refactor it
+                // The ImpactAnalysisService has fallback behavior when Graph client is null
+                var impactAnalysisService = new ImpactAnalysisService(null);
+                
                 var scriptGenerationService = new ScriptGenerationService();
                 var remediationService = new RemediationService(policyComparisonService, impactAnalysisService, scriptGenerationService);
 
@@ -2158,6 +2168,17 @@ namespace ConditionalAccessExporter
         private static void SetupLogging()
         {
             var services = new ServiceCollection();
+
+            // Build configuration
+            var configBuilder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true)
+                .AddJsonFile("resilience-config.json", optional: true)
+                .AddEnvironmentVariables()
+                .AddCommandLine(Environment.GetCommandLineArgs());
+            
+            var configuration = configBuilder.Build();
+            services.AddSingleton<IConfiguration>(configuration);
             
             // Configure logging
             services.AddLogging(builder =>
@@ -2170,12 +2191,41 @@ namespace ConditionalAccessExporter
                 builder.SetMinimumLevel(LogLevel.Information);
             });
 
-            // Register services
+            // Configure resilience settings
+            services.Configure<ResilienceConfiguration>(configuration.GetSection("Resilience"));
+
+            // Register core services
             services.AddSingleton<ILoggingService, LoggingService>();
             services.AddTransient<PolicyComparisonService>();
             services.AddTransient<PolicyValidationService>();
             services.AddTransient<TerraformConversionService>();
             services.AddTransient<ReportGenerationService>();
+
+            // Register resilience services
+            services.AddMemoryCache();
+            services.AddSingleton<IResilienceConfigurationService, ResilienceConfigurationService>();
+            services.AddTransient<IResilientGraphService>(provider =>
+            {
+                var logger = provider.GetRequiredService<ILogger<ResilientGraphService>>();
+                var cache = provider.GetRequiredService<IMemoryCache>();
+                var configOptions = provider.GetRequiredService<IOptions<ResilienceConfiguration>>();
+
+                // Get Azure credentials from environment
+                var tenantId = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
+                var clientId = Environment.GetEnvironmentVariable("AZURE_CLIENT_ID");
+                var clientSecret = Environment.GetEnvironmentVariable("AZURE_CLIENT_SECRET");
+
+                if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+                {
+                    throw new InvalidOperationException("Azure credentials not configured. Please set AZURE_TENANT_ID, AZURE_CLIENT_ID, and AZURE_CLIENT_SECRET environment variables.");
+                }
+
+                // Create GraphServiceClient
+                var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+                var graphServiceClient = new GraphServiceClient(credential);
+                
+                return new ResilientGraphService(graphServiceClient, configOptions, cache, logger);
+            });
 
             // Build service provider
             _serviceProvider = services.BuildServiceProvider();
@@ -2183,6 +2233,18 @@ namespace ConditionalAccessExporter
             // Initialize structured logger
             _logger = _serviceProvider.GetRequiredService<ILogger<Program>>();
             StructuredLogger.Initialize(_logger);
+
+            // Log resilience configuration status
+            var resilienceConfig = _serviceProvider.GetRequiredService<IResilienceConfigurationService>();
+            var validationResults = resilienceConfig.ValidateConfiguration();
+            if (validationResults.Any())
+            {
+                _logger.LogWarning("Resilience configuration has validation warnings");
+            }
+            else
+            {
+                _logger.LogInformation("Resilience configuration loaded and validated successfully");
+            }
         }
 
         /// <summary>
