@@ -74,8 +74,40 @@ jobs:
         set +x # Disable debug output
 
     - name: Validate Security Analyzers Configuration
+
+
+    - name: Check for Hardcoded Secrets
       run: |
-        echo "🔍 Validating security analyzers configuration..."
+        echo "🔍 Checking for hardcoded secrets..."
+
+        # Common patterns that should not be in code
+        secret_patterns=(
+          "password\s*[:=]\s*[\"'][^\"']+[\"']"
+          "key\s*[:=]\s*[\"'][^\"']+[\"']"
+          "secret\s*[:=]\s*[\"'][^\"']+[\"']"
+          "token\s*[:=]\s*[\"'][^\"']+[\"']"
+          "api_key\s*[:=]\s*[\"'][^\"']+[\"']"
+          "client_secret\s*[:=]\s*[\"'][^\"']+[\"']"
+          "private_key\s*[:=]\s*[\"'][^\"']+[\"']"
+          "\-\-\-\-\-BEGIN\s+(RSA\s+)?PRIVATE\s+KEY\-\-\-\-\-"
+        )
+
+        found_secrets=false
+        for pattern in "${secret_patterns[@]}"; do
+          matches=$(grep -r -i -E "$pattern" ConditionalAccessExporter/ --include="*.cs" --include="*.json" --include="*.xml" | grep -v "cacheKey = \"conditional_access_policies\"")
+          if [[ -n "$matches" ]]; then
+            echo "❌ Potential hardcoded secret found with pattern: $pattern"
+            echo "$matches"
+            found_secrets=true
+          fi
+        done
+
+        if [[ "$found_secrets" == "true" ]]; then
+          echo "❌ Hardcoded secrets detected. Please remove them and use secure configuration."
+          exit 1
+        fi
+
+        echo "✅ No hardcoded secrets detected"
         
         # Check if security analyzers are properly configured in project files
         analyzers_found=0
@@ -109,10 +141,6 @@ jobs:
           echo "⚠️ Consider adding more security analyzers for better coverage"
         fi
 
-    - name: Check for Hardcoded Secrets
-      run: |
-        echo "🔍 Checking for hardcoded secrets..."
-        
         # Common patterns that should not be in code
         secret_patterns=(
           "password\s*=\s*[\"'][^\"']+[\"']"
