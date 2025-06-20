@@ -35,6 +35,9 @@ namespace ConditionalAccessExporter.Services
         private long _cacheHits;
         private DateTime _lastReset = DateTime.UtcNow;
 
+        // Static random instance for jitter calculation to avoid seed issues with frequent creation
+        private static readonly Random _random = new();
+
         public ResilientGraphService(
             GraphServiceClient graphServiceClient,
             IOptions<ResilienceConfiguration> config,
@@ -215,8 +218,8 @@ namespace ConditionalAccessExporter.Services
             // Add jitter if enabled
             if (_config.RetryPolicy.UseJitter)
             {
-                var random = new Random();
-                delay = (int)(delay * (0.5 + random.NextDouble() * 0.5));
+                // Using static _random instance declared at class level
+                delay = (int)(delay * (0.5 + _random.NextDouble() * 0.5));
             }
             
             return Math.Min(delay, maxDelay);

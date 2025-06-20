@@ -11,17 +11,13 @@
     },
     "CircuitBreaker": {
       "FailureThreshold": 5,
-      "DurationOfBreakSeconds": 60,
+      "RecoveryTimeSeconds": 60,
       "MinimumThroughput": 10,
       "SamplingDurationSeconds": 60
     },
     "RateLimiting": {
       "EnableAdaptiveRateLimiting": true,
-      "MaxRequestsPerMinute": 600,
-      "MaxConcurrentRequests": 10,
-      "BufferPercentage": 0.8,
-      "EnableRequestQueuing": true,
-      "MaxQueueSize": 100
+      "MaxConcurrentRequests": 10
     },
     "Timeout": {
       "RequestTimeoutSeconds": 30,

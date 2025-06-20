@@ -93,7 +93,7 @@ namespace ConditionalAccessExporter.Models
         /// Duration in seconds to keep circuit open before attempting reset
         /// </summary>
         [Range(10, 300)]
-        public int DurationOfBreakSeconds { get; set; } = 30;
+        public int RecoveryTimeSeconds { get; set; } = 30;
 
         /// <summary>
         /// Minimum throughput required before circuit breaker activates
