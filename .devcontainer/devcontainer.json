@@ -1,0 +1,28 @@
+
+
+
+{
+    "name": "CA Scanner Dev Container",
+    "build": {
+        "dockerfile": "../Dockerfile"
+    },
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "extensions": [
+        "ms-dotnettools.csharp",
+        "ms-azuretools.vscode-dotnet-runtime",
+        "ms-vscode.cpptools",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "ms-azuretools.vscode-docker"
+    ],
+    "postCreateCommand": "dotnet build",
+    "forwardPorts": [
+        8080
+    ],
+    "mounts": [
+        "source=${localWorkspaceFolder},target=/workspace,type=bind"
+    ],
+    "remoteUser": "root"
+}
+

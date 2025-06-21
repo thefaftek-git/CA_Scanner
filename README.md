@@ -18,6 +18,58 @@ dotnet run export
 ## 📚 Documentation
 
 - **[Getting Started](ConditionalAccessExporter/README.md)**: Basic usage and command-line options
+- **[Containerization Guide](#🐳-containerization-and-deployment)**: Docker, Kubernetes, and cloud-native deployment options
+
+## 🐳 Containerization and Deployment
+
+CA_Scanner supports modern containerization and cloud-native deployment patterns. You can run the application in various environments including:
+
+### Docker
+
+```bash
+# Build the Docker image
+docker build -t ca-scanner:latest .
+
+# Run the container with environment variables
+docker run -e AZURE_TENANT_ID=your-tenant-id \
+           -e AZURE_CLIENT_ID=your-client-id \
+           -e AZURE_CLIENT_SECRET=your-client-secret \
+           -p 8080:80 ca-scanner:latest
+```
+
+### Docker Compose
+
+```bash
+# Start the application with Docker Compose
+docker-compose up -d
+```
+
+### Kubernetes
+
+Deploy to a Kubernetes cluster using the provided manifests:
+
+```bash
+# Update image repository in k8s/deployment.yaml
+kubectl apply -f k8s/deployment.yaml
+```
+
+### Helm
+
+Install using Helm for more advanced configurations:
+
+```bash
+# Add your Helm repo and install
+helm install ca-scanner ./ca-scanner
+```
+
+### Cloud Platforms
+
+Pre-configured templates are available for:
+- Azure Kubernetes Service (AKS)
+- Amazon Elastic Kubernetes Service (EKS)
+- Google Cloud Run
+- Azure Container Instances
+
 - **[Policy Validation Engine](POLICY_VALIDATION_ENGINE.md)**: Comprehensive policy validation, security assessment, and compliance reporting ⭐ NEW
 - **[Developer Guide](CONTRIBUTING.md)**: Complete onboarding guide for contributors
 - **[Configuration Reference](CONFIGURATION.md)**: All configuration options and environment variables
