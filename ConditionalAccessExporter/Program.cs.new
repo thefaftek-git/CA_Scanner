@@ -1,0 +1,55 @@
+        private static async Task<int> ExportPoliciesAsync(string outputPath)
+        {
+            // Add colored header with progress spinner
+            Logger.WriteInfo("Conditional Access Policy Exporter");
+            Logger.WriteInfo("==================================");
+
+            try
+            {
+                Logger.WriteInfo($"Tenant ID: {Environment.GetEnvironmentVariable("AZURE_TENANT_ID")?.Substring(0, 8)}... (truncated)");
+                Logger.WriteInfo($"Client ID: {Environment.GetEnvironmentVariable("AZURE_CLIENT_ID")?.Substring(0, 8)}... (truncated)");
+
+                // Show progress spinner while authenticating and fetching policies
+                Logger.WriteInfo("Authenticating to Microsoft Graph...");
+                var exportData = await FetchEntraPoliciesAsync();
+
+                if (exportData is ConditionalAccessExportModel model)
+                {
+                    Logger.WriteInfo($"Found {model.PoliciesCount} Conditional Access Policies");
+
+                    // Show policy summary with colors
+                    Logger.WriteInfo("Policy Summary:");
+                    Logger.WriteInfo("=================");
+                    foreach (var policy in model.Policies)
+                    {
+                        var stateColor = policy.State.Equals("Enabled", StringComparison.OrdinalIgnoreCase) ? "\x1B[32m" : "\x1B[33m"; // Green for enabled, yellow for other
+                        Logger.WriteInfo($"{stateColor}• {policy.DisplayName} (State: {policy.State})\x1B[0m");
+                    }
+                }
+
+                // Serialize to JSON with pretty formatting
+                var json = JsonConvert.SerializeObject(exportData, Formatting.Indented, new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DateFormatHandling = DateFormatHandling.IsoDateFormat
+                });
+
+                // Write to file
+                Logger.WriteInfo("Writing policies to disk...");
+                await File.WriteAllTextAsync(outputPath, json, Encoding.UTF8);
+
+                // Show success with green color
+                Logger.WriteInfo($"\x1B[32mConditional Access Policies exported successfully to: {outputPath}\x1B[0m");
+                Logger.WriteInfo($"File size: {new FileInfo(outputPath).Length / 1024.0:F2} KB");
+
+                // Final success message
+                Logger.WriteInfo("\x1B[32mExport completed successfully!\x1B[0m");
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
+                return 1;
+            }
+        }

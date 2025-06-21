@@ -1,0 +1,48 @@
+title: CA Scanner Documentation
+description: Comprehensive documentation for the Azure Conditional Access Policy Management Tool
+theme: just-the-docs
+
+url: https://thefaftek-git.github.io/CA_Scanner/
+
+aux_links:
+  GitHub Repository: https://github.com/thefaftek-git/CA_Scanner
+
+back_to_top: true
+back_to_top_text: "Back to top"
+
+color_scheme: dark
+
+callouts:
+  warning:
+    title: Warning
+    color: yellow
+  note:
+    title: Note
+    color: blue
+  important:
+    title: Important
+    color: red
+
+# Navigation structure
+nav_external_links:
+  - title: GitHub
+    url: https://github.com/thefaftek-git/CA_Scanner
+    hide_label: true
+    target: _blank
+  - title: Issues
+    url: https://github.com/thefaftek-git/CA_Scanner/issues
+    hide_label: true
+    target: _blank
+
+# Additional settings
+markdown: kramdown
+highlighter: rouge
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
