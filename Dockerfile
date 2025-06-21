@@ -16,7 +16,7 @@ COPY . .
 RUN dotnet publish "ConditionalAccessExporter/ConditionalAccessExporter.csproj" -c Release -o out
 
 # Use a smaller runtime image for the final container
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+FROM mcr.microsoft.com/dotnet/runtime:8.0 AS runtime
 WORKDIR /app
 
 # Copy the published application from the build stage
@@ -26,9 +26,6 @@ COPY --from=build-env /app/out .
 ENV AZURE_TENANT_ID=""
 ENV AZURE_CLIENT_ID=""
 ENV AZURE_CLIENT_SECRET=""
-
-# Expose port 80 (default for ASP.NET Core)
-EXPOSE 80
 
 # Entry point for the application
 ENTRYPOINT ["dotnet", "ConditionalAccessExporter.dll"]

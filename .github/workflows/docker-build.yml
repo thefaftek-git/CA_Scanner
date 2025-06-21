@@ -35,14 +35,14 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        docker build -t your-docker-repo/ca-scanner:latest .
-        docker tag your-docker-repo/ca-scanner:latest your-docker-repo/ca-scanner:${{ github.sha }}
-        docker push your-docker-repo/ca-scanner:latest
-        docker push your-docker-repo/ca-scanner:${{ github.sha }}
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/ca-scanner:latest .
+        docker tag ${{ secrets.DOCKER_USERNAME }}/ca-scanner:latest ${{ secrets.DOCKER_USERNAME }}/ca-scanner:${{ github.sha }}
+        docker push ${{ secrets.DOCKER_USERNAME }}/ca-scanner:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/ca-scanner:${{ github.sha }}
 
     - name: Build multi-architecture image
       run: |
         docker buildx create --use
         docker buildx inspect --bootstrap
-        docker buildx build --platform linux/amd64,linux/arm64 -t your-docker-repo/ca-scanner:multiarch-latest --push .
+        docker buildx build --platform linux/amd64,linux/arm64 -t ${{ secrets.DOCKER_USERNAME }}/ca-scanner:multiarch-latest --push .
 
