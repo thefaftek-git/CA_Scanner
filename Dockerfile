@@ -22,10 +22,10 @@ WORKDIR /app
 # Copy the published application from the build stage
 COPY --from=build-env /app/out .
 
-# Set environment variables for Azure authentication (these will be provided at runtime)
-ENV AZURE_TENANT_ID=""
-ENV AZURE_CLIENT_ID=""
-ENV AZURE_CLIENT_SECRET=""
+# Environment variables for Azure authentication must be provided at runtime.
+# Required: AZURE_TENANT_ID
+# Required: AZURE_CLIENT_ID
+# Required: AZURE_CLIENT_SECRET
 
 # Entry point for the application
 ENTRYPOINT ["dotnet", "ConditionalAccessExporter.dll"]
