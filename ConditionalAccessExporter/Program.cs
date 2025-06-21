@@ -28,13 +28,24 @@ namespace ConditionalAccessExporter
             var rootCommand = new RootCommand("Conditional Access Policy Exporter and Comparator");
 
             // Export command
-            var exportCommand = new Command("export", "Export Conditional Access policies from Entra ID");
+            var exportCommand = new Command("export", "Export Conditional Access policies from Entra ID") {
+                Description = "Export all Conditional Access policies from your Azure AD tenant to a JSON file."
+            };
             var outputOption = new Option<string>(
                 name: "--output",
                 description: "Output file path",
                 getDefaultValue: () => $"ConditionalAccessPolicies_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json"
             );
             exportCommand.AddOption(outputOption);
+
+            // Add example usage
+            exportCommand.AddAlias("exp");
+            exportCommand.Description = "Export Conditional Access policies from Entra ID to a JSON file.";
+            exportCommand.AddExample(new CommandExample(
+                "[--output <path>]",
+                "Export policies with custom output path: dotnet run export --output my-policies.json"
+            ));
+
             exportCommand.SetHandler(ExportPoliciesAsync, outputOption);
 
             // Terraform command
@@ -126,11 +137,26 @@ namespace ConditionalAccessExporter
                 providerVersionOption);
 
             // Compare command
-            var compareCommand = new Command("compare", "Compare Entra policies with reference JSON files");
+            var compareCommand = new Command("compare", "Compare Entra policies with reference JSON files") {
+                Description = "Compare Conditional Access policies from your Azure AD tenant against reference JSON files."
+            };
             var referenceDirectoryOption = new Option<string>(
                 name: "--reference-dir",
                 description: "Directory containing reference JSON files"
             ) { IsRequired = true };
+
+            // Add example usage
+            compareCommand.AddAlias("cmp");
+            compareCommand.Description = "Compare Conditional Access policies from Entra ID against reference JSON files.";
+            compareCommand.AddExample(new CommandExample(
+                "[--reference-dir <dir>] [--entra-file <file>]",
+                "Basic comparison: dotnet run compare --reference-dir ./reference-policies"
+            ));
+            compareCommand.AddExample(new CommandExample(
+                "[--output-dir <dir>] [--formats <formats>]",
+                "Custom output formats: dotnet run compare --reference-dir ./reference-policies --formats console json html csv"
+            ));
+
             var entraFileOption = new Option<string>(
                 name: "--entra-file",
                 description: "Path to exported Entra policies JSON file (if not provided, will fetch live data)"
@@ -553,13 +579,33 @@ namespace ConditionalAccessExporter
 
         private static async Task<int> ExportPoliciesAsync(string outputPath)
         {
+            // Add colored header with progress spinner
             Logger.WriteInfo("Conditional Access Policy Exporter");
             Logger.WriteInfo("==================================");
 
             try
             {
+                Logger.WriteInfo($"Tenant ID: {Environment.GetEnvironmentVariable("AZURE_TENANT_ID")?.Substring(0, 8)}... (truncated)");
+                Logger.WriteInfo($"Client ID: {Environment.GetEnvironmentVariable("AZURE_CLIENT_ID")?.Substring(0, 8)}... (truncated)");
+
+                // Show progress spinner while authenticating and fetching policies
+                Logger.WriteInfo("Authenticating to Microsoft Graph...");
                 var exportData = await FetchEntraPoliciesAsync();
-                
+
+                if (exportData is ConditionalAccessExportModel model)
+                {
+                    Logger.WriteInfo($"Found {model.PoliciesCount} Conditional Access Policies");
+
+                    // Show policy summary with colors
+                    Logger.WriteInfo("Policy Summary:");
+                    Logger.WriteInfo("=================");
+                    foreach (var policy in model.Policies)
+                    {
+                        var stateColor = policy.State.Equals("Enabled", StringComparison.OrdinalIgnoreCase) ? "\x1B[32m" : "\x1B[33m"; // Green for enabled, yellow for other
+                        Logger.WriteInfo($"{stateColor}• {policy.DisplayName} (State: {policy.State})\x1B[0m");
+                    }
+                }
+
                 // Serialize to JSON with pretty formatting
                 var json = JsonConvert.SerializeObject(exportData, Formatting.Indented, new JsonSerializerSettings
                 {
@@ -568,12 +614,16 @@ namespace ConditionalAccessExporter
                 });
 
                 // Write to file
+                Logger.WriteInfo("Writing policies to disk...");
                 await File.WriteAllTextAsync(outputPath, json, Encoding.UTF8);
 
-                Logger.WriteInfo($"Conditional Access Policies exported successfully to: {outputPath}");
+                // Show success with green color
+                Logger.WriteInfo($"\x1B[32mConditional Access Policies exported successfully to: {outputPath}\x1B[0m");
                 Logger.WriteInfo($"File size: {new FileInfo(outputPath).Length / 1024.0:F2} KB");
-                Logger.WriteInfo("Export completed successfully!");
-                
+
+                // Final success message
+                Logger.WriteInfo("\x1B[32mExport completed successfully!\x1B[0m");
+
                 return 0;
             }
             catch (Exception ex)
@@ -969,15 +1019,32 @@ namespace ConditionalAccessExporter
             bool skipValidation = false)
         {
             Logger.WriteInfo("Conditional Access Policy Comparison");
-            Logger.WriteInfo("====================================");
+            Logger.WriteInfo("=====================================");
 
-            try
+            // Show progress with spinner
+            Logger.WriteInfo($"Reference directory: {referenceDirectory}");
+
+            if (!string.IsNullOrEmpty(entraFile))
             {
-                // Validate reference directory is provided
+                Logger.WriteInfo($"Entra file: {entraFile}");
+            }
+            else
+            {
+                Logger.WriteInfo("Entra file: <fetching from live Entra ID>");
+            }
+
+            Logger.WriteInfo($"Output directory: {outputDirectory}");
+            Logger.WriteInfo($"Report formats: {string.Join(", ", reportFormats)}");
+            Logger.WriteInfo($"Matching strategy: {matchingStrategy}");
+            Logger.WriteInfo($"Case sensitivity: {(caseSensitive ? "On" : "Off")}");
+            Logger.WriteInfo($"Explain numeric values: {(explainValues ? "On" : "Off")}");
                 if (string.IsNullOrEmpty(referenceDirectory))
+                Logger.WriteInfo("Comparing policies...");
+
+                // Show spinner while comparing
+                using (var spinner = new Utils.SimpleSpinner("Please wait"))
                 {
-                    Logger.WriteError("Error: Reference directory is required but was not provided.");
-                    return (int)ExitCode.Error;
+                {
                 }
 
                 // Validate reference directory exists
@@ -1002,10 +1069,10 @@ namespace ConditionalAccessExporter
                 };
 
                 // Set logger quiet mode based on CI/CD options
-                Logger.SetQuietMode(quiet);
-                Logger.SetVerboseMode(explainValues);
+                }
 
-                Logger.WriteInfo($"Reference directory: {referenceDirectory}");
+                // Generate standard reports
+                // Generate standard reports
                 
                 if (!string.IsNullOrEmpty(entraFile))
                 {
@@ -1109,26 +1176,24 @@ namespace ConditionalAccessExporter
                     // Minimal output for pipelines
                     if (analysis.CriticalDifferences > 0)
                     {
-                        Logger.WriteInfo($"CRITICAL: {analysis.CriticalDifferences} critical differences found");
-                    }
-                    else if (analysis.TotalDifferences > 0)
-                    {
-                        Logger.WriteInfo($"WARNING: {analysis.TotalDifferences} differences found");
-                    }
-                    else
-                    {
-                        Logger.WriteInfo("SUCCESS: No differences found");
-                    }
-                }
-                else
+                // Display summary with colors
+                Logger.WriteInfo("");
+                Logger.WriteInfo($"{"[34m"}SUMMARY{"[0m"}");
+                Logger.WriteInfo("----------------------------------------");
+                Logger.WriteInfo($"{result.TotalEntraPolicies} policies in Entra ID");
+                Logger.WriteInfo($"{result.ReferencePoliciesCount} reference policies");
+                if (result.PoliciesOnlyInEntra > 0)
                 {
-                    Logger.WriteInfo("");
-                    Logger.WriteInfo("Comparison Results Summary:");
-                    Logger.WriteInfo("==========================");
-                    Logger.WriteInfo($"Total policies compared: {result.Summary.TotalEntraPolicies}");
-                    Logger.WriteInfo($"Policies with differences: {result.Summary.PoliciesWithDifferences}");
-                    Logger.WriteInfo($"Critical differences: {analysis.CriticalDifferences}");
-                    Logger.WriteInfo($"Non-critical differences: {analysis.NonCriticalDifferences}");
+                    Logger.WriteInfo($"{result.PoliciesOnlyInEntra} {"[31mpolicy/policies only in Entra[0m"}");
+                }
+                if (result.PoliciesOnlyInReference > 0)
+                {
+                    Logger.WriteInfo($"{result.MatchingPolicies} {"[32midentical policy/policies[0m"}");
+                }
+                if (result.PoliciesWithDifferences > 0)
+                {
+                    Logger.WriteInfo($"{result.PoliciesWithDifferences} {"[31mpolicy/policies with differences[0m"}");
+                }
                     
                     if (analysis.CriticalPolicies.Any())
                     {
@@ -1139,49 +1204,49 @@ namespace ConditionalAccessExporter
                     Logger.WriteInfo("Comparison completed successfully!");
                 }
 
-                return analysis.ExitCode;
-            }
-            catch (Exception ex)
-            {
-                HandleException(ex);
-                return (int)ExitCode.Error;
-            }
-        }
-
-        private static async Task<object> FetchEntraPoliciesAsync()
-        {
+                // Display policies only in Entra with colors
+                if (result.PoliciesOnlyInEntra > 0)
+                {
+                    Logger.WriteInfo("");
+                    Logger.WriteInfo($"{"[31mPOLICIES ONLY IN ENTRA[0m"}");
+                    Logger.WriteInfo("----------------------------------------");
+                    foreach (var policy in result.PoliciesOnlyInEntra)
+                    {
+                        Logger.WriteInfo($"{policy.DisplayName} (ID: {policy.Id})");
+                    }
+                }
             // Get Azure credentials from environment variables for logging
             var tenantId = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
             var clientId = Environment.GetEnvironmentVariable("AZURE_CLIENT_ID");
 
             Logger.WriteInfo($"Tenant ID: {tenantId}");
-            Logger.WriteInfo($"Client ID: {clientId}");
-            Logger.WriteInfo("Client Secret: [HIDDEN]");
-            Logger.WriteInfo("");
-
-            // Use the resilient Graph service from DI container
-            var resilientGraphService = GetService<IResilientGraphService>();
-
-            Logger.WriteInfo("Authenticating to Microsoft Graph with resilience patterns...");
-            Logger.WriteInfo("Fetching Conditional Access Policies...");
-
-            // Get all conditional access policies with resilience patterns applied
+                // Display policies with differences with colors
+                if (result.PoliciesWithDifferences > 0)
+                {
+                    Logger.WriteInfo("");
+                    Logger.WriteInfo($"{"[31mPOLICIES WITH DIFFERENCES[0m"}");
+                    Logger.WriteInfo("----------------------------------------");
+                    foreach (var policy in result.PoliciesWithDifferences)
+                    {
+                        Logger.WriteInfo($"{policy.DisplayName}");
+                    }
+                }
             var policies = await resilientGraphService.GetConditionalAccessPoliciesAsync();
 
             // Log performance metrics
             var metrics = resilientGraphService.GetMetrics();
             Logger.WriteInfo($"API Performance: {metrics.TotalCalls} calls, {metrics.SuccessRate:F1}% success rate, {metrics.AverageResponseTimeMs:F0}ms avg response time");
-            if (metrics.CachedCalls > 0)
-            {
-                Logger.WriteInfo($"Cache Performance: {metrics.CacheHitRate:F1}% hit rate, {metrics.CachedCalls} cached responses");
-            }
-            if (metrics.RateLimitHits > 0)
-            {
-                Logger.WriteWarning($"Rate Limiting: {metrics.RateLimitHits} rate limit hits encountered");
-            }
-
-            if (policies?.Value == null || !policies.Value.Any())
-            {
+                // Display identical policies with colors
+                if (result.MatchingPolicies > 0)
+                {
+                    Logger.WriteInfo("");
+                    Logger.WriteInfo($"{"[32mIDENTICAL POLICIES[0m"}");
+                    Logger.WriteInfo("----------------------------------------");
+                    foreach (var policy in result.MatchingPolicies)
+                    {
+                        Logger.WriteInfo($"{policy.DisplayName}");
+                    }
+                }
                 Logger.WriteInfo("No Conditional Access Policies found.");
                 return new { ExportedAt = DateTime.UtcNow, TenantId = tenantId, PoliciesCount = 0, Policies = new List<object>() };
             }
@@ -1201,9 +1266,8 @@ namespace ConditionalAccessExporter
                     DisplayName = policy.DisplayName,
                     State = policy.State?.ToString(),
                     CreatedDateTime = policy.CreatedDateTime,
-                    ModifiedDateTime = policy.ModifiedDateTime,
-                    Conditions = new
-                    {
+                Logger.WriteInfo("");
+                Logger.WriteInfo($"{"[32mComparison completed successfully![0m"}");
                         Applications = new
                         {
                             IncludeApplications = policy.Conditions?.Applications?.IncludeApplications,
