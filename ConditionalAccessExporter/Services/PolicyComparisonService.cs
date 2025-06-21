@@ -536,20 +536,26 @@ namespace ConditionalAccessExporter.Services
             return false;
         }
 
-        private static bool AreEquivalentDates(string str1, string str2)
+        public static bool AreEquivalentDates(string str1, string str2)
         {
             // Use culture-invariant parsing with predefined date formats
-            bool date1Parsed = DateTime.TryParseExact(str1, DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date1) ||
-                               DateTime.TryParse(str1, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date1);
+            bool date1Parsed = DateTime.TryParseExact(str1, DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date1) ||
+                               DateTime.TryParse(str1, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out date1);
             
             // Short-circuit if first string isn't a valid date
             if (!date1Parsed)
                 return false;
             
-            bool date2Parsed = DateTime.TryParseExact(str2, DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date2) ||
-                               DateTime.TryParse(str2, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date2);
+            bool date2Parsed = DateTime.TryParseExact(str2, DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date2) ||
+                               DateTime.TryParse(str2, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out date2);
             
-            return date2Parsed && date1 == date2;
+            // Compare dates with time component ignored for better comparison accuracy
+            if (date1Parsed && date2Parsed)
+            {
+                return date1.Date == date2.Date; // Compare only the date part
+            }
+
+            return false;
         }
 
         private ReferencePolicy? FindMatchingReference(
