@@ -1178,21 +1178,21 @@ namespace ConditionalAccessExporter
                     {
                 // Display summary with colors
                 Logger.WriteInfo("");
-                Logger.WriteInfo($"{"[34m"}SUMMARY{"[0m"}");
+                Logger.WriteInfo($"{""}SUMMARY{""}");
                 Logger.WriteInfo("----------------------------------------");
                 Logger.WriteInfo($"{result.TotalEntraPolicies} policies in Entra ID");
                 Logger.WriteInfo($"{result.ReferencePoliciesCount} reference policies");
                 if (result.PoliciesOnlyInEntra > 0)
                 {
-                    Logger.WriteInfo($"{result.PoliciesOnlyInEntra} {"[31mpolicy/policies only in Entra[0m"}");
+                    Logger.WriteInfo($"{result.PoliciesOnlyInEntra} {"policy/policies only in Entra"}");
                 }
                 if (result.PoliciesOnlyInReference > 0)
                 {
-                    Logger.WriteInfo($"{result.MatchingPolicies} {"[32midentical policy/policies[0m"}");
+                    Logger.WriteInfo($"{result.MatchingPolicies} {"identical policy/policies"}");
                 }
                 if (result.PoliciesWithDifferences > 0)
                 {
-                    Logger.WriteInfo($"{result.PoliciesWithDifferences} {"[31mpolicy/policies with differences[0m"}");
+                    Logger.WriteInfo($"{result.PoliciesWithDifferences} {"policy/policies with differences"}");
                 }
                     
                     if (analysis.CriticalPolicies.Any())
@@ -1208,7 +1208,7 @@ namespace ConditionalAccessExporter
                 if (result.PoliciesOnlyInEntra > 0)
                 {
                     Logger.WriteInfo("");
-                    Logger.WriteInfo($"{"[31mPOLICIES ONLY IN ENTRA[0m"}");
+                    Logger.WriteInfo($"{"POLICIES ONLY IN ENTRA"}");
                     Logger.WriteInfo("----------------------------------------");
                     foreach (var policy in result.PoliciesOnlyInEntra)
                     {
@@ -1224,7 +1224,7 @@ namespace ConditionalAccessExporter
                 if (result.PoliciesWithDifferences > 0)
                 {
                     Logger.WriteInfo("");
-                    Logger.WriteInfo($"{"[31mPOLICIES WITH DIFFERENCES[0m"}");
+                    Logger.WriteInfo($"{"POLICIES WITH DIFFERENCES"}");
                     Logger.WriteInfo("----------------------------------------");
                     foreach (var policy in result.PoliciesWithDifferences)
                     {
@@ -1240,7 +1240,7 @@ namespace ConditionalAccessExporter
                 if (result.MatchingPolicies > 0)
                 {
                     Logger.WriteInfo("");
-                    Logger.WriteInfo($"{"[32mIDENTICAL POLICIES[0m"}");
+                    Logger.WriteInfo($"{"IDENTICAL POLICIES"}");
                     Logger.WriteInfo("----------------------------------------");
                     foreach (var policy in result.MatchingPolicies)
                     {
@@ -1267,7 +1267,7 @@ namespace ConditionalAccessExporter
                     State = policy.State?.ToString(),
                     CreatedDateTime = policy.CreatedDateTime,
                 Logger.WriteInfo("");
-                Logger.WriteInfo($"{"[32mComparison completed successfully![0m"}");
+                Logger.WriteInfo($"{"Comparison completed successfully!"}");
                         Applications = new
                         {
                             IncludeApplications = policy.Conditions?.Applications?.IncludeApplications,
