@@ -52,6 +52,20 @@ jobs:
         reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
         
     - name: Upload coverage report artifact
+
+
+    - name: Check coverage threshold
+      if: success()
+      run: |
+        COVERAGE=$(grep -oPm1 "(?<=<coverage line-rate=\")[^\"]+" coveragereport/Cobertura.xml)
+        if (( $(echo "$COVERAGE < 0.80" | bc -l) )); then
+          echo "Coverage is below threshold: $COVERAGE"
+          exit 1
+        else
+          echo "Coverage is above threshold: $COVERAGE"
+        fi
+
+
       if: success()
       uses: actions/upload-artifact@v4
       with:
