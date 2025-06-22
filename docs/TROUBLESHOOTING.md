@@ -698,6 +698,141 @@ export DOTNET_gcServer=1
 
 ## 🆘 Getting Help
 
+
+
+## 🌐 Terraform Integration Issues
+
+### Issue: "Terraform conversion fails"
+
+**Symptoms:**
+- Conversion from JSON to Terraform fails
+- Error messages about invalid JSON or Terraform syntax
+- Missing or incorrect Terraform resources
+
+**Diagnostic Commands:**
+```bash
+# Check JSON file structure
+jq . input-policies.json
+
+# Validate Terraform syntax
+terraform validate
+```
+
+**Solutions:**
+
+#### 1. Invalid JSON Input
+```bash
+# Fix JSON syntax errors
+jq . input-policies.json > fixed-input.json
+
+# Use the fixed JSON file for conversion
+dotnet run terraform --input fixed-input.json --output output.tf --direction json-to-terraform
+```
+
+#### 2. Missing Terraform Resources
+```bash
+# Check for missing resources in output
+grep -i "resource" output.tf
+
+# Add missing resources manually if needed
+```
+
+#### 3. Terraform Version Issues
+```bash
+# Ensure you're using compatible Terraform version
+terraform version
+
+# Update Terraform if necessary
+# https://www.terraform.io/downloads.html
+```
+
+### Issue: "Terraform apply fails"
+
+**Symptoms:**
+- `terraform apply` fails with errors
+- Resources not created or modified as expected
+- Error messages about API limits or permissions
+
+**Diagnostic Commands:**
+```bash
+# Check Terraform plan output
+terraform plan
+
+# Enable detailed logging
+export TF_LOG=DEBUG
+terraform apply
+```
+
+**Solutions:**
+
+#### 1. API Permission Issues
+```bash
+# Ensure app registration has necessary permissions
+# Azure Portal → App Registrations → Your App → API permissions
+# Add: Microsoft Graph → Application permissions → Policy.ReadWrite.All
+# Grant admin consent
+```
+
+#### 2. Terraform State Issues
+```bash
+# Check Terraform state file
+terraform show
+
+# Fix state file if necessary
+terraform state list
+terraform state rm <resource>
+```
+
+#### 3. API Throttling
+```bash
+# Reduce parallel operations
+export TF_PARALLELISM=1
+terraform apply
+```
+
+### Issue: "Drift between Terraform and Azure"
+
+**Symptoms:**
+- Changes made in Azure not reflected in Terraform state
+- Terraform plan shows unexpected changes
+- Manual changes in Azure portal
+
+**Diagnostic Commands:**
+```bash
+# Import current state into Terraform
+terraform import <resource> <id>
+
+# Check for drift
+terraform plan
+```
+
+**Solutions:**
+
+#### 1. Manual Import
+```bash
+# Import specific resource
+terraform import azuread_conditional_access_policy.require_mfa_all_users <policy-id>
+
+# Verify import
+terraform state list
+```
+
+#### 2. Refresh State
+```bash
+# Refresh Terraform state
+terraform refresh
+
+# Check for drift
+terraform plan
+```
+
+#### 3. Use Terraform Cloud/Enterprise
+```bash
+# Enable remote state management
+# https://www.terraform.io/cloud
+```
+
+
 ### Before Seeking Help
 
 1. **Search Existing Issues**: Check [GitHub Issues](https://github.com/thefaftek-git/CA_Scanner/issues)

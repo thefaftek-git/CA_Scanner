@@ -80,6 +80,59 @@ my-baselines/
 
 ### Example 3: Basic Policy Comparison
 
+
+### Example 4: Interactive Policy Management
+
+**Scenario**: You want to interactively manage your Conditional Access policies using CA_Scanner.
+
+**Step 1: Export Current Policies**
+
+```bash
+# Set up environment variables
+export AZURE_TENANT_ID="your-tenant-id"
+export AZURE_CLIENT_ID="your-client-id"
+export AZURE_CLIENT_SECRET="your-client-secret"
+
+# Export current policies
+dotnet run export --output current-policies.json
+```
+
+**Step 2: Create a Baseline**
+
+```bash
+# Create a baseline from the current policies
+dotnet run baseline --output-dir baseline
+```
+
+**Step 3: Compare Current Policies Against Baseline**
+
+```bash
+# Compare current policies against the baseline
+dotnet run compare --reference-dir baseline --entra-file current-policies.json --output-dir comparison-report --formats html
+```
+
+**Step 4: Review the Comparison Report**
+
+Open the generated HTML report in your browser to review the differences between the current policies and the baseline.
+
+**Expected Output:**
+
+```
+Conditional Access Policy Comparison
+====================================
+Reference Directory: baseline
+Entra File: current-policies.json
+Output Directory: comparison-report
+
+Comparison Results:
+- Policies Added: 0
+- Policies Removed: 0
+- Policies Modified: 2
+
+Detailed Report: comparison-report/comparison-report.html
+```
+
+
 **Scenario**: You want to compare your current policies against the baseline you created.
 
 ```bash
