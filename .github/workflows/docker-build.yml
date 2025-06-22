@@ -5,13 +5,13 @@ name: Docker Build and Push
 on:
   push:
     branches:
-      - main
+      - '**'
     paths:
       - 'Dockerfile'
       - 'ConditionalAccessExporter/**'
   pull_request:
     branches:
-      - main
+      - '**'
     paths:
       - 'Dockerfile'
       - 'ConditionalAccessExporter/**'
@@ -35,6 +35,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build and push Docker image
+      if: github.ref == 'refs/heads/main' || env.PUSH_DOCKER_IMAGE == 'true'
       run: |
         docker build -t ${{ secrets.DOCKER_USERNAME }}/ca-scanner:latest .
         docker tag ${{ secrets.DOCKER_USERNAME }}/ca-scanner:latest ${{ secrets.DOCKER_USERNAME }}/ca-scanner:${{ github.sha }}
@@ -42,6 +43,7 @@ jobs:
         docker push ${{ secrets.DOCKER_USERNAME }}/ca-scanner:${{ github.sha }}
 
     - name: Build multi-architecture image
+      if: github.ref == 'refs/heads/main' || env.PUSH_DOCKER_IMAGE == 'true'
       run: |
         docker buildx create --use
         docker buildx inspect --bootstrap
