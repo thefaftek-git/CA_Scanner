@@ -1,0 +1,7 @@
+
+{
+  "thresholds": {
+    "branch": 80,
+    "line": 80
+  }
+}
