@@ -91,41 +91,65 @@ The application follows a service-oriented architecture with specialized service
 ## Common Development Workflows
 
 ### Building the Solution
-# Build the entire solution:
-dotnet build
+To build the solution, follow these steps:
 
-# Build with specific configuration:
-dotnet build --configuration Release
+1. **Build the entire solution**:
+   ```bash
+   dotnet build
+   ```
 
-# Clean and rebuild:
-dotnet clean && dotnet build
+2. **Build with specific configuration**:
+   ```bash
+   dotnet build --configuration Release
+   ```
+
+3. **Clean and rebuild**:
+   ```bash
+   dotnet clean && dotnet build
+   ```
 
 ### Running the Application
-# Run from solution root:
-dotnet run --project ConditionalAccessExporter
+To run the application, follow these steps:
 
-# Run from project directory:
-cd ConditionalAccessExporter
-dotnet run
+1. **Run from solution root**:
+   ```bash
+   dotnet run --project ConditionalAccessExporter
+   ```
 
-# Run with convenience script:
-cd ConditionalAccessExporter
-./run.sh
+2. **Run from project directory**:
+   ```bash
+   cd ConditionalAccessExporter
+   dotnet run
+   ```
 
+3. **Run with convenience script**:
+   ```bash
+   cd ConditionalAccessExporter
+   ./run.sh
+   ```
 
 ### Testing
+To run tests, follow these steps:
 
-# Run all tests from solution root:
-dotnet test
+1. **Run all tests from solution root**:
+   ```bash
+   dotnet test
+   ```
 
-# Run tests with verbose output:
-dotnet test --verbosity normal
+2. **Run tests with verbose output**:
+   ```bash
+   dotnet test --verbosity normal
+   ```
 
-# Run specific test project:
-dotnet test ConditionalAccessExporter.Tests
+3. **Run specific test project**:
+   ```bash
+   dotnet test ConditionalAccessExporter.Tests
+   ```
 
-# Run tests with coverage:
-dotnet test --collect:"XPlat Code Coverage"
+4. **Run tests with coverage**:
+   ```bash
+   dotnet test --collect:"XPlat Code Coverage"
+   ```
 
 ## Service Architecture Deep Dive
 
@@ -135,6 +159,53 @@ All services follow consistent patterns:
 - **Comprehensive error handling** with detailed logging
 - **Interface-based design** for testability and loose coupling
 - **Constructor injection** for dependencies
+
+
+
+## Progress Tracking
+
+### Purpose
+The `progress.md` file is used to track the progress of tasks, plans, and debugging efforts. It serves as a central place to document ongoing work, planned tasks, and any issues encountered during development.
+
+### Usage Guidelines
+1. **Planning Tasks**: Before making changes to the code, update `progress.md` with a detailed plan. Include the tasks to be completed, the steps to follow, and any prerequisites.
+2. **Debugging Issues**: When debugging an issue, document the steps taken, the configuration used, and the results of builds and tests. This helps in tracking the progress and resolving issues more efficiently.
+3. **Updating Progress**: Regularly update `progress.md` as tasks are completed. This ensures that the team has a clear understanding of the current status and any remaining work.
+4. **Avoid Committing Changes**: Changes to the `progress.md` file should not be committed to the repository. This file is intended for internal use and tracking purposes only.
+
+### Example Structure
+```markdown
+# Progress Tracking
+
+## Current Tasks
+- [ ] Task 1: Description of the task
+- [ ] Task 2: Description of the task
+
+## Debugging Issues
+- Issue 1: Description of the issue
+  - Steps taken: Description of the steps taken to resolve the issue
+  - Results: Description of the results of the steps taken
+
+## Completed Tasks
+- Task 1: Description of the task
+- Task 2: Description of the task
+```
+
+
+
+## Error Handling and Troubleshooting
+
+### Common Errors
+1. **Missing .NET SDK**: Ensure that the .NET 8 SDK is installed. You can use the provided `dotnet-install.sh` script to install it.
+2. **Azure Authentication Issues**: Verify that the environment variables for Azure credentials are correctly set.
+3. **Build Failures**: Check the error messages for specific issues. Common problems include missing dependencies or syntax errors in the code.
+
+### Troubleshooting Steps
+1. **Check Logs**: Review the logs for detailed error messages.
+2. **Verify Configuration**: Ensure that all configuration files and environment variables are correctly set.
+3. **Consult Documentation**: Refer to the detailed documentation in the `docs` directory for specific issues.
+4. **Community Support**: Join the community forums or GitHub discussions for additional help.
+
 
 ## Testing Strategy
 
