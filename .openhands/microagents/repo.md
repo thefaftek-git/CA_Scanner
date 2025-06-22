@@ -1,10 +1,19 @@
-# General Repository Microagent
-
-This microagent provides OpenHands with comprehensive guidance about the CA_Scanner project structure, architecture, and common workflows.
-
 ## Project Overview
 
 CA_Scanner is a .NET 8 Azure Conditional Access Policy management tool designed for Azure administrators, DevOps engineers, and security teams. The solution provides comprehensive capabilities for managing and analyzing Conditional Access policies in Microsoft 365 environments.
+
+## Environment Setup Requirements
+
+### Prerequisites
+1. **.NET 8 SDK** installation (automated script provided: `dotnet-install.sh`)
+2. **Azure App Registration** with appropriate permissions
+3. **Environment variables** for Azure credentials
+4. **Planning Tasks** before making changes to the code, you should update progress.md with a plan. If you're debugging an issue, it's recommended you configure your pre-requisites first and run build(s) and test(s). This plan should be updated as you finish tasks. Changes to this file should NOT be committed to the repo.
+
+### Environment Variables
+AZURE_TENANT_ID=your-tenant-id-here
+AZURE_CLIENT_ID=your-client-id-here
+AZURE_CLIENT_SECRET=your-client-secret-here
 
 ### Main Capabilities
 - **Export**: Retrieve all Conditional Access policies from Azure AD via Microsoft Graph API
@@ -13,8 +22,6 @@ CA_Scanner is a .NET 8 Azure Conditional Access Policy management tool designed 
 - **Terraform Conversion**: Convert between JSON and Terraform formats for Infrastructure as Code workflows
 - **Report Generation**: Generate detailed reports in multiple formats (console, JSON, HTML, CSV)
 - **Remediation**: Handle policy remediation workflows with comprehensive analysis
-
-## Architecture Guide
 
 ### Main Project Structure
 ```
@@ -25,7 +32,7 @@ ConditionalAccessExporter/
 │   ├── Program.cs                          # Main entry point with CLI parsing
 │   ├── ConditionalAccessExporter.csproj    # Project configuration
 │   ├── Models/                             # Data models and DTOs
-│   ├── Services/                           # 15+ specialized service classes
+│   ├── Services/                           # specialized service classes
 │   ├── Utils/                              # Utility classes and helpers
 │   └── reference-templates/                # Template files for baseline generation
 └── ConditionalAccessExporter.Tests/        # Comprehensive test suite
@@ -35,7 +42,7 @@ ConditionalAccessExporter/
 ```
 
 ### Services Layer Architecture
-The application follows a service-oriented architecture with 15+ specialized services:
+The application follows a service-oriented architecture with specialized services:
 
 #### Core Services
 - **BaselineGenerationService**: Creates reference policy files from current tenant
@@ -58,10 +65,10 @@ The application follows a service-oriented architecture with 15+ specialized ser
 - **TemplateService**: Manages policy templates
 
 ### Models Directory
-- **ComparisonResult.cs**: Data models for policy comparison results
-- **RemediationModels.cs**: Models for remediation workflows
-- **TemplateModels.cs**: Template-related data structures
-- **TerraformModels.cs**: Terraform-specific data models
+- **ComparisonResult**: Data models for policy comparison results
+- **RemediationModels**: Models for remediation workflows
+- **TemplateModels**: Template-related data structures
+- **TerraformModels**: Terraform-specific data models
 
 ### Tests Architecture
 - Comprehensive unit tests for all major services
@@ -84,74 +91,41 @@ The application follows a service-oriented architecture with 15+ specialized ser
 ## Common Development Workflows
 
 ### Building the Solution
-```bash
-# Build the entire solution
+# Build the entire solution:
 dotnet build
 
-# Build with specific configuration
+# Build with specific configuration:
 dotnet build --configuration Release
 
-# Clean and rebuild
+# Clean and rebuild:
 dotnet clean && dotnet build
-```
 
 ### Running the Application
-```bash
-# Run from solution root
+# Run from solution root:
 dotnet run --project ConditionalAccessExporter
 
-# Run from project directory
+# Run from project directory:
 cd ConditionalAccessExporter
 dotnet run
 
-# Run with convenience script
+# Run with convenience script:
 cd ConditionalAccessExporter
 ./run.sh
-```
+
 
 ### Testing
-```bash
-# Run all tests from solution root
+
+# Run all tests from solution root:
 dotnet test
 
-# Run tests with verbose output
+# Run tests with verbose output:
 dotnet test --verbosity normal
 
-# Run specific test project
+# Run specific test project:
 dotnet test ConditionalAccessExporter.Tests
 
-# Run tests with coverage
+# Run tests with coverage:
 dotnet test --collect:"XPlat Code Coverage"
-```
-
-### Main Entry Point
-- **Program.cs**: Contains command-line argument parsing using System.CommandLine
-- Supports multiple command modes: export, compare, baseline, terraform
-- Comprehensive help system and error handling
-- Async/await patterns throughout for Azure API interactions
-
-## Environment Setup Requirements
-
-### Prerequisites
-1. **.NET 8 SDK** installation (automated script provided: `dotnet-install.sh`)
-2. **Azure App Registration** with appropriate permissions
-3. **Environment variables** for Azure credentials
-
-### Azure Configuration
-- **Required Permission**: `Policy.Read.All` (Application permission in Microsoft Graph)
-- **Authentication Method**: Client credentials flow
-- **Setup Guide**: Available in `GITHUB_SECRETS_SETUP.md`
-
-### Environment Variables
-```bash
-AZURE_TENANT_ID=your-tenant-id-here
-AZURE_CLIENT_ID=your-client-id-here
-AZURE_CLIENT_SECRET=your-client-secret-here
-```
-
-### Installation Script
-- **dotnet-install.sh**: Automated .NET 8 SDK installation for Debian-based systems. Do not attempt to read this script, only execute it. The script may take up to 5 minutes to complete.
-- Handles package manager configuration and dependency installation
 
 ## Service Architecture Deep Dive
 
@@ -162,45 +136,7 @@ All services follow consistent patterns:
 - **Interface-based design** for testability and loose coupling
 - **Constructor injection** for dependencies
 
-### Key Service Responsibilities
-
-#### BaselineGenerationService
-- Creates reference policy files from current tenant
-- Supports filtering by enabled state or specific policy names
-- Anonymizes tenant-specific data for sharing
-- Customizable output directory organization
-
-#### PolicyComparisonService
-- Multiple matching strategies (by name, ID, or custom mapping)
-- Flexible comparison options (case-sensitive/insensitive)
-- Detailed diff analysis with specific change highlighting
-- Support for both live data and exported JSON files
-
-#### TerraformConversionService
-- Bidirectional conversion between JSON and Terraform formats
-- Handles Azure resource naming conventions
-- Maintains configuration consistency across formats
-- Supports both individual policy and bulk conversion
-
-#### ReportGenerationService
-- Multiple output formats: console, JSON, HTML, CSV
-- Customizable report templates
-- Detailed analysis with policy field mappings
-- Integration with comparison and baseline services
-
-#### RemediationService
-- Policy remediation workflow management
-- Change impact analysis
-- Rollback capability planning
-- Integration with CI/CD pipelines
-
 ## Testing Strategy
-
-### Test Organization
-- **Unit tests** for all major services with comprehensive coverage
-- **Integration tests** for end-to-end workflows
-- **Mocking patterns** for external dependencies (Microsoft Graph API)
-- **Test data management** with realistic policy scenarios
 
 ### Test Execution
 - **Automatic test discovery** via xUnit framework
@@ -209,7 +145,6 @@ All services follow consistent patterns:
 - **Coverage reporting** integrated with CI/CD
 
 ### Best Practices
-- Progress.md should be used to make a plan before code changes are started. This should be updated as each plan step is completed.
 - Write tests for new features following established patterns
 - Mock external dependencies to ensure reliable, fast tests
 - Use realistic test data that reflects actual Azure policy structures
@@ -217,7 +152,7 @@ All services follow consistent patterns:
 ## Documentation Locations
 
 ### Primary Documentation
-- **Main README**: `/README.md` - Project overview, quick start, and features
+- **Main README**: `README.md` - Project overview, quick start, and features
 - **Project README**: `ConditionalAccessExporter/README.md` - Detailed usage instructions and troubleshooting
 
 ### Specialized Documentation
