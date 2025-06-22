@@ -1,0 +1,24 @@
+
+
+{
+  "project": "ConditionalAccessExporter.Tests.csproj",
+  "testProjects": ["ConditionalAccessExporter.Tests.csproj"],
+  "mutate": ["**/*.cs"],
+  "thresholds": {
+    "high": 80,
+    "low": 60,
+    "break": 0
+  },
+  "reporters": ["html", "progress", "dashboard"],
+  "dashboard": {
+    "project": "CA_Scanner"
+  },
+  "timeoutMS": 60000,
+  "timeoutFactor": 1.2,
+  "maxConcurrentTestRunners": 1,
+  "concurrentTestrunners": 1,
+  "disableMixMutants": true,
+  "mutateCoverage": true,
+  "coverageAnalysis": "perTest"
+}
+
