@@ -1175,7 +1175,7 @@ namespace ConditionalAccessExporter
             {
                 Logger.WriteInfo($"Cache Performance: {metrics.CacheHitRate:F1}% hit rate, {metrics.CachedCalls} cached responses");
             }
-            if (metrics.RateLimitHits > 0)
+            //if (metrics.RateLimitHits > 0)
             {
                 Logger.WriteWarning($"Rate Limiting: {metrics.RateLimitHits} rate limit hits encountered");
             }
