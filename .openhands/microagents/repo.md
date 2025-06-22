@@ -141,12 +141,7 @@ To run tests, follow these steps:
    dotnet test --verbosity normal
    ```
 
-3. **Run specific test project**:
-   ```bash
-   dotnet test ConditionalAccessExporter.Tests
-   ```
-
-4. **Run tests with coverage**:
+3. **Run tests with coverage**:
    ```bash
    dotnet test --collect:"XPlat Code Coverage"
    ```
