@@ -582,8 +582,8 @@ namespace ConditionalAccessExporter
                 return 1;
             }
         }
-
-        private static async Task<int> ConvertTerraformAsync(
+fafasdsafs
+        //private static async Task<int> ConvertTerraformAsync(
             string inputPath,
             string outputPath,
             bool validate,
