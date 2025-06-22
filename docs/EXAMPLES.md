@@ -581,6 +581,136 @@ dotnet run compare \
   --output-dir "$REVIEW_DIR/compliance-check" \
   --formats html json
 
+
+
+## 📚 Interactive Tutorials
+
+### Tutorial 1: Setting Up CA_Scanner for the First Time
+
+**Step 1: Install .NET 8 SDK**
+
+```bash
+# Download and install .NET 8 SDK
+./dotnet-install.sh
+```
+
+**Step 2: Set Up Azure Credentials**
+
+```bash
+# Set environment variables for Azure credentials
+export AZURE_TENANT_ID="your-tenant-id"
+export AZURE_CLIENT_ID="your-client-id"
+export AZURE_CLIENT_SECRET="your-client-secret"
+```
+
+**Step 3: Clone the Repository**
+
+```bash
+# Clone the CA_Scanner repository
+git clone https://github.com/thefaftek-git/CA_Scanner.git
+cd CA_Scanner
+```
+
+**Step 4: Build the Project**
+
+```bash
+# Build the project
+dotnet build
+```
+
+**Step 5: Run Tests**
+
+```bash
+# Run tests to ensure everything is set up correctly
+dotnet test
+```
+
+### Tutorial 2: Exporting Conditional Access Policies
+
+**Step 1: Export Policies**
+
+```bash
+# Export current Conditional Access policies
+dotnet run export --output current-policies.json
+```
+
+**Step 2: Review the Export**
+
+```bash
+# Open the exported JSON file to review the policies
+cat current-policies.json
+```
+
+### Tutorial 3: Creating a Baseline
+
+**Step 1: Generate Baseline**
+
+```bash
+# Generate a baseline from the current policies
+dotnet run baseline --output-dir baseline
+```
+
+**Step 2: Review the Baseline**
+
+```bash
+# List the generated baseline files
+ls baseline
+```
+
+### Tutorial 4: Comparing Policies
+
+**Step 1: Compare Current Policies Against Baseline**
+
+```bash
+# Compare current policies against the baseline
+dotnet run compare --reference-dir baseline --entra-file current-policies.json --output-dir comparison-report --formats html
+```
+
+**Step 2: Review the Comparison Report**
+
+```bash
+# Open the generated HTML report in your browser
+open comparison-report/comparison-report.html
+```
+
+## 🛠️ Enhanced CLI Experience
+
+### Interactive Command Builder
+
+**Step 1: Start the Interactive Command Builder**
+
+```bash
+# Start the interactive command builder
+dotnet run interactive
+```
+
+**Step 2: Follow the Prompts**
+
+The interactive command builder will guide you through the process of building a command step-by-step.
+
+**Example:**
+
+```bash
+# Interactive Command Builder Session
+$ dotnet run interactive
+Welcome to the CA_Scanner Interactive Command Builder!
+
+1. Export policies
+2. Create baseline
+3. Compare policies
+4. Exit
+
+Please choose an option: 1
+
+Export policies selected.
+
+Enter output file path (default: current-policies.json): custom-export.json
+
+Exporting policies to custom-export.json...
+Export completed successfully!
+```
+
+
 echo "Privileged access review completed for $QUARTER"
 echo "Review materials available in: $REVIEW_DIR"
 ```

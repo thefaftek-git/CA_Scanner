@@ -832,6 +832,91 @@ terraform plan
 # https://www.terraform.io/cloud
 ```
 
+### Issue: "Terraform plan shows no changes"
+
+**Symptoms:**
+- `terraform plan` shows no changes despite known differences
+- No resources are marked for creation, update, or deletion
+
+**Diagnostic Commands:**
+```bash
+# Check Terraform state file
+terraform show
+
+# Compare Terraform state with Azure state
+terraform state pull | jq .
+```
+
+**Solutions:**
+
+#### 1. Ensure State is Up-to-Date
+```bash
+# Refresh Terraform state
+terraform refresh
+
+# Check for drift
+terraform plan
+```
+
+#### 2. Check for State Locking Issues
+```bash
+# Ensure no other Terraform processes are running
+terraform state list-locked
+
+# Unlock if necessary
+terraform force-unlock <lock-id>
+```
+
+#### 3. Verify Resource IDs
+```bash
+# Ensure resource IDs match between Terraform and Azure
+terraform import <resource> <id>
+```
+
+### Issue: "Terraform destroy fails"
+
+**Symptoms:**
+- `terraform destroy` fails with errors
+- Resources not deleted as expected
+- Error messages about API limits or permissions
+
+**Diagnostic Commands:**
+```bash
+# Check Terraform state file
+terraform show
+
+# Enable detailed logging
+export TF_LOG=DEBUG
+terraform destroy
+```
+
+**Solutions:**
+
+#### 1. API Permission Issues
+```bash
+# Ensure app registration has necessary permissions
+# Azure Portal → App Registrations → Your App → API permissions
+# Add: Microsoft Graph → Application permissions → Policy.ReadWrite.All
+# Grant admin consent
+```
+
+#### 2. Terraform State Issues
+```bash
+# Check Terraform state file
+terraform show
+
+# Fix state file if necessary
+terraform state list
+terraform state rm <resource>
+```
+
+#### 3. API Throttling
+```bash
+# Reduce parallel operations
+export TF_PARALLELISM=1
+terraform destroy
+```
+
 
 ### Before Seeking Help
 

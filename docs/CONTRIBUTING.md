@@ -57,6 +57,7 @@ CA_Scanner follows a service-oriented architecture with specialized services:
 2. **Make Changes**
    - Implement your feature or fix
    - Write tests for your changes
+   - Follow the coding standards outlined below
 
 3. **Run Tests**
    ```bash
@@ -64,6 +65,8 @@ CA_Scanner follows a service-oriented architecture with specialized services:
    ```
 
 4. **Commit Changes**
+   - Ensure your commit messages are clear and descriptive
+   - Follow the commit message guidelines below
    ```bash
    git add .
    git commit -m "Your commit message"
@@ -78,6 +81,43 @@ CA_Scanner follows a service-oriented architecture with specialized services:
    - Go to the repository on GitHub
    - Click on "Compare & pull request"
    - Fill out the PR template
+   - Ensure your PR description is clear and includes a reference to the issue it addresses
+
+## Coding Standards
+
+- Follow C# coding conventions
+- Use meaningful variable and method names
+- Write clear and concise comments
+- Keep functions small and focused
+- Use async/await for all I/O operations
+- Handle errors gracefully and log them appropriately
+- Write unit tests for all new functionality
+
+## Testing Guidelines
+
+- Write unit tests for all new functionality
+- Use mocking for external dependencies
+- Aim for high test coverage
+- Run tests locally before pushing
+- Use integration tests to verify end-to-end workflows
+- Ensure tests are fast and reliable
+
+## Commit Message Guidelines
+
+- Use the imperative mood in the subject line (e.g., "Add feature" not "Added feature")
+- Keep the subject line under 50 characters
+- Use the body to explain what and why you changed something
+- Reference the issue number in the commit message (e.g., "Fixes #123")
+- Use bullet points for multiple changes
+
+## Pull Request Guidelines
+
+- Ensure your PR is small and focused on a single feature or fix
+- Include a clear and descriptive title
+- Reference the issue number in the PR description
+- Include a summary of the changes and the reasoning behind them
+- Ensure all tests pass before requesting a review
+- Be open to feedback and willing to make changes
 
 ## Coding Standards
 
