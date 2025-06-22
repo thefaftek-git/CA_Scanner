@@ -1,0 +1,119 @@
+
+
+
+
+name: "✨ Feature Request / Feedback"
+about: Suggest an idea for this project, or provide feedback on your experience
+title: "[FEEDBACK] "
+labels: ["enhancement", "user-feedback"]
+assignees: ['thefaftek-git']
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to provide feedback! Your input helps us improve CA_Scanner.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: "Background"
+      description: "Please provide some context about your use case or environment"
+      placeholder: "I'm using CA_Scanner to manage policies for a large enterprise with over 10,000 users..."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: feedback-type
+    attributes:
+      label: "What type of feedback are you providing?"
+      options:
+        - "Feature Request"
+        - "Bug Report"
+        - "Documentation Improvement"
+        - "Performance Issue"
+        - "General Feedback"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: feature-request
+    attributes:
+      label: "Feature Request Details"
+      description: "If you're suggesting a new feature, please provide as much detail as possible"
+      placeholder: |
+        I would like to see support for XYZ because...
+    validations:
+      required: false
+
+  - type: textarea
+    id: bug-report
+    attributes:
+      label: "Bug Report Details"
+      description: "If you're reporting a bug, please include steps to reproduce and any error messages"
+      placeholder: |
+        Steps to reproduce:
+        1. Run 'dotnet run export'
+        2. ...
+        Error message: ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: documentation-improvement
+    attributes:
+      label: "Documentation Improvement Suggestions"
+      description: "If you're suggesting improvements to the documentation, please be specific about what needs improvement and how"
+      placeholder: |
+        The section on ABC could use more examples. Specifically...
+    validations:
+      required: false
+
+  - type: textarea
+    id: performance-issue
+    attributes:
+      label: "Performance Issue Details"
+      description: "If you're reporting a performance issue, please provide details about your environment and what you were doing when the issue occurred"
+      placeholder: |
+        I noticed slow performance when exporting policies for a tenant with 500+ policies. The operation took approximately...
+    validations:
+      required: false
+
+  - type: textarea
+    id: general-feedback
+    attributes:
+      label: "General Feedback"
+      description: "Any other feedback or suggestions?"
+      placeholder: |
+        I really like the new XYZ feature, but I think it could be improved by...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "How important is this to you?"
+      options:
+        - "Nice to have"
+        - "Useful addition"
+        - "Important feature"
+        - "Critical need"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: "Code of Conduct"
+      description: "By submitting this issue, you agree to follow our Code of Conduct"
+      options:
+        - label: "I agree to follow the [Code of Conduct](https://github.com/thefaftek-git/CA_Scanner/blob/main/CODE_OF_CONDUCT.md)"
+          required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        Thanks again for your feedback! We'll review it and get back to you soon.
+
+

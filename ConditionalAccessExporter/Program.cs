@@ -11,7 +11,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using ConditionalAccessExporter.Models;
 using ConditionalAccessExporter.Services;
-using ConditionalAccessExporter.Utils;
+using ConditionalAccessExporter.Utils; // For ConsoleColorHelper and StructuredLoggerWithColors
 
 namespace ConditionalAccessExporter
 {
@@ -24,6 +24,15 @@ namespace ConditionalAccessExporter
         {
             // Set up dependency injection and logging
             SetupLogging();
+
+            // Check if we should show the interactive tutorial
+            if (args.Length == 0 || (args.Length == 1 && (args[0] == "--help" || args[0] == "-h")))
+            {
+                if (InteractiveCommandBuilder.ConfirmAction("Would you like to see an interactive tutorial"))
+                {
+                    InteractiveCommandBuilder.ShowTutorial();
+                }
+            }
 
             var rootCommand = new RootCommand("Conditional Access Policy Exporter and Comparator");
 
@@ -548,7 +557,80 @@ namespace ConditionalAccessExporter
                 return await ExportPoliciesAsync($"ConditionalAccessPolicies_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json");
             }
 
+            // Add interactive mode option
+            var interactiveOption = new Option<bool>(
+                name: "--interactive",
+                description: "Launch interactive command selection menu",
+                getDefaultValue: () => false
+            );
+            rootCommand.AddOption(interactiveOption);
+
+            // Set up handler for the root command
+            rootCommand.SetHandler(() =>
+            {
+                if (interactiveOption.GetValueForInvoke() == true)
+                {
+                    ShowInteractiveMenu(rootCommand);
+                }
+            });
+
+            // If no arguments provided and interactive mode is enabled by default
+            if (args.Length == 0 && !Environment.GetEnvironmentVariable("CA_SKIP_INTERACTIVE")?.ToLower() == "true")
+            {
+                args = new[] { "--interactive" };
+            }
+
             return await rootCommand.InvokeAsync(args);
+        }
+
+        /// <summary>
+        /// Show interactive command selection menu
+        /// </summary>
+        private static void ShowInteractiveMenu(RootCommand rootCommand)
+        {
+            while (true)
+            {
+                var result = InteractiveCommandBuilder.ShowMainMenu(rootCommand);
+
+                if (result.Cancelled || string.IsNullOrEmpty(result.CommandName))
+                {
+                    Console.WriteLine(ConsoleColorHelper.FormatInfo("Exiting interactive mode. Goodbye!"));
+                    break;
+                }
+
+                var command = rootCommand.FindCommand(result.CommandName);
+                if (command == null)
+                {
+                    Console.WriteLine(ConsoleColorHelper.FormatError($"Command '{result.CommandName}' not found."));
+                    continue;
+                }
+
+                InteractiveCommandBuilder.ShowCommandHelp(command);
+
+                // Ask if user wants to run the command
+                if (!InteractiveCommandBuilder.ConfirmAction($"Do you want to run the '{command.Name}' command"))
+                {
+                    continue;
+                }
+
+                // Run the command with default options
+                try
+                {
+                    var exitCode = command.Invoke(new string[] { "--help" });
+                    Console.WriteLine();
+                    Console.WriteLine(ConsoleColorHelper.FormatInfo("Command completed with exit code: " + exitCode));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ConsoleColorHelper.FormatError($"Error running command: {ex.Message}"));
+                }
+
+                // Ask if user wants to run another command
+                if (!InteractiveCommandBuilder.ConfirmAction("Do you want to run another command"))
+                {
+                    break;
+                }
+            }
         }
 
         private static async Task<int> ExportPoliciesAsync(string outputPath)
@@ -2264,18 +2346,18 @@ namespace ConditionalAccessExporter
     /// </summary>
     public static class Logger
     {
-        public static void SetQuietMode(bool quietMode) => StructuredLogger.SetQuietMode(quietMode);
-        public static void SetVerboseMode(bool verboseMode) => StructuredLogger.SetVerboseMode(verboseMode);
-        public static void WriteInfo(string message) => StructuredLogger.WriteInfo(message);
-        public static void WriteError(string message) => StructuredLogger.WriteError(message);
-        public static void WriteVerbose(string message) => StructuredLogger.WriteVerbose(message);
+        public static void SetQuietMode(bool quietMode) => LoggerWithColors.SetQuietMode(quietMode);
+        public static void SetVerboseMode(bool verboseMode) => LoggerWithColors.SetVerboseMode(verboseMode);
+        public static void WriteInfo(string message) => LoggerWithColors.WriteInfo(message);
+        public static void WriteError(string message) => LoggerWithColors.WriteError(message);
+        public static void WriteVerbose(string message) => LoggerWithColors.WriteVerbose(message);
         
         // Additional structured logging methods
-        public static void WriteWarning(string message) => StructuredLogger.WriteWarning(message);
+        public static void WriteWarning(string message) => LoggerWithColors.WriteWarning(message);
         public static void LogPerformance(string operation, TimeSpan duration, object? additionalData = null) 
-            => StructuredLogger.LogPerformance(operation, duration, additionalData);
+            => LoggerWithColors.LogPerformance(operation, duration, additionalData);
         public static void LogAudit(string action, string policyName, object? details = null) 
-            => StructuredLogger.LogAudit(action, policyName, details);
-        public static IDisposable? BeginScope(string correlationId) => StructuredLogger.BeginScope(correlationId);
+            => LoggerWithColors.LogAudit(action, policyName, details);
+        public static IDisposable? BeginScope(string correlationId) => LoggerWithColors.BeginScope(correlationId);
     }
 }
