@@ -14,6 +14,12 @@ Welcome to the CA_Scanner documentation site! This site provides comprehensive i
 - [API Reference](#api-reference)
 - [Advanced Features](#advanced-features)
 - [Contributing](#contributing)
+- [Tutorials](#tutorials)
+
+## Tutorials
+
+- [Getting Started with CA_Scanner](tutorials/getting-started.md)
+- [Interactive CLI Tutorial](tutorials/interactive-cli.md)
 
 ## Getting Started
 
