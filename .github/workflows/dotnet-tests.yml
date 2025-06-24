@@ -52,6 +52,20 @@ jobs:
         reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
         
     - name: Upload coverage report artifact
+
+
+    - name: Enforce minimum coverage threshold
+      if: success()
+      run: |
+        coverage=$(grep -oPm1 "(?<=<coverage line-rate=\")[^\"]+" coveragereport/Cobertura.xml)
+        if (( $(echo "$coverage < 0.80" | bc -l) )); then
+          echo "Coverage is below the minimum threshold of 80%."
+          exit 1
+        else
+          echo "Coverage is above the minimum threshold of 80%."
+        fi
+
+
       if: success()
       uses: actions/upload-artifact@v4
       with:

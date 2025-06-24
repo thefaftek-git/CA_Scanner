@@ -28,14 +28,15 @@ namespace ConditionalAccessExporter
             var rootCommand = new RootCommand("Conditional Access Policy Exporter and Comparator");
 
             // Export command
-            var exportCommand = new Command("export", "Export Conditional Access policies from Entra ID");
-            var outputOption = new Option<string>(
-                name: "--output",
-                description: "Output file path",
-                getDefaultValue: () => $"ConditionalAccessPolicies_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json"
-            );
-            exportCommand.AddOption(outputOption);
-            exportCommand.SetHandler(ExportPoliciesAsync, outputOption);
+    // Export command
+    var exportCommand = new Command("export", "Export Conditional Access policies from Entra ID");
+    var outputOption = new Option<string>(name: "--output", description: "Output file path", getDefaultValue: () => $"ConditionalAccessPolicies_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json");
+    exportCommand.AddOption(outputOption);
+    exportCommand.SetHandler(ExportPoliciesAsync, outputOption);
+    exportCommand.Description = "Export Conditional Access policies from Entra ID to a JSON file. This command retrieves all Conditional Access policies from your Azure AD tenant and saves them to the specified output file.";
+    exportCommand.AddAlias("e");
+    exportCommand.AddExample("dotnet run export --output ./policies.json");
+    exportCommand.AddExample("dotnet run e -o ./policies.json");
 
             // Terraform command
             var terraformCommand = new Command("terraform", "Convert Terraform conditional access policies to JSON");
@@ -126,88 +127,72 @@ namespace ConditionalAccessExporter
                 providerVersionOption);
 
             // Compare command
-            var compareCommand = new Command("compare", "Compare Entra policies with reference JSON files");
-            var referenceDirectoryOption = new Option<string>(
-                name: "--reference-dir",
-                description: "Directory containing reference JSON files"
-            ) { IsRequired = true };
-            var entraFileOption = new Option<string>(
-                name: "--entra-file",
-                description: "Path to exported Entra policies JSON file (if not provided, will fetch live data)"
-            );
-            var outputDirectoryOption = new Option<string>(
-                name: "--output-dir",
-                description: "Output directory for comparison reports",
-                getDefaultValue: () => "comparison-reports"
-            );
-            var reportFormatsOption = new Option<string[]>(
-                name: "--formats",
-                description: "Report formats to generate (space or comma-separated)",
-                getDefaultValue: () => new[] { "console", "json", "html" }
-            );
-            reportFormatsOption.AllowMultipleArgumentsPerToken = true;
-            var matchingStrategyOption = new Option<MatchingStrategy>(
-                name: "--matching",
-                description: "Strategy for matching policies",
-                getDefaultValue: () => MatchingStrategy.ByName
-            );
-            var caseSensitiveOption = new Option<bool>(
-                name: "--case-sensitive",
-                description: "Case sensitive policy name matching",
-                getDefaultValue: () => false
-            );
-            var explainOption = new Option<bool>(
-                name: "--explain",
-                description: "Decode numeric values in console output with human-readable explanations",
-                getDefaultValue: () => false
-            );
-            var exitOnDifferencesOption = new Option<bool>(
-                name: "--exit-on-differences",
-                description: "Return non-zero exit codes based on comparison results",
-                getDefaultValue: () => false
-            );
-            var maxDifferencesOption = new Option<int?>(
-                name: "--max-differences",
-                description: "Fail if more than specified number of policies differ"
-            );
-            var failOnOption = new Option<string[]>(
-                name: "--fail-on",
-                description: "Fail on specific types of changes (comma or space-separated)",
-                getDefaultValue: () => Array.Empty<string>()
-            );
-            failOnOption.AllowMultipleArgumentsPerToken = true;
-            var ignoreOption = new Option<string[]>(
-                name: "--ignore",
-                description: "Ignore specific types of differences (comma or space-separated)",
-                getDefaultValue: () => Array.Empty<string>()
-            );
-            ignoreOption.AllowMultipleArgumentsPerToken = true;
-            var quietOption = new Option<bool>(
-                name: "--quiet",
-                description: "Minimal output for pipeline usage",
-                getDefaultValue: () => false
-            );
-            var skipValidationOption = new Option<bool>(
-                name: "--skip-validation",
-                description: "Skip validation of reference files before comparison",
-                getDefaultValue: () => false
-            );
-
-            compareCommand.AddOption(referenceDirectoryOption);
-            compareCommand.AddOption(entraFileOption);
-            compareCommand.AddOption(outputDirectoryOption);
-            compareCommand.AddOption(reportFormatsOption);
-            compareCommand.AddOption(matchingStrategyOption);
-            compareCommand.AddOption(caseSensitiveOption);
-            compareCommand.AddOption(explainOption);
-            compareCommand.AddOption(exitOnDifferencesOption);
-            compareCommand.AddOption(maxDifferencesOption);
-            compareCommand.AddOption(failOnOption);
-            compareCommand.AddOption(ignoreOption);
-            compareCommand.AddOption(quietOption);
-            compareCommand.AddOption(skipValidationOption);
-
-            compareCommand.SetHandler(async (context) =>
+    // Compare command
+    var compareCommand = new Command("compare", "Compare Entra policies with reference JSON files");
+    var referenceDirectoryOption = new Option<string>(name: "--reference-dir", description: "Directory containing reference JSON files") { IsRequired = true };
+    var entraFileOption = new Option<string>(name: "--entra-file", description: "Path to exported Entra policies JSON file (if not provided, will fetch live data)");
+    var outputDirectoryOption = new Option<string>(name: "--output-dir", description: "Output directory for comparison reports", getDefaultValue: () => "comparison-reports");
+    var reportFormatsOption = new Option<string[]>(name: "--formats", description: "Report formats to generate (space or comma-separated)", getDefaultValue: () => new[] { "console", "json", "html" });
+    reportFormatsOption.AllowMultipleArgumentsPerToken = true;
+    var matchingStrategyOption = new Option<MatchingStrategy>(name: "--matching", description: "Strategy for matching policies", getDefaultValue: () => MatchingStrategy.ByName);
+    var caseSensitiveOption = new Option<bool>(name: "--case-sensitive", description: "Case sensitive policy name matching", getDefaultValue: () => false);
+    var explainOption = new Option<bool>(name: "--explain", description: "Decode numeric values in console output with human-readable explanations", getDefaultValue: () => false);
+    var exitOnDifferencesOption = new Option<bool>(name: "--exit-on-differences", description: "Return non-zero exit codes based on comparison results", getDefaultValue: () => false);
+    var maxDifferencesOption = new Option<int?>(name: "--max-differences", description: "Fail if more than specified number of policies differ");
+    var failOnOption = new Option<string[]>(name: "--fail-on", description: "Fail on specific types of changes (comma or space-separated)", getDefaultValue: () => Array.Empty<string>());
+    failOnOption.AllowMultipleArgumentsPerToken = true;
+    var ignoreOption = new Option<string[]>(name: "--ignore", description: "Ignore specific types of differences (comma or space-separated)", getDefaultValue: () => Array.Empty<string>());
+    ignoreOption.AllowMultipleArgumentsPerToken = true;
+    var quietOption = new Option<bool>(name: "--quiet", description: "Minimal output for pipeline usage", getDefaultValue: () => false);
+    var skipValidationOption = new Option<bool>(name: "--skip-validation", description: "Skip validation of reference files before comparison", getDefaultValue: () => false);
+    compareCommand.AddOption(referenceDirectoryOption);
+    compareCommand.AddOption(entraFileOption);
+    compareCommand.AddOption(outputDirectoryOption);
+    compareCommand.AddOption(reportFormatsOption);
+    compareCommand.AddOption(matchingStrategyOption);
+    compareCommand.AddOption(caseSensitiveOption);
+    compareCommand.AddOption(explainOption);
+    compareCommand.AddOption(exitOnDifferencesOption);
+    compareCommand.AddOption(maxDifferencesOption);
+    compareCommand.AddOption(failOnOption);
+    compareCommand.AddOption(ignoreOption);
+    compareCommand.AddOption(quietOption);
+    compareCommand.AddOption(skipValidationOption);
+    compareCommand.SetHandler(async (context) =>
+    {
+        var referenceDirectory = context.ParseResult.GetValueForOption(referenceDirectoryOption);
+        var entraFile = context.ParseResult.GetValueForOption(entraFileOption);
+        var outputDirectory = context.ParseResult.GetValueForOption(outputDirectoryOption);
+        var reportFormats = context.ParseResult.GetValueForOption(reportFormatsOption);
+        var matchingStrategy = context.ParseResult.GetValueForOption(matchingStrategyOption);
+        var caseSensitive = context.ParseResult.GetValueForOption(caseSensitiveOption);
+        var explainValues = context.ParseResult.GetValueForOption(explainOption);
+        var exitOnDifferences = context.ParseResult.GetValueForOption(exitOnDifferencesOption);
+        var maxDifferences = context.ParseResult.GetValueForOption(maxDifferencesOption);
+        var failOn = context.ParseResult.GetValueForOption(failOnOption);
+        var ignore = context.ParseResult.GetValueForOption(ignoreOption);
+        var quiet = context.ParseResult.GetValueForOption(quietOption);
+        var skipValidation = context.ParseResult.GetValueForOption(skipValidationOption);
+        var exitCode = await ComparePoliciesAsync(
+            referenceDirectory!,
+            entraFile,
+            outputDirectory!,
+            reportFormats!,
+            matchingStrategy,
+            caseSensitive,
+            explainValues,
+            exitOnDifferences,
+            maxDifferences,
+            failOn!,
+            ignore!,
+            quiet,
+            skipValidation);
+        context.ExitCode = exitCode;
+    });
+    compareCommand.Description = "Compare Entra policies with reference JSON files. This command compares the current policies in your Azure AD tenant against a set of reference JSON files and generates detailed comparison reports.";
+    compareCommand.AddAlias("c");
+    compareCommand.AddExample("dotnet run compare --reference-dir ./baseline --entra-file ./live.json --output-dir ./reports");
+    compareCommand.AddExample("dotnet run c -r ./baseline -e ./live.json -o ./reports");
             {
                 var referenceDirectory = context.ParseResult.GetValueForOption(referenceDirectoryOption);
                 var entraFile = context.ParseResult.GetValueForOption(entraFileOption);
@@ -240,6 +225,14 @@ namespace ConditionalAccessExporter
                 
                 context.ExitCode = exitCode;
             });
+}
+}
+}
+}
+}
+}
+}
+}
 
             // Cross-format compare command
             var crossFormatCompareCommand = new Command("cross-compare", "Compare policies across different formats (JSON vs Terraform)");
