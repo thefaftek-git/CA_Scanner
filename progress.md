@@ -11,7 +11,7 @@
 
 ### 2. Development Automation
 - [x] Add pre-commit hooks with Husky.NET
-- [ ] Implement automatic code formatting
+- [x] Implement automatic code formatting
 - [ ] Create development environment setup scripts
 - [ ] Add VS Code development container
 
