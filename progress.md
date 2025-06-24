@@ -12,7 +12,7 @@
 ### 2. Development Automation
 - [x] Add pre-commit hooks with Husky.NET
 - [x] Implement automatic code formatting
-- [ ] Create development environment setup scripts
+- [x] Create development environment setup scripts
 - [ ] Add VS Code development container
 
 ### 3. Code Standards and Guidelines
