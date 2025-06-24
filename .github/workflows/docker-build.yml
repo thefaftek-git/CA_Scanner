@@ -1,32 +1,31 @@
 
-
 name: Docker Build and Push
 
 on:
   push:
     branches:
-      - '**'
-    paths:
-      - 'Dockerfile'
-      - 'ConditionalAccessExporter/**'
+      - main
   pull_request:
     branches:
-      - '**'
-    paths:
-      - 'Dockerfile'
-      - 'ConditionalAccessExporter/**'
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    needs: [build-and-test, analyze, security-policy-check, dependency-scan]
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v2
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
+
+    - name: Check Docker secrets
+      run: |
+        if [ -z "${{ secrets.DOCKER_USERNAME }}" ] || [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then
+          echo "DOCKER_USERNAME and DOCKER_PASSWORD secrets are not set. Please set these secrets in the repository settings."
+          exit 1
+        fi
 
     - name: Log in to DockerHub
       uses: docker/login-action@v3
@@ -35,17 +34,13 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build and push Docker image
-      if: github.ref == 'refs/heads/main' || env.PUSH_DOCKER_IMAGE == 'true'
       run: |
         docker build -t ${{ secrets.DOCKER_USERNAME }}/ca-scanner:latest .
         docker tag ${{ secrets.DOCKER_USERNAME }}/ca-scanner:latest ${{ secrets.DOCKER_USERNAME }}/ca-scanner:${{ github.sha }}
-        docker push ${{ secrets.DOCKER_USERNAME }}/ca-scanner:latest
         docker push ${{ secrets.DOCKER_USERNAME }}/ca-scanner:${{ github.sha }}
 
     - name: Build multi-architecture image
-      if: github.ref == 'refs/heads/main' || env.PUSH_DOCKER_IMAGE == 'true'
       run: |
         docker buildx create --use
         docker buildx inspect --bootstrap
-        docker buildx build --platform linux/amd64,linux/arm64 -t ${{ secrets.DOCKER_USERNAME }}/ca-scanner:multiarch-latest --push .
 
