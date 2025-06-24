@@ -1,31 +1,37 @@
 
 # Use the official .NET SDK image to build the application
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
-# Set working directory inside the container
-WORKDIR /app
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy the project file and restore dependencies
-COPY ["ConditionalAccessExporter/ConditionalAccessExporter.csproj", "ConditionalAccessExporter/"]
-RUN dotnet restore "ConditionalAccessExporter/ConditionalAccessExporter.csproj"
+# Install .NET SDK
+RUN curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0
 
-# Copy the rest of the source code
+# Set up working directory
+WORKDIR /workspace
+
+# Copy project files
 COPY . .
 
-# Build the application
-RUN dotnet publish "ConditionalAccessExporter/ConditionalAccessExporter.csproj" -c Release -o out
+# Restore NuGet packages
+RUN dotnet restore
 
-# Use a smaller runtime image for the final container
-FROM mcr.microsoft.com/dotnet/runtime:8.0 AS runtime
-WORKDIR /app
+# Build the project
+RUN dotnet build
 
-# Copy the published application from the build stage
-COPY --from=build-env /app/out .
+# Install global tools
+RUN dotnet tool install -g dotnet-format
 
-# Environment variables for Azure authentication must be provided at runtime.
-# Required: AZURE_TENANT_ID
-# Required: AZURE_CLIENT_ID
-# Required: AZURE_CLIENT_SECRET
+# Set up pre-commit hooks
+RUN husky install
 
-# Entry point for the application
-ENTRYPOINT ["dotnet", "ConditionalAccessExporter.dll"]
+# Expose port for the application
+EXPOSE 5000
+
+# Start the application
+CMD ["dotnet", "run", "--project", "ConditionalAccessExporter"]
+
