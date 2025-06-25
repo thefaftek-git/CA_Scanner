@@ -22,18 +22,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
-        
+
     - name: Restore dependencies
       run: dotnet --version && dotnet restore
-      
+
     - name: Build
       run: dotnet --version && dotnet build --no-restore -p:TreatWarningsAsErrors=false -p:RunAnalyzersDuringBuild=false -p:RunCodeAnalysis=false -p:WarningLevel=0
-    
+
     - name: Test with coverage
       id: tests
       continue-on-error: true
@@ -42,7 +42,7 @@ jobs:
         AZURE_CLIENT_ID: ${{ secrets.Azure_Client_Id }}
         AZURE_CLIENT_SECRET: ${{ secrets.Azure_Client_Secret }}
       run: "dotnet --version && dotnet test --no-build --verbosity normal --collect:\"XPlat Code Coverage\" --logger \"console;verbosity=detailed\" --nologo -p:TreatWarningsAsErrors=false -p:RunAnalyzersDuringBuild=false -p:RunCodeAnalysis=false -p:WarningLevel=0"
-      
+
     - name: Generate code coverage report
       if: success()
       uses: danielpalme/ReportGenerator-GitHub-Action@5.4.8
@@ -50,14 +50,25 @@ jobs:
         reports: '**/coverage.cobertura.xml'
         targetdir: 'coveragereport'
         reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
-        
+
     - name: Upload coverage report artifact
       if: success()
       uses: actions/upload-artifact@v4
       with:
         name: CoverageReport
         path: coveragereport
-        
+
+    - name: Enforce minimum coverage threshold
+      if: success()
+      run: |
+        coverage=$(grep -oPm1 "(?<=<coverage line-rate=\")[^\"]+" coveragereport/Cobertura.xml)
+        if (( $(echo "$coverage < 0.80" | bc -l) )); then
+          echo "Coverage is below the minimum threshold of 80%."
+          exit 1
+        else
+          echo "Coverage is above the minimum threshold of 80%."
+        fi
+
     - name: Publish coverage report to GitHub Pages
       if: success() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
       uses: JamesIves/github-pages-deploy-action@v4

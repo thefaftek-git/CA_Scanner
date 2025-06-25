@@ -392,6 +392,56 @@ public class PolicyComparisonServiceTests
 
     [Fact]
     public async Task CompareAsync_MatchingByName_SameName_ShouldMatch()
+
+    [Fact]
+    public async Task CompareAsync_DifferentStates_ShouldReportAsDifferent()
+    {
+        // Arrange
+        var policy1 = CreateTestEntraPolicy("policy-1", "Test Policy", "Enabled");
+        var policy2 = CreateTestEntraPolicy("policy-2", "Test Policy", "Disabled");
+        var entraExport = CreateTestEntraExport("tenant-123", policy1, policy2);
+
+        var tempDir = Path.Combine(Path.GetTempPath(), "test-ref-different-states");
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            var refPolicyPath1 = Path.Combine(tempDir, "policy1.json");
+            await File.WriteAllTextAsync(refPolicyPath1, CreateTestReferencePolicy("policy-1", "Test Policy", "Enabled"));
+
+            var refPolicyPath2 = Path.Combine(tempDir, "policy2.json");
+            await File.WriteAllTextAsync(refPolicyPath2, CreateTestReferencePolicy("policy-2", "Test Policy", "Disabled"));
+
+            var matchingOptions = new MatchingOptions
+            {
+                Strategy = MatchingStrategy.ByName,
+                CaseSensitive = false
+            };
+
+            // Act
+            var result = await _service.CompareAsync(entraExport, tempDir, matchingOptions);
+
+            // Assert
+            Assert.Equal(2, result.Summary.PoliciesWithDifferences);
+            Assert.Equal(0, result.Summary.MatchingPolicies);
+            Assert.Equal(2, result.PolicyComparisons.Count);
+
+            var comparison1 = result.PolicyComparisons.FirstOrDefault(c => c.PolicyId == "policy-1");
+            Assert.NotNull(comparison1);
+            Assert.Equal(ComparisonStatus.Identical, comparison1.Status);
+
+            var comparison2 = result.PolicyComparisons.FirstOrDefault(c => c.PolicyId == "policy-2");
+            Assert.NotNull(comparison2);
+            Assert.Equal(ComparisonStatus.Different, comparison2.Status);
+            Assert.NotNull(comparison2.Differences);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, true);
+        }
+    }
+
     {
         // Arrange
         var policy1 = CreateTestEntraPolicy("different-id", "Same Policy Name");

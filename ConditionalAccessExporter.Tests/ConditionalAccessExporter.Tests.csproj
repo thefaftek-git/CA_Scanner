@@ -1,43 +1,51 @@
+
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    
-    <!-- Security Analysis Configuration -->
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest</AnalysisLevel>
-    <AnalysisMode>Recommended</AnalysisMode>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-    <WarningsNotAsErrors />
-    <CodeAnalysisRuleSet>../ConditionalAccessExporter/security.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.4" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-    <PackageReference Include="Moq" Version="4.20.72" /> <!-- No update available per initial check, keeping as is -->
-    <PackageReference Include="System.IO.Abstractions" Version="22.0.14" /> <!-- No update available per initial check, keeping as is -->
-    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="22.0.14" /> <!-- No update available per initial check, keeping as is -->
-    <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.1" />
-    <!-- Security fix for vulnerable dependencies -->
-    <PackageReference Include="System.Text.Json" Version="9.0.6" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" /> <!-- No update available per initial check, keeping as is -->
-    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" /> <!-- No update available per initial check, keeping as is -->
-  </ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
+    <PackageReference Include="xunit" Version="2.8.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.0" />
+    <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Graph" Version="5.20.0" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.54.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.23073.1" />
+    <PackageReference Include="System.CommandLine.DragonFruit" Version="2.0.0-beta4.23073.1" />
+    <PackageReference Include="System.CommandLine.Extensions" Version="2.0.0-beta4.23073.1" />
+    <PackageReference Include="System.CommandLine.Hosting" Version="2.0.0-beta4.23073.1" />
+    <PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.23073.1" />
+    <PackageReference Include="System.CommandLine.Parsing" Version="2.0.0-beta4.23073.1" />
+    <PackageReference Include="System.CommandLine.Rendering" Version="2.0.0-beta4.23073.1" />
+    <PackageReference Include="System.CommandLine.Resources" Version="2.0.0-beta4.23073.1" />
+    <PackageReference Include="System.CommandLine.Suggest" Version="2.0.0-beta4.23073.1" />
+    <PackageReference Include="System.CommandLine.Tokenization" Version="2.0.0-beta4.23073.1" />
+    <PackageReference Include="System.CommandLine.Versioning" Version="2.0.0-beta4.23073.1" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.426" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="4.8.0" />
+    <PackageReference Include="dotnet-format" Version="8.0.0" />
 
-  <ItemGroup>
-    <Using Include="Xunit" />
-  </ItemGroup>
+    <!-- Testing dependencies -->
+    <PackageReference Include="Moq" Version="4.20.69" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.1" />
+    <PackageReference Include="FluentAssertions" Version="7.0.0" />
 
-  <ItemGroup>
-    <ProjectReference Include="..\ConditionalAccessExporter\ConditionalAccessExporter.csproj" />
+    <!-- Mutation testing -->
+    <PackageReference Include="Stryker.NET.MsBuild" Version="4.3.2" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
+

@@ -16,6 +16,253 @@ CA_Scanner is a .NET 8 Azure Conditional Access Policy management tool designed 
 
 ## 🚀 Quick Start for Developers
 
+To set up your development environment and get started with CA_Scanner, follow these steps:
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/thefaftek-git/CA_Scanner.git
+   cd CA_Scanner
+   ```
+
+2. **Install .NET 8 SDK**:
+   ```bash
+   ./dotnet-install.sh
+   ```
+
+3. **Set up Azure credentials**:
+   - Create an Azure App Registration with the necessary permissions.
+   - Set the following environment variables with your Azure credentials:
+     ```bash
+     export AZURE_TENANT_ID=your-tenant-id
+     export AZURE_CLIENT_ID=your-client-id
+     export AZURE_CLIENT_SECRET=your-client-secret
+     ```
+
+4. **Build the solution**:
+   ```bash
+   dotnet build
+   ```
+
+5. **Run the application**:
+   ```bash
+   cd ConditionalAccessExporter
+   ./run.sh
+   ```
+
+6. **Run tests**:
+   ```bash
+   dotnet test
+   ```
+
+## 🏗️ Project Architecture
+
+CA_Scanner follows a service-oriented architecture with specialized services for different functionalities. The main services are located in the `ConditionalAccessExporter/Services` directory.
+
+### Core Services
+- **BaselineGenerationService**: Creates reference policy files from current tenant
+- **PolicyComparisonService**: Compares policies with flexible matching strategies
+- **TerraformConversionService**: Converts between JSON and Terraform formats
+- **ReportGenerationService**: Creates various output formats (console, JSON, HTML, CSV)
+
+### Utility Services
+- **RemediationService**: Handles policy remediation workflows
+- **PolicyValidationService**: Validates policy configurations
+- **ScriptGenerationService**: Generates automation scripts
+- **TemplateService**: Manages policy templates
+
+## 💻 Development Workflow
+
+### Branching Strategy
+- Create a new branch for each feature or bug fix.
+- Use descriptive branch names (e.g., `feature/interactive-documentation`, `bugfix/authentication-issue`).
+
+### Commit Messages
+- Write clear and concise commit messages.
+- Follow the conventional commit format (e.g., `feat: add interactive documentation`, `fix: resolve authentication issue`).
+
+### Pull Requests
+- Create a pull request for each feature or bug fix.
+- Include a detailed description of the changes and the reasoning behind them.
+- Request reviews from at least one other contributor.
+
+### Code Reviews
+- Participate in code reviews to provide feedback and help improve code quality.
+- Address feedback promptly and make necessary changes.
+
+## 🎨 Coding Standards
+
+### C# Conventions
+- Follow the [C# Coding Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions).
+- Use meaningful variable and method names.
+- Write clear and concise comments.
+
+### Patterns and Best Practices
+- Use dependency injection for service dependencies.
+- Follow the single responsibility principle for classes and methods.
+- Write unit tests for new features and bug fixes.
+
+## 🧪 Testing Guidelines
+
+### Unit Testing
+- Write unit tests for all new features and bug fixes.
+- Use the xUnit framework for unit testing.
+- Mock external dependencies using libraries like Moq.
+
+### Integration Testing
+- Write integration tests for end-to-end workflows.
+- Use the xUnit framework for integration testing.
+- Test against a real Azure environment or a mock environment.
+
+### Mocking
+- Use mocking libraries like Moq to simulate external dependencies.
+- Write clear and concise mock setups.
+
+## 🐛 Troubleshooting
+
+### Common Development Issues
+- **Build Failures**: Check the error messages for specific issues. Common problems include missing dependencies or syntax errors in the code.
+- **Azure Authentication Issues**: Verify that the environment variables for Azure credentials are correctly set.
+- **Test Failures**: Check the test output for specific issues. Common problems include incorrect test setups or missing mocks.
+
+### Diagnostic Commands
+- **Check Azure Credentials**:
+  ```bash
+  echo $AZURE_TENANT_ID
+  echo $AZURE_CLIENT_ID
+  echo $AZURE_CLIENT_SECRET
+  ```
+
+- **Run Specific Test**:
+  ```bash
+  dotnet test --filter "FullyQualifiedName=Namespace.ClassName.MethodName"
+  ```
+
+- **Check Test Coverage**:
+  ```bash
+  dotnet test --collect:"XPlat Code Coverage"
+  ```
+
+## 📈 Performance Considerations
+
+- Optimize database queries and reduce unnecessary data processing.
+- Use asynchronous programming for I/O-bound operations.
+- Profile the application to identify performance bottlenecks.
+
+## 🔒 Security Guidelines
+
+### Code Security
+- **Never commit secrets** to version control
+- **Use environment variables** for configuration
+- **Validate all inputs** properly
+- **Handle sensitive data** carefully
+- **Follow principle of least privilege**
+
+### Azure Security
+- **Use service principals** for authentication
+- **Rotate secrets regularly**
+- **Monitor API usage**
+- **Follow Azure security best practices**
+
+## 📚 Documentation Standards
+
+### Code Documentation
+- Use XML comments for public methods and properties.
+- Include summary, parameters, returns, and exceptions where applicable.
+
+### README Updates
+- Update command-line help sections when adding new features.
+- Add usage examples for new features.
+- Update troubleshooting if needed.
+- Add new features to the feature list.
+
+### API Documentation
+- Use DocFX for API documentation generation.
+- Include XML documentation comments in code.
+- Integrate with the build pipeline.
+- Host the documentation site.
+
+## 🛠️ Common Development Tasks
+
+### Adding a New Service
+1. **Create the interface** in the appropriate namespace.
+2. **Implement the service** following the service pattern.
+3. **Add unit tests** with good coverage.
+4. **Register in the DI container** (if applicable).
+5. **Update documentation**.
+
+### Adding a New Command
+1. **Update Program.cs** with the new command definition.
+2. **Create the command handler** method.
+3. **Add validation** for command options.
+4. **Update help text** and documentation.
+5. **Add integration tests**.
+
+### Adding a New Output Format
+1. **Extend ReportGenerationService** with the new format.
+2. **Create format-specific logic**.
+3. **Update command-line options**.
+4. **Add tests** for the new format.
+5. **Update documentation** with examples.
+
+## 🚀 Release Process
+
+### Pre-Release Checklist
+- [ ] All tests passing
+- [ ] Documentation updated
+- [ ] Version numbers updated
+- [ ] CHANGELOG.md updated
+- [ ] Performance benchmarks run
+
+### Version Numbering
+- Follow semantic versioning (SemVer):
+  - **Major**: Breaking changes (2.0.0)
+  - **Minor**: New features, backward compatible (1.1.0)
+  - **Patch**: Bug fixes (1.0.1)
+
+## 🤝 Getting Help
+
+### Resources
+- **Project README**: Overview and quick start
+- **CONFIGURATION.md**: All configuration options
+- **EXAMPLES.md**: Practical use cases
+- **API Documentation**: Generated docs (future)
+
+### Support Channels
+- **GitHub Issues**: Bug reports and feature requests
+- **GitHub Discussions**: Questions and general discussion
+- **Code Reviews**: Learning opportunity through PR reviews
+
+### Mentorship
+- New contributors are encouraged to:
+  1. Start with "good first issue" labels
+  2. Ask questions in PR comments
+  3. Participate in code reviews
+  4. Join community discussions
+
+## 📝 Issue and PR Templates
+
+### Bug Report Template
+- Include environment details (.NET version, OS)
+- Provide steps to reproduce
+- Describe expected vs actual behavior
+- Include error messages and logs
+- Provide Azure tenant configuration (anonymized)
+
+### Feature Request Template
+- Describe the use case
+- Propose a solution
+- List alternative solutions considered
+- Explain the impact on existing functionality
+
+### Pull Request Template
+- Describe the changes
+- List the testing performed
+- Note any documentation updates
+- Highlight any breaking changes
+- Include screenshots (if UI changes)
+
+---
+
 ### Prerequisites
 
 1. **.NET 8.0 SDK**

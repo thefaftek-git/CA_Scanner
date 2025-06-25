@@ -1,0 +1,24 @@
+
+
+
+
+title: CA_Scanner Documentation
+description: Comprehensive documentation for CA_Scanner, a .NET 8 Azure Conditional Access Policy management tool.
+theme: jekyll-theme-minimal
+baseurl: "/CA_Scanner"
+url: "https://thefaftek-git.github.io"
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
+include:
+  - CONTRIBUTING.md
+  - CONFIGURATION.md
+  - EXAMPLES.md
+  - TROUBLESHOOTING.md
+  - API_REFERENCE.md
+  - ADVANCED_FEATURES.md
+
+
+

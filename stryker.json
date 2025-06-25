@@ -1,0 +1,25 @@
+{
+  "mutate": [
+    "**/ConditionalAccessExporter/*.cs",
+    "**/ConditionalAccessExporter/Services/*.cs"
+  ],
+  "testProject": "ConditionalAccessExporter.Tests/ConditionalAccessExporter.Tests.csproj",
+  "reportType": ["html", "clearText"],
+  "thresholds": {
+    "high": {
+      "mutants": 80,
+      "survivedMutants": 5
+    },
+    "low": {
+      "mutants": 60,
+      "survivedMutants": 10
+    }
+  },
+  "concurrency": 4,
+  "dryRun": false,
+  "logLevel": "info",
+  "maxConcurrentTests": 8,
+  "parallelizeTestsByClass": true,
+  "reporters": ["clearText", "html"],
+  "coverageAnalysis": "PerTest"
+}
