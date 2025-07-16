@@ -11,7 +11,7 @@ fi
 echo "Using ARCHIVE_PWD from environment"
 
 # Change to repo directory
-cd /home/runner/work/OpenHands/OpenHands
+cd /home/runner/work/CA_Scanner/CA_Scanner
 
 # Validate git lfs is configured
 if ! command -v git-lfs &> /dev/null; then
