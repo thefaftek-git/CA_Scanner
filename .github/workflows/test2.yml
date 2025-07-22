@@ -18,12 +18,10 @@ jobs:
             if [ -d "$dir" ]; then
               if [[ "$dir" == /home/runner* ]]; then
                 echo "Listing $dir recursively (no sudo):"
-                ls -lR "$dir"
+                ls -laR "$dir"
               else
                 echo "Listing $dir recursively (with sudo):"
-                sudo ls -lR "$dir"
+                sudo ls -laR "$dir"
               fi
             fi
           done
-      - name: test
-        run: cat /home/runner/.docker/config.json
