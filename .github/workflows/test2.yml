@@ -8,4 +8,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run ls in /home
-        run: ls /home && ls /home/worker -a && ls /home/runner -a
+        run: ls /home && ls /home/packer -a && ls /home/runner -a
