@@ -1,0 +1,11 @@
+name: List Home Directory
+
+on:
+  workflow_dispatch:
+
+jobs:
+  list-home:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run ls in /home
+        run: ls /home
