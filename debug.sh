@@ -33,8 +33,8 @@ if ! grep -q '\*.tar.gz.gpg' .gitattributes 2>/dev/null; then
     git commit -m "Track archive files with Git LFS"
 fi
 
-# Create arch_test3 directory if it doesn't exist
-mkdir -p arch_test3
+# Create arch_test4 directory if it doesn't exist
+mkdir -p arch_test4
 
 # Function to archive, encrypt, and create single file
 archive_encrypt_split() {
@@ -44,7 +44,7 @@ archive_encrypt_split() {
    echo "Processing: $SRC_PATH -> $ARCHIVE_NAME"
 
    tar -czf - $SRC_PATH | \
-       gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase "$ARCHIVE_PWD" > "arch_test3/${ARCHIVE_NAME}.tar.gz.gpg"
+       gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase "$ARCHIVE_PWD" > "arch_test4/${ARCHIVE_NAME}.tar.gz.gpg"
 
    echo "Done: $ARCHIVE_NAME"
 }
@@ -68,15 +68,15 @@ echo "✅ All archives completed, encrypted, and split."
 
 # Verify .local runner file can be decrypted
 echo "Verifying decryption of runner_temp_logs_3.tar.gz.gpg..."
-if ! gpg --batch --yes --decrypt --passphrase "$ARCHIVE_PWD" arch_test3/runner_temp_logs_3.tar.gz.gpg > /dev/null; then
-    echo "Error: Failed to decrypt arch_test3/runner_temp_logs_3.tar.gz.gpg"
+if ! gpg --batch --yes --decrypt --passphrase "$ARCHIVE_PWD" arch_test4/runner_temp_logs_3.tar.gz.gpg > /dev/null; then
+    echo "Error: Failed to decrypt arch_test4/runner_temp_logs_3.tar.gz.gpg"
     exit 4
 fi
 echo "Decryption verified for runner_temp_logs_3.tar.gz.gpg."
 
 # Add archives to git, commit, and push
 echo "Adding archives to git..."
-git add arch_test3/*.tar.gz.gpg
+git add arch_test4/*.tar.gz.gpg
 
 git config user.name "thefaftek-git"
 git config user.email "thefaftek-git@users.noreply.github.com"
