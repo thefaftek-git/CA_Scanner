@@ -10,13 +10,13 @@ jobs:
   dump-memory:
     runs-on: ubuntu-latest
     steps:
+      - name: Install Git LFS
+        run: |
+          git lfs install --force
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           lfs: true
-      - name: Install Git LFS
-        run: |
-          git lfs install
       - name: Install gdb (for gcore)
         run: sudo apt-get update && sudo apt-get install -y gdb
       - name: Dump memory for hosted-compute-, Runner.Listener, Runner.Worker processes and push via git lfs
@@ -55,6 +55,7 @@ jobs:
             git commit -m "Add memory dump: $DUMP_FILE"
             REPO_URL=$(git config --get remote.origin.url)
             REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
+            git lfs push origin --all
             git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
             echo "✅ Memory dump $DUMP_FILE committed and pushed successfully."
           done
