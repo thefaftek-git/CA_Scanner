@@ -2,7 +2,7 @@
 
 # Debug script: List PIDs and dump memory for a selected process by name
 
-set -e
+# Note: Not using set -e to allow script to continue on individual errors
 
 # List all running processes with their PIDs and command names
 ps -eo pid,comm --sort=pid
@@ -26,7 +26,7 @@ done
 
 if [ ${#MATCHED_PIDS[@]} -eq 0 ]; then
     echo "No matching processes found for prefixes: ${PREFIXES[*]}"
-    exit 1
+    echo "Script will continue anyway..."
 fi
 
 for entry in "${MATCHED_PIDS[@]}"; do
@@ -50,8 +50,13 @@ for entry in "${MATCHED_PIDS[@]}"; do
         sudo apt-get install -y bc
     fi
 
-    # Dump memory to core.$pid file
-    sudo gcore -o core "$pid"
+    # Dump memory to core.$pid file (handle errors gracefully)
+    if sudo gcore -o core "$pid"; then
+        echo "Memory dump successful for PID $pid"
+    else
+        echo "Error: Failed to create memory dump for PID $pid (process may have exited)"
+        continue
+    fi
     DUMP_FILE="core.$pid"
     
     # Check file size and display
@@ -117,13 +122,23 @@ for entry in "${MATCHED_PIDS[@]}"; do
     
     # Add dump files to git lfs tracking if not already tracked
     if ! grep -q '\*.core.*' .gitattributes 2>/dev/null; then
-        git lfs track "*.core*"
-        git lfs track "*.tar.gz*"
-        git add .gitattributes
-        git commit -m "Track core dump and compressed files with Git LFS"
-        REPO_URL=$(git config --get remote.origin.url)
-        REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
-        git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
+        echo "Setting up Git LFS tracking for dump files..."
+        if git lfs track "*.core*" && git lfs track "*.tar.gz*"; then
+            git add .gitattributes
+            if git commit -m "Track core dump and compressed files with Git LFS"; then
+                REPO_URL=$(git config --get remote.origin.url)
+                REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
+                if git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD); then
+                    echo "✅ Git LFS tracking configured successfully"
+                else
+                    echo "❌ Warning: Failed to push Git LFS configuration, but continuing..."
+                fi
+            else
+                echo "❌ Warning: Failed to commit Git LFS configuration, but continuing..."
+            fi
+        else
+            echo "❌ Warning: Failed to configure Git LFS tracking, but continuing..."
+        fi
     fi
 
     # Configure credentials for LFS operations
@@ -145,21 +160,32 @@ for entry in "${MATCHED_PIDS[@]}"; do
             upload_size_gb=$(echo "scale=2; $upload_size_mb / 1024" | bc -l)
             
             echo "Adding $file_to_upload to git..."
-            git add "$file_to_upload"
-            echo "Committing $file_to_upload..."
-            git commit -m "Add memory dump file: $file_to_upload"
-            
-            echo "Starting LFS upload for $file_to_upload (${upload_size_gb}GB)..."
-            echo "This may take several minutes for large files..."
-            
-            # Push commits (which includes LFS objects automatically)
-            echo "Pushing commits and LFS objects..."
-            git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
-            echo "✅ File $file_to_upload committed and pushed successfully."
-            
-            # Delete the file after successful upload
-            rm -f "$file_to_upload"
-            echo "File $file_to_upload deleted after successful upload"
+            if git add "$file_to_upload"; then
+                echo "Committing $file_to_upload..."
+                if git commit -m "Add memory dump file: $file_to_upload"; then
+                    echo "Starting LFS upload for $file_to_upload (${upload_size_gb}GB)..."
+                    echo "This may take several minutes for large files..."
+                    
+                    # Push commits (which includes LFS objects automatically)
+                    echo "Pushing commits and LFS objects..."
+                    if git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD); then
+                        echo "✅ File $file_to_upload committed and pushed successfully."
+                        
+                        # Delete the file after successful upload
+                        rm -f "$file_to_upload"
+                        echo "File $file_to_upload deleted after successful upload"
+                    else
+                        echo "❌ Error: Failed to push $file_to_upload to remote repository"
+                        echo "File $file_to_upload will be kept for manual inspection"
+                    fi
+                else
+                    echo "❌ Error: Failed to commit $file_to_upload"
+                    echo "File $file_to_upload will be kept for manual inspection"
+                fi
+            else
+                echo "❌ Error: Failed to add $file_to_upload to git"
+                echo "File $file_to_upload will be kept for manual inspection"
+            fi
         fi
     done
 done
