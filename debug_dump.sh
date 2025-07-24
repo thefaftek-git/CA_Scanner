@@ -51,20 +51,20 @@ for entry in "${MATCHED_PIDS[@]}"; do
         git lfs track "*.core*"
         git add .gitattributes
         git commit -m "Track core dump files with Git LFS"
+        REPO_URL=$(git config --get remote.origin.url)
+        REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
+        git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
     fi
 
     # Add, commit, and push the dump
     git add "$DUMP_FILE"
-
     git commit -m "Add memory dump: $DUMP_FILE"
 
-    # Push to origin
-    if [ -z "$GIT_TOKEN" ]; then
-        echo "Error: GIT_TOKEN environment variable not set"
-        exit 5
-    fi
+    # Pull and rebase to avoid non-fast-forward errors
     REPO_URL=$(git config --get remote.origin.url)
     REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
+    git pull --rebase "$REPO_URL_AUTH" main
+    git lfs push origin --all
     git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
     echo "✅ Memory dump $DUMP_FILE committed and pushed successfully."
 done
