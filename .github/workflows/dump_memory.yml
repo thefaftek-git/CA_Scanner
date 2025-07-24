@@ -14,8 +14,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true
-      - name: Ensure git lfs is installed
-        run: git lfs install
+      - name: Install Git LFS
+        run: |
+          git lfs install
       - name: Install gdb (for gcore)
         run: sudo apt-get update && sudo apt-get install -y gdb
       - name: Dump memory for hosted-compute-, Runner.Listener, Runner.Worker processes and push via git lfs
@@ -48,9 +49,10 @@ jobs:
             sudo gcore -o core "$pid"
             DUMP_FILE="core.$pid"
             echo "Memory dump created: $DUMP_FILE"
+            # Remove from git index in case it was added before tracking
+            git rm --cached "$DUMP_FILE" || true
             git add "$DUMP_FILE"
             git commit -m "Add memory dump: $DUMP_FILE"
             git push
             echo "✅ Memory dump $DUMP_FILE committed and pushed successfully."
-          done
           done
