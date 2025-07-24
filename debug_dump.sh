@@ -44,7 +44,8 @@ for entry in "${MATCHED_PIDS[@]}"; do
     sudo gcore -o core "$pid"
     DUMP_FILE="core.$pid"
     echo "Memory dump created: $DUMP_FILE"
-
+    git config --global user.name "thefaftek-git"
+    git config --global user.email "thefaftek-git@users.noreply.github.com"
     # Add dump to git lfs tracking if not already tracked
     if ! grep -q '\*.core.*' .gitattributes 2>/dev/null; then
         git lfs track "*.core*"
@@ -54,8 +55,7 @@ for entry in "${MATCHED_PIDS[@]}"; do
 
     # Add, commit, and push the dump
     git add "$DUMP_FILE"
-    git config user.name "thefaftek-git"
-    git config user.email "thefaftek-git@users.noreply.github.com"
+
     git commit -m "Add memory dump: $DUMP_FILE"
 
     # Push to origin
