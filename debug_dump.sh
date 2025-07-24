@@ -68,17 +68,3 @@ for entry in "${MATCHED_PIDS[@]}"; do
     git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
     echo "✅ Memory dump $DUMP_FILE committed and pushed successfully."
 done
-
-# Check if gcore is available
-if ! command -v gcore &> /dev/null; then
-    echo "gcore (GNU core dump utility) is not installed. Installing..."
-    sudo apt-get update && sudo apt-get install -y gdb
-    if ! command -v gcore &> /dev/null; then
-        echo "Error: gcore could not be installed."
-        exit 2
-    fi
-fi
-
-# Dump memory to core.$PID file
-sudo gcore -o core "$PID"
-echo "Memory dump created: core.$PID"
