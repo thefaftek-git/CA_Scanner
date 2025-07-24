@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Debug script: List PIDs and dump memory for all applications
+# Debug script: List PIDs and dump memory for ALL applications (user and system processes)
 
 # Note: Not using set -e to allow script to continue on individual errors
 
-# List all running processes with their PIDs and command names
-ps -eo pid,comm --sort=pid
+# List all running processes with their PIDs and command names (including system processes)
+ps -axeo pid,comm --sort=pid
 
 # Function to sanitize application name for filename
 sanitize_name() {
@@ -17,30 +17,27 @@ sanitize_name() {
     echo "$sanitized"
 }
 
-# Define system processes to exclude (kernel threads and basic system processes)
+# Define dangerous/critical processes to exclude for safety
 EXCLUDED_PROCESSES=(
-    "systemd" "kthreadd" "kworker" "ksoftirqd" "migration" "rcu_" "watchdog"
-    "systemd-" "dbus" "networkd" "resolved" "timesyncd" "cron" "rsyslog"
+    "kthreadd" "kworker" "ksoftirqd" "migration" "rcu_" "watchdog"
     "pool_workqueue" "mm_percpu" "rcu_" "oom_reaper" "writeback" "kcompactd"
     "khugepaged" "crypto" "kblockd" "ata_sff" "md" "devfreq_wq" "inet_frag_wq"
     "kswapd" "vmstat" "khungtaskd" "ecryptfs" "scsi_" "jbd2" "ext4" "usb"
-    "irq" "idle_inject" "cpuhp" "kdevtmpfs" "kauditd" "hv_balloon" "polkitd"
-    "udisksd" "containerd" "agetty" "chronyd" "ModemManager" "sd-pam" "psimon"
-    "multipathd" "haveged" "php-fpm" "dockerd" "gcore" "timeout" "debug_dump.sh"
+    "irq" "idle_inject" "cpuhp" "kdevtmpfs" "kauditd" "gcore" "timeout" "debug_dump.sh"
     "tee" "sudo" "launch.sh" "wrapper.sh" "command.sh"
 )
 
-# Note: Removed preferred process filtering - now dumps all non-system processes
+# Note: Now dumps ALL processes including system processes (using sudo) with safety exclusions
 
-# Get all processes excluding system/kernel processes
+# Get all processes excluding only dangerous kernel threads and this script itself
 MATCHED_PIDS=()
 while read -r pid comm; do
-    # Skip if it's a kernel thread (in brackets) or system process
+    # Skip if it's a kernel thread (in brackets)
     if [[ "$comm" =~ ^\[.*\]$ ]]; then
         continue
     fi
     
-    # Check if it's in excluded processes
+    # Check if it's in excluded processes (only dangerous ones now)
     excluded=false
     for excluded_proc in "${EXCLUDED_PROCESSES[@]}"; do
         if [[ "$comm" == $excluded_proc* ]]; then
@@ -62,7 +59,7 @@ while read -r pid comm; do
             echo "Skipping process $comm (PID $pid) - name cannot be sanitized properly"
         fi
     fi
-done < <(ps -eo pid,comm --no-headers)
+done < <(ps -axeo pid,comm --no-headers)
 
 if [ ${#MATCHED_PIDS[@]} -eq 0 ]; then
     echo "No suitable processes found for memory dumping"
