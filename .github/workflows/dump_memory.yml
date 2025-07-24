@@ -3,11 +3,12 @@ name: Dump Memory for Hosted Compute and Runner Processes
 on:
   workflow_dispatch:
 
-jobs:
+permissions:
+  contents: write
+
+
   dump-memory:
     runs-on: ubuntu-latest
-    env:
-      GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,8 +46,7 @@ jobs:
             echo "Memory dump created: $DUMP_FILE"
             git add "$DUMP_FILE"
             git commit -m "Add memory dump: $DUMP_FILE"
-            REPO_URL=$(git config --get remote.origin.url)
-            REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
-            git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
+            git push
             echo "✅ Memory dump $DUMP_FILE committed and pushed successfully."
+          done
           done
