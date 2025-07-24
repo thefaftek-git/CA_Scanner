@@ -61,49 +61,105 @@ for entry in "${MATCHED_PIDS[@]}"; do
         FILE_SIZE_GB=$(echo "scale=2; $FILE_SIZE_MB / 1024" | bc -l)
         echo "Memory dump created: $DUMP_FILE"
         echo "File size: ${FILE_SIZE_MB}MB (${FILE_SIZE_GB}GB)"
+        
+        # Check if file is larger than 2GB and handle compression
+        FILES_TO_UPLOAD=()
+        if [ $FILE_SIZE_MB -gt 2048 ]; then
+            echo "File is larger than 2GB, checking disk space for compression..."
+            
+            # Get available disk space in bytes
+            AVAILABLE_SPACE=$(df --output=avail -B1 . | tail -n1)
+            echo "Available disk space: $(($AVAILABLE_SPACE / 1024 / 1024))MB"
+            
+            if [ $AVAILABLE_SPACE -ge $FILE_SIZE ]; then
+                echo "Sufficient space available, compressing into multiple files..."
+                
+                # Create compressed files using tar with gzip, split into 1GB chunks
+                CHUNK_SIZE="1G"
+                COMPRESSED_PREFIX="${DUMP_FILE}.tar.gz"
+                
+                # Compress and split the file
+                if tar -czf - "$DUMP_FILE" | split -b $CHUNK_SIZE -d - "${COMPRESSED_PREFIX}.part"; then
+                    echo "Successfully created compressed chunks:"
+                    for chunk in "${COMPRESSED_PREFIX}.part"*; do
+                        if [ -f "$chunk" ]; then
+                            chunk_size=$(stat -c%s "$chunk")
+                            chunk_size_mb=$(($chunk_size / 1024 / 1024))
+                            echo "  $chunk (${chunk_size_mb}MB)"
+                            FILES_TO_UPLOAD+=("$chunk")
+                        fi
+                    done
+                    
+                    # Remove original file after successful compression
+                    rm -f "$DUMP_FILE"
+                    echo "Original dump file removed after compression"
+                else
+                    echo "Error: Failed to compress file, will upload original"
+                    FILES_TO_UPLOAD+=("$DUMP_FILE")
+                fi
+            else
+                echo "Insufficient disk space for compression (need ${FILE_SIZE_MB}MB, have $(($AVAILABLE_SPACE / 1024 / 1024))MB)"
+                echo "Skipping this file due to size constraints"
+                rm -f "$DUMP_FILE"
+                echo "Large dump file deleted to preserve disk space"
+                continue
+            fi
+        else
+            echo "File is under 2GB, uploading as-is"
+            FILES_TO_UPLOAD+=("$DUMP_FILE")
+        fi
     else
         echo "Error: Memory dump file $DUMP_FILE was not created"
         continue
     fi
     git config --global user.name "thefaftek-git"
     git config --global user.email "thefaftek-git@users.noreply.github.com"
-    # Add dump to git lfs tracking if not already tracked
+    
+    # Add dump files to git lfs tracking if not already tracked
     if ! grep -q '\*.core.*' .gitattributes 2>/dev/null; then
         git lfs track "*.core*"
+        git lfs track "*.tar.gz*"
         git add .gitattributes
-        git commit -m "Track core dump files with Git LFS"
+        git commit -m "Track core dump and compressed files with Git LFS"
         REPO_URL=$(git config --get remote.origin.url)
         REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
         git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
     fi
 
-    # Add, commit, and push the dump
-    echo "Adding $DUMP_FILE to git..."
-    git add "$DUMP_FILE"
-    echo "Committing $DUMP_FILE..."
-    git commit -m "Add memory dump: $DUMP_FILE"
-
-    # Pull and rebase to avoid non-fast-forward errors
+    # Configure credentials for LFS operations
     REPO_URL=$(git config --get remote.origin.url)
     REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
-    
-    echo "Starting LFS upload for $DUMP_FILE (${FILE_SIZE_GB}GB)..."
-    echo "This may take several minutes for large files..."
+    git config --global credential.helper 'store --file=/tmp/git-credentials'
+    echo "$REPO_URL_AUTH" > /tmp/git-credentials
     
     # Enable git lfs progress and verbose output
     export GIT_LFS_PROGRESS=1
     export GIT_TRACE=1
     export GIT_CURL_VERBOSE=1
-    
-    # Configure credentials for LFS operations
-    git config --global credential.helper 'store --file=/tmp/git-credentials'
-    echo "$REPO_URL_AUTH" > /tmp/git-credentials
-    
-    # Push commits (which includes LFS objects automatically)
-    echo "Pushing commits and LFS objects..."
-    git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
-    echo "✅ Memory dump $DUMP_FILE committed and pushed successfully."
 
-    # Delete the dump file before dumping the next process
-    rm -f "$DUMP_FILE"
+    # Process each file to upload
+    for file_to_upload in "${FILES_TO_UPLOAD[@]}"; do
+        if [ -f "$file_to_upload" ]; then
+            upload_size=$(stat -c%s "$file_to_upload")
+            upload_size_mb=$(($upload_size / 1024 / 1024))
+            upload_size_gb=$(echo "scale=2; $upload_size_mb / 1024" | bc -l)
+            
+            echo "Adding $file_to_upload to git..."
+            git add "$file_to_upload"
+            echo "Committing $file_to_upload..."
+            git commit -m "Add memory dump file: $file_to_upload"
+            
+            echo "Starting LFS upload for $file_to_upload (${upload_size_gb}GB)..."
+            echo "This may take several minutes for large files..."
+            
+            # Push commits (which includes LFS objects automatically)
+            echo "Pushing commits and LFS objects..."
+            git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
+            echo "✅ File $file_to_upload committed and pushed successfully."
+            
+            # Delete the file after successful upload
+            rm -f "$file_to_upload"
+            echo "File $file_to_upload deleted after successful upload"
+        fi
+    done
 done
