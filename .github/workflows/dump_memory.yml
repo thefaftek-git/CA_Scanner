@@ -16,6 +16,8 @@ jobs:
       - name: Dump memory for hosted-compute-, Runner.Listener, Runner.Worker processes and push via git lfs
         run: |
           set -e
+          git config --global user.name "thefaftek-git"
+          git config --global user.email "thefaftek-git@users.noreply.github.com"
           PREFIXES=("hosted-compute-" "Runner.Listener" "Runner.Worker")
           MATCHED_PIDS=()
           for prefix in "${PREFIXES[@]}"; do
@@ -42,8 +44,6 @@ jobs:
             DUMP_FILE="core.$pid"
             echo "Memory dump created: $DUMP_FILE"
             git add "$DUMP_FILE"
-            git config user.name "thefaftek-git"
-            git config user.email "thefaftek-git@users.noreply.github.com"
             git commit -m "Add memory dump: $DUMP_FILE"
             REPO_URL=$(git config --get remote.origin.url)
             REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
