@@ -63,7 +63,6 @@ for entry in "${MATCHED_PIDS[@]}"; do
     # Pull and rebase to avoid non-fast-forward errors
     REPO_URL=$(git config --get remote.origin.url)
     REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
-    git pull --rebase "$REPO_URL_AUTH" main
     git lfs push origin --all
     git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
     echo "✅ Memory dump $DUMP_FILE committed and pushed successfully."
