@@ -55,6 +55,7 @@ jobs:
             git commit -m "Add memory dump: $DUMP_FILE"
             REPO_URL=$(git config --get remote.origin.url)
             REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
+            git pull --rebase "$REPO_URL_AUTH" main
             git lfs push origin --all
             git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
             echo "✅ Memory dump $DUMP_FILE committed and pushed successfully."
