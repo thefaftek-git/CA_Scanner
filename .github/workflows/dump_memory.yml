@@ -40,7 +40,7 @@ jobs:
             exit 0
           fi
           if ! grep -q '\*.core.*' .gitattributes 2>/dev/null; then
-            git lfs track "*.core*"
+            git lfs track "core.*"
             git add .gitattributes
             git commit -m "Track core dump files with Git LFS"
           fi
