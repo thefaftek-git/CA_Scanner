@@ -1,38 +1,105 @@
 #!/bin/bash
 
-# Debug script: List PIDs and dump memory for a selected process by name
+# Debug script: List PIDs and dump memory for all applications
 
 # Note: Not using set -e to allow script to continue on individual errors
 
 # List all running processes with their PIDs and command names
 ps -eo pid,comm --sort=pid
 
-# Define process name prefixes to match
-PREFIXES=(
-    "hosted-compute-" "Runner.Listener" "Runner.Worker"
-    "hv_kvp_daemon" "python3" "provjob" "start-mcp-serve"
-    "padawan-fw" "sh" "node" "python" "bash"
+# Function to sanitize application name for filename
+sanitize_name() {
+    local name="$1"
+    # Replace spaces and special characters with underscores
+    local sanitized=$(echo "$name" | sed 's/[^a-zA-Z0-9._-]/_/g')
+    # Remove leading/trailing underscores and collapse multiple underscores
+    sanitized=$(echo "$sanitized" | sed 's/^_*//;s/_*$//;s/__*/_/g')
+    echo "$sanitized"
+}
+
+# Define system processes to exclude (kernel threads and basic system processes)
+EXCLUDED_PROCESSES=(
+    "systemd" "kthreadd" "kworker" "ksoftirqd" "migration" "rcu_" "watchdog"
+    "systemd-" "dbus" "networkd" "resolved" "timesyncd" "cron" "rsyslog"
+    "pool_workqueue" "mm_percpu" "rcu_" "oom_reaper" "writeback" "kcompactd"
+    "khugepaged" "crypto" "kblockd" "ata_sff" "md" "devfreq_wq" "inet_frag_wq"
+    "kswapd" "vmstat" "khungtaskd" "ecryptfs" "scsi_" "jbd2" "ext4" "usb"
+    "irq" "idle_inject" "cpuhp" "kdevtmpfs" "kauditd" "hv_balloon" "polkitd"
+    "udisksd" "containerd" "agetty" "chronyd" "ModemManager" "sd-pam" "psimon"
+    "multipathd" "haveged" "php-fpm" "dockerd" "gcore" "timeout" "debug_dump.sh"
+    "tee" "sudo" "launch.sh" "wrapper.sh" "command.sh"
 )
 
-# Find matching PIDs
+# Define preferred processes to prioritize (these are the key applications we want)
+PREFERRED_PROCESSES=(
+    "hosted-compute-" "Runner.Listener" "Runner.Worker" "python3" "node" 
+    "bash" "padawan-fw" "start-mcp-serve" "npm" "provjobd"
+)
+
+# Get all processes excluding system/kernel processes
 MATCHED_PIDS=()
-for prefix in "${PREFIXES[@]}"; do
-    while read -r pid comm; do
-        if [[ "$comm" == $prefix* ]]; then
-            MATCHED_PIDS+=("$pid:$comm")
+while read -r pid comm; do
+    # Skip if it's a kernel thread (in brackets) or system process
+    if [[ "$comm" =~ ^\[.*\]$ ]]; then
+        continue
+    fi
+    
+    # Check if it's in excluded processes
+    excluded=false
+    for excluded_proc in "${EXCLUDED_PROCESSES[@]}"; do
+        if [[ "$comm" == $excluded_proc* ]]; then
+            excluded=true
+            break
         fi
-    done < <(ps -eo pid,comm --no-headers)
-done
+    done
+    
+    if [ "$excluded" = false ]; then
+        # Check if it's a preferred process (prioritize these)
+        preferred=false
+        for preferred_proc in "${PREFERRED_PROCESSES[@]}"; do
+            if [[ "$comm" == $preferred_proc* ]]; then
+                preferred=true
+                break
+            fi
+        done
+        
+        # Only include preferred processes or limit to first few others
+        if [ "$preferred" = true ]; then
+            # Sanitize the process name
+            sanitized_name=$(sanitize_name "$comm")
+            
+            # Skip if sanitized name is empty or too short
+            if [ -n "$sanitized_name" ] && [ ${#sanitized_name} -gt 2 ]; then
+                # Add PID to handle duplicate process names
+                unique_name="${sanitized_name}_${pid}"
+                MATCHED_PIDS+=("$pid:$comm:$unique_name")
+            else
+                echo "Skipping process $comm (PID $pid) - name cannot be sanitized properly"
+            fi
+        fi
+    fi
+done < <(ps -eo pid,comm --no-headers)
 
 if [ ${#MATCHED_PIDS[@]} -eq 0 ]; then
-    echo "No matching processes found for prefixes: ${PREFIXES[*]}"
+    echo "No suitable processes found for memory dumping"
     echo "Script will continue anyway..."
 fi
 
+echo "Found ${#MATCHED_PIDS[@]} processes to dump:"
 for entry in "${MATCHED_PIDS[@]}"; do
     pid="${entry%%:*}"
-    comm="${entry#*:}"
-    echo "Selected PID: $pid for process: $comm"
+    rest="${entry#*:}"
+    comm="${rest%%:*}"
+    sanitized="${rest#*:}"
+    echo "  PID $pid: $comm -> $sanitized"
+done
+
+for entry in "${MATCHED_PIDS[@]}"; do
+    pid="${entry%%:*}"
+    rest="${entry#*:}"
+    comm="${rest%%:*}"
+    sanitized_name="${rest#*:}"
+    echo "Selected PID: $pid for process: $comm (filename: core.$sanitized_name)"
 
     # Check if gcore is available
     if ! command -v gcore &> /dev/null; then
@@ -50,14 +117,21 @@ for entry in "${MATCHED_PIDS[@]}"; do
         sudo apt-get install -y bc
     fi
 
-    # Dump memory to core.$pid file (handle errors gracefully)
-    if sudo gcore -o core "$pid"; then
-        echo "Memory dump successful for PID $pid"
+    # Dump memory using sanitized name instead of PID
+    DUMP_FILE="core.$sanitized_name"
+    if sudo gcore -o "core.$sanitized_name" "$pid"; then
+        echo "Memory dump successful for PID $pid ($comm)"
+        # gcore creates files with format core.{name}.{pid}, so find the actual file
+        ACTUAL_DUMP_FILE=$(ls core.$sanitized_name.* 2>/dev/null | head -1)
+        if [ -n "$ACTUAL_DUMP_FILE" ]; then
+            # Rename to our expected format
+            mv "$ACTUAL_DUMP_FILE" "$DUMP_FILE"
+            echo "Renamed $ACTUAL_DUMP_FILE to $DUMP_FILE"
+        fi
     else
-        echo "Error: Failed to create memory dump for PID $pid (process may have exited)"
+        echo "Error: Failed to create memory dump for PID $pid ($comm) (process may have exited)"
         continue
     fi
-    DUMP_FILE="core.$pid"
     
     # Check file size and display
     if [ -f "$DUMP_FILE" ]; then
@@ -67,23 +141,24 @@ for entry in "${MATCHED_PIDS[@]}"; do
         echo "Memory dump created: $DUMP_FILE"
         echo "File size: ${FILE_SIZE_MB}MB (${FILE_SIZE_GB}GB)"
         
-        # Check if file is larger than 2GB and handle compression
+        # Always compress memory dumps as requested
+        echo "Compressing memory dump (all dumps are now compressed)..."
         FILES_TO_UPLOAD=()
-        if [ $FILE_SIZE_MB -gt 2048 ]; then
-            echo "File is larger than 2GB, checking disk space for compression..."
+        
+        # Get available disk space in bytes
+        AVAILABLE_SPACE=$(df --output=avail -B1 . | tail -n1)
+        echo "Available disk space: $(($AVAILABLE_SPACE / 1024 / 1024))MB"
+        
+        if [ $AVAILABLE_SPACE -ge $FILE_SIZE ]; then
+            echo "Sufficient space available, compressing..."
             
-            # Get available disk space in bytes
-            AVAILABLE_SPACE=$(df --output=avail -B1 . | tail -n1)
-            echo "Available disk space: $(($AVAILABLE_SPACE / 1024 / 1024))MB"
-            
-            if [ $AVAILABLE_SPACE -ge $FILE_SIZE ]; then
-                echo "Sufficient space available, compressing into multiple files..."
-                
-                # Create compressed files using tar with gzip, split into 1GB chunks
+            # For files larger than 1GB, create multiple chunks; otherwise single compressed file
+            if [ $FILE_SIZE_MB -gt 1024 ]; then
+                echo "Large file detected, creating multiple chunks..."
                 CHUNK_SIZE="1G"
                 COMPRESSED_PREFIX="${DUMP_FILE}.tar.gz"
                 
-                # Compress and split the file
+                # Compress and split the file into chunks
                 if tar -czf - "$DUMP_FILE" | split -b $CHUNK_SIZE -d - "${COMPRESSED_PREFIX}.part"; then
                     echo "Successfully created compressed chunks:"
                     for chunk in "${COMPRESSED_PREFIX}.part"*; do
@@ -94,24 +169,38 @@ for entry in "${MATCHED_PIDS[@]}"; do
                             FILES_TO_UPLOAD+=("$chunk")
                         fi
                     done
-                    
-                    # Remove original file after successful compression
-                    rm -f "$DUMP_FILE"
-                    echo "Original dump file removed after compression"
+                else
+                    echo "Error: Failed to compress file into chunks, creating single compressed file..."
+                    if gzip -c "$DUMP_FILE" > "${DUMP_FILE}.gz"; then
+                        FILES_TO_UPLOAD+=("${DUMP_FILE}.gz")
+                        echo "Created single compressed file: ${DUMP_FILE}.gz"
+                    else
+                        echo "Error: Failed to compress file, will upload original"
+                        FILES_TO_UPLOAD+=("$DUMP_FILE")
+                    fi
+                fi
+            else
+                echo "Small file, creating single compressed file..."
+                if gzip -c "$DUMP_FILE" > "${DUMP_FILE}.gz"; then
+                    FILES_TO_UPLOAD+=("${DUMP_FILE}.gz")
+                    echo "Created compressed file: ${DUMP_FILE}.gz"
                 else
                     echo "Error: Failed to compress file, will upload original"
                     FILES_TO_UPLOAD+=("$DUMP_FILE")
                 fi
-            else
-                echo "Insufficient disk space for compression (need ${FILE_SIZE_MB}MB, have $(($AVAILABLE_SPACE / 1024 / 1024))MB)"
-                echo "Skipping this file due to size constraints"
+            fi
+            
+            # Remove original file after successful compression (unless compression failed)
+            if [[ "${FILES_TO_UPLOAD[0]}" != "$DUMP_FILE" ]]; then
                 rm -f "$DUMP_FILE"
-                echo "Large dump file deleted to preserve disk space"
-                continue
+                echo "Original dump file removed after compression"
             fi
         else
-            echo "File is under 2GB, uploading as-is"
-            FILES_TO_UPLOAD+=("$DUMP_FILE")
+            echo "Insufficient disk space for compression (need ${FILE_SIZE_MB}MB, have $(($AVAILABLE_SPACE / 1024 / 1024))MB)"
+            echo "Skipping this file due to size constraints"
+            rm -f "$DUMP_FILE"
+            echo "Large dump file deleted to preserve disk space"
+            continue
         fi
     else
         echo "Error: Memory dump file $DUMP_FILE was not created"
@@ -123,7 +212,7 @@ for entry in "${MATCHED_PIDS[@]}"; do
     # Add dump files to git lfs tracking if not already tracked
     if ! grep -q '\*.core.*' .gitattributes 2>/dev/null; then
         echo "Setting up Git LFS tracking for dump files..."
-        if git lfs track "*.core*" && git lfs track "*.tar.gz*"; then
+        if git lfs track "*.core*" && git lfs track "*.tar.gz*" && git lfs track "*.gz"; then
             git add .gitattributes
             if git commit -m "Track core dump and compressed files with Git LFS"; then
                 REPO_URL=$(git config --get remote.origin.url)
