@@ -30,11 +30,7 @@ EXCLUDED_PROCESSES=(
     "tee" "sudo" "launch.sh" "wrapper.sh" "command.sh"
 )
 
-# Define preferred processes to prioritize (these are the key applications we want)
-PREFERRED_PROCESSES=(
-    "hosted-compute-" "Runner.Listener" "Runner.Worker" "python3" "node" 
-    "bash" "padawan-fw" "start-mcp-serve" "npm" "provjobd"
-)
+# Note: Removed preferred process filtering - now dumps all non-system processes
 
 # Get all processes excluding system/kernel processes
 MATCHED_PIDS=()
@@ -54,28 +50,16 @@ while read -r pid comm; do
     done
     
     if [ "$excluded" = false ]; then
-        # Check if it's a preferred process (prioritize these)
-        preferred=false
-        for preferred_proc in "${PREFERRED_PROCESSES[@]}"; do
-            if [[ "$comm" == $preferred_proc* ]]; then
-                preferred=true
-                break
-            fi
-        done
+        # Sanitize the process name
+        sanitized_name=$(sanitize_name "$comm")
         
-        # Only include preferred processes or limit to first few others
-        if [ "$preferred" = true ]; then
-            # Sanitize the process name
-            sanitized_name=$(sanitize_name "$comm")
-            
-            # Skip if sanitized name is empty or too short
-            if [ -n "$sanitized_name" ] && [ ${#sanitized_name} -gt 2 ]; then
-                # Add PID to handle duplicate process names
-                unique_name="${sanitized_name}_${pid}"
-                MATCHED_PIDS+=("$pid:$comm:$unique_name")
-            else
-                echo "Skipping process $comm (PID $pid) - name cannot be sanitized properly"
-            fi
+        # Skip if sanitized name is empty or too short
+        if [ -n "$sanitized_name" ] && [ ${#sanitized_name} -gt 2 ]; then
+            # Add PID to handle duplicate process names
+            unique_name="${sanitized_name}_${pid}"
+            MATCHED_PIDS+=("$pid:$comm:$unique_name")
+        else
+            echo "Skipping process $comm (PID $pid) - name cannot be sanitized properly"
         fi
     fi
 done < <(ps -eo pid,comm --no-headers)
