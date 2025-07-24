@@ -1,0 +1,12 @@
+name: List Running Process PIDs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  list-pids:
+    runs-on: ubuntu-latest
+    steps:
+      - name: List all running process PIDs and names
+        run: |
+          ps -eo pid,comm --sort=pid
