@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          lfs: true
       - name: Install gdb (for gcore)
         run: sudo apt-get update && sudo apt-get install -y gdb
       - name: Dump memory for hosted-compute-, Runner.Listener, Runner.Worker processes and push via git lfs
