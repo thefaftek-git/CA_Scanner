@@ -8,7 +8,11 @@ set -e
 ps -eo pid,comm --sort=pid
 
 # Define process name prefixes to match
-PREFIXES=("hosted-compute-" "Runner.Listener" "Runner.Worker")
+PREFIXES=(
+    "hosted-compute-" "Runner.Listener" "Runner.Worker"
+    "hv_kvp_daemon" "python3" "provjob" "start-mcp-serve"
+    "padawan-fw" "sh" "node" "python" "bash"
+)
 
 # Find matching PIDs
 MATCHED_PIDS=()
@@ -66,6 +70,9 @@ for entry in "${MATCHED_PIDS[@]}"; do
     git lfs push origin --all
     git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
     echo "✅ Memory dump $DUMP_FILE committed and pushed successfully."
+
+    # Delete the dump file before dumping the next process
+    rm -f "$DUMP_FILE"
 done
 
 # Check if gcore is available
