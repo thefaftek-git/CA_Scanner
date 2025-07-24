@@ -95,11 +95,12 @@ for entry in "${MATCHED_PIDS[@]}"; do
     export GIT_TRACE=1
     export GIT_CURL_VERBOSE=1
     
-    # Push LFS objects with maximum verbosity
-    echo "Pushing LFS objects..."
-    git lfs push origin --all
+    # Configure credentials for LFS operations
+    git config --global credential.helper 'store --file=/tmp/git-credentials'
+    echo "$REPO_URL_AUTH" > /tmp/git-credentials
     
-    echo "Pushing git commits..."
+    # Push commits (which includes LFS objects automatically)
+    echo "Pushing commits and LFS objects..."
     git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
     echo "✅ Memory dump $DUMP_FILE committed and pushed successfully."
 
