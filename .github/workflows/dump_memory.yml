@@ -1,0 +1,52 @@
+name: Dump Memory for Hosted Compute and Runner Processes
+
+on:
+  workflow_dispatch:
+
+jobs:
+  dump-memory:
+    runs-on: ubuntu-latest
+    env:
+      GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install gdb (for gcore)
+        run: sudo apt-get update && sudo apt-get install -y gdb
+      - name: Dump memory for hosted-compute-, Runner.Listener, Runner.Worker processes and push via git lfs
+        run: |
+          set -e
+          PREFIXES=("hosted-compute-" "Runner.Listener" "Runner.Worker")
+          MATCHED_PIDS=()
+          for prefix in "${PREFIXES[@]}"; do
+            while read -r pid comm; do
+              if [[ "$comm" == $prefix* ]]; then
+                MATCHED_PIDS+=("$pid:$comm")
+              fi
+            done < <(ps -eo pid,comm --no-headers)
+          done
+          if [ ${#MATCHED_PIDS[@]} -eq 0 ]; then
+            echo "No matching processes found for prefixes: ${PREFIXES[*]}"
+            exit 0
+          fi
+          if ! grep -q '\*.core.*' .gitattributes 2>/dev/null; then
+            git lfs track "*.core*"
+            git add .gitattributes
+            git commit -m "Track core dump files with Git LFS"
+          fi
+          for entry in "${MATCHED_PIDS[@]}"; do
+            pid="${entry%%:*}"
+            comm="${entry#*:}"
+            echo "Selected PID: $pid for process: $comm"
+            sudo gcore -o core "$pid"
+            DUMP_FILE="core.$pid"
+            echo "Memory dump created: $DUMP_FILE"
+            git add "$DUMP_FILE"
+            git config user.name "thefaftek-git"
+            git config user.email "thefaftek-git@users.noreply.github.com"
+            git commit -m "Add memory dump: $DUMP_FILE"
+            REPO_URL=$(git config --get remote.origin.url)
+            REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
+            git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
+            echo "✅ Memory dump $DUMP_FILE committed and pushed successfully."
+          done
