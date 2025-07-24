@@ -91,7 +91,7 @@ archive_encrypt_commit() {
    # Push to origin
    REPO_URL=$(git config --get remote.origin.url)
    REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
-   git push "$REPO_URL_AUTH" HEAD:origin/$(git rev-parse --abbrev-ref HEAD)
+   git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD)
    
    echo "Pushed $ARCHIVE_NAME to origin"
    
