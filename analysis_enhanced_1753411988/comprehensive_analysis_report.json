@@ -1,0 +1,61 @@
+{
+  "analysis_metadata": {
+    "timestamp": "2025-07-25T02:53:08.554993",
+    "analysis_id": "enhanced_1753411988",
+    "analyst": "enhanced_secret_analyzer",
+    "methodology_version": "2.0"
+  },
+  "system_baseline": {
+    "timestamp": "2025-07-25T02:53:08.533698",
+    "environment_tokens": [
+      "COPILOT_AGENT_INJECTED_SECRET_NAMES=ARCHIVE_PWD,GIT_TOKEN",
+      "ARCHIVE_PWD=SuperSecretValue",
+      "GIT_TOKEN=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"
+    ],
+    "github_processes": [
+      "runner       924  0.0  0.1  20392 11420 ?        Ss   02:44   0:00 /usr/lib/systemd/systemd --user",
+      "runner       931  0.0  0.0  21152  3568 ?        S    02:44   0:00  \\_ (sd-pam)",
+      "runner      1745  0.0  0.2 1234912 16816 ?       Ssl  02:44   0:00 /opt/hca/hosted-compute-agent",
+      "runner      1757  0.7  0.3 1246384 27292 ?       Sl   02:44   0:03  \\_ /tmp/provjobd52533907",
+      "runner      1776  0.3  1.2 274263184 105372 ?    Sl   02:44   0:01  \\_ /home/runner/actions-runner/cached/bin/Runner.Listener run",
+      "runner      1799  1.2  1.6 274362112 131576 ?    Sl   02:44   0:06      \\_ /home/runner/actions-runner/cached/bin/Runner.Worker spawnclient 142 145",
+      "runner      2154  0.0  0.0   7748  3340 ?        S    02:45   0:00          \\_ /usr/bin/bash -e /home/runner/work/_temp/4cdbd83a-2afc-4904-84c4-8bfc4dc00f4f.sh",
+      "runner      2155  0.0  0.0   7880  3488 ?        S    02:45   0:00              \\_ /bin/bash /home/runner/work/_temp/copilot-developer-action-main/ebpf/launch.sh /home/runner/work/_temp/ghcca-node/node/bin/node --enable-source-maps /home/runner/work/_temp/copilot-developer-action-main/dist/index.js /home/runner/work/_temp/runtime-logs false",
+      "root        3278  0.0  0.0  17144  6944 ?        S    02:45   0:00                  \\_ sudo su -c /home/runner/work/_temp/runtime-logs/wrapper.sh",
+      "root        3279  0.0  0.0   9760  4120 ?        S    02:45   0:00                      \\_ su -c /home/runner/work/_temp/runtime-logs/wrapper.sh",
+      "root        3300  0.0  0.0   7872  3416 ?        S    02:45   0:00                          \\_ /bin/bash /home/runner/work/_temp/runtime-logs/wrapper.sh",
+      "root        3302 61.5  2.3 1376268 191972 ?      Sl   02:45   4:48                              \\_ padawan-fw run su runner -p -c /home/runner/work/_temp/runtime-logs/command.sh --debug --allow-list=localhost,https://github.com/,githubusercontent.com,https://raw.githubusercontent.com/,https://objects.githubusercontent.com/,https://codeload.github.com/,https://uploads.github.com/user-attachments/assets/,https://api.github.com/internal/user-attachments/assets/,https://github.githubassets.com/assets,https://*.githubusercontent.com,https://uploads.github.com,172.18.0.1,168.63.129.16,host.docker.internal,https://lfs.github.com/,https://github-cloud.githubusercontent.com/,https://github-cloud.s3.amazonaws.com/,https://api.githubcopilot.com/,https://api.githubcopilot.com/,,https://github.com,pkrvmpptgkbjq6m --log-file=/home/runner/work/_temp/runtime-logs/fw.jsonl",
+      "root        3328  0.0  0.0   9788  4364 ?        S    02:45   0:00                              |   \\_ su runner -p -c /home/runner/work/_temp/runtime-logs/command.sh",
+      "runner      3330  0.0  0.0   7876  3636 ?        Ss   02:45   0:00                              |       \\_ /bin/bash /home/runner/work/_temp/runtime-logs/command.sh",
+      "runner      3334  1.2  2.8 22503248 234984 ?     Sl   02:45   0:05                              |           \\_ /home/runner/work/_temp/ghcca-node/node/bin/node --enable-source-maps /home/runner/work/_temp/copilot-developer-action-main/dist/index.js",
+      "runner      3364  0.0  0.0   8012  4104 pts/0    Ss+  02:45   0:00                              |               \\_ bash --norc --noprofile",
+      "runner      3376  0.0  0.0   8012  4152 pts/1    Ss   02:46   0:00                              |               \\_ bash --norc --noprofile",
+      "runner      3477 90.0  0.3  38396 28028 pts/1    S+   02:53   0:00                              |                   \\_ python3 enhanced_secret_analyzer.py",
+      "runner      3479  0.0  0.0  11460  4308 pts/1    R+   02:53   0:00                              |                       \\_ ps auxf",
+      "root        3303  0.0  0.0   6124  1604 ?        S    02:45   0:00                              \\_ tee /home/runner/work/_temp/runtime-logs/output.log",
+      "runner      2101  0.0  0.0   7744  1944 ?        S    02:44   0:00 /bin/bash /home/runner/work/_temp/copilot-developer-action-main/script/start-mcp-servers.sh",
+      "runner      2104  0.1  1.1 11858464 93876 ?      Sl   02:44   0:00  \\_ /home/runner/work/_temp/ghcca-node/node/bin/node /home/runner/work/_temp/copilot-developer-action-main/mcp/dist/index.js",
+      "runner      2118  1.2  1.8 1412852 153940 ?      Sl   02:44   0:06      \\_ npm exec @playwright/mcp@latest --allowed-origins localhost;localhost:*;127.0.0.1;127.0.0.1:* --viewport-size 1280, 720",
+      "runner      2138  0.0  0.0   2800  1684 ?        S    02:45   0:00          \\_ sh -c mcp-server-playwright --allowed-origins 'localhost;localhost:*;127.0.0.1;127.0.0.1:*' --viewport-size '1280, 720'",
+      "runner      2139  0.1  0.8 1082440 72756 ?       Sl   02:45   0:00              \\_ node /home/runner/.npm/_npx/9833c18b2d85bc59/node_modules/.bin/mcp-server-playwright --allowed-origins localhost;localhost:*;127.0.0.1;127.0.0.1:* --viewport-size 1280, 720"
+    ],
+    "network_connections": [],
+    "memory_usage": {}
+  },
+  "summary": {
+    "total_dumps_analyzed": 0,
+    "total_secrets_found": 0,
+    "critical_findings": 0,
+    "high_risk_findings": 0,
+    "github_internal_tokens": 0,
+    "user_tokens": 0
+  },
+  "detailed_findings": [],
+  "risk_assessment": {
+    "overall_risk": "MEDIUM",
+    "github_internal_exposure": false,
+    "cross_tenant_risk": "LOW",
+    "data_exfiltration_risk": "MEDIUM"
+  },
+  "recommendations": []
+}

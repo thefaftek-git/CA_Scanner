@@ -1,0 +1,26 @@
+=== Manual Memory Analysis Started ===
+Timestamp: Fri Jul 25 02:55:39 UTC 2025
+=== PHASE 0: BASELINE DOCUMENTATION ===
+=== PHASE 1: TARGET PROCESS IDENTIFICATION ===
+Target PIDs: 2104 2139 3334
+=== PHASE 2: MEMORY STRING EXTRACTION ===
+Analyzing PID 2104...
+Completed analysis for PID 2104
+Analyzing PID 2139...
+Completed analysis for PID 2139
+Analyzing PID 3334...
+Completed analysis for PID 3334
+=== PHASE 3: SECRET PATTERN ANALYSIS ===
+Searching for GitHub tokens...
+Searching for pattern: ghp_[A-Za-z0-9]{36}
+Searching for pattern: ghs_[A-Za-z0-9]{36}
+Searching for pattern: ghu_[A-Za-z0-9]{36}
+Searching for pattern: ghr_[A-Za-z0-9]{36}
+Searching for pattern: ghi_[A-Za-z0-9]{36}
+Searching for pattern: gho_[A-Za-z0-9]{36}
+=== PHASE 4: TOKEN ANALYSIS AND CATEGORIZATION ===
+Total unique GitHub tokens found: 4
+=== PHASE 5: SUMMARY REPORT GENERATION ===
+Manual memory analysis completed!
+Results saved in: manual_memory_analysis_1753412139
+Summary report: manual_memory_analysis_1753412139/manual_analysis_summary.md
