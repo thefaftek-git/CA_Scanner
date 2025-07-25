@@ -117,15 +117,6 @@ TMP_EXCLUDE=""
 for subdir in $TMP_SUBDIRS; do
     subdir_name=$(basename "$subdir")
     
-    # Handle tmp subdirectories that might have their own subdirs
-    TMP_SUB_SUBDIRS=$(get_subdirs "$subdir")
-    TMP_SUB_EXCLUDE=""
-    for sub_subdir in $TMP_SUB_SUBDIRS; do
-        sub_subdir_name=$(basename "$sub_subdir")
-        archive_encrypt_commit "$sub_subdir" "tmp_${subdir_name}_${sub_subdir_name}" ""
-        TMP_SUB_EXCLUDE="${TMP_SUB_EXCLUDE}tmp/${subdir_name}/${sub_subdir_name}/*\n"
-    done
-    
     # Process the tmp subdirectory (excluding already processed sub-subdirs)
     archive_encrypt_commit "$subdir" "tmp_${subdir_name}" "$TMP_SUB_EXCLUDE"
     TMP_EXCLUDE="${TMP_EXCLUDE}tmp/${subdir_name}/*\n"
