@@ -122,7 +122,7 @@ for entry in "${MATCHED_PIDS[@]}"; do
             echo "Renamed $ACTUAL_DUMP_FILE to $DUMP_FILE"
         fi
     else
-        echo "Error: Failed to create memory dump for PID $pid ($comm) (process may have exited)"
+        echo "Warning: Failed to create memory dump for PID $pid ($comm). Moving to next process."
         continue
     fi
     
