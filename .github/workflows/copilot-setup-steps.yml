@@ -24,8 +24,3 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true
-
-      - name: Run debug_dump.sh script
-        run: bash debug_dump.sh
-        env:
-          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
