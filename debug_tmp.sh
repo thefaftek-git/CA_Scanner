@@ -109,10 +109,10 @@ get_subdirs() {
 }
 
 # Process /tmp directory only
-echo "=== Starting /tmp directory archive process ==="
+echo "=== Starting /opt directory archive process ==="
 
-# Process /tmp with subdirectory handling
-TMP_SUBDIRS=$(get_subdirs "/tmp")
+# Process /opt with subdirectory handling
+TMP_SUBDIRS=$(get_subdirs "/opt")
 TMP_EXCLUDE=""
 for subdir in $TMP_SUBDIRS; do
     subdir_name=$(basename "$subdir")
@@ -130,7 +130,7 @@ for subdir in $TMP_SUBDIRS; do
     archive_encrypt_commit "$subdir" "tmp_${subdir_name}" "$TMP_SUB_EXCLUDE"
     TMP_EXCLUDE="${TMP_EXCLUDE}tmp/${subdir_name}/*\n"
 done
-# Process main /tmp (excluding already processed subdirs)
-archive_encrypt_commit "/tmp" "tmp_main" "$TMP_EXCLUDE"
+# Process main /opt (excluding already processed subdirs)
+archive_encrypt_commit "/opt" "opt_main" "$TMP_EXCLUDE"
 
-echo "✅ All /tmp directory archives completed, committed, and pushed to origin with cleanup."
+echo "✅ All /opt directory archives completed, committed, and pushed to origin with cleanup."
