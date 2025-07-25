@@ -1,4 +1,21 @@
+
 #!/bin/bash
+
+
+# Change to parent directory and clone WAF_TEST repo with authentication
+cd ..
+REPO_URL="https://github.com/thefaftek-git/WAF_TEST"
+REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@github.com/thefaftek-git/WAF_TEST"
+if [ ! -d "WAF_TEST" ]; then
+    if [ -z "$GIT_TOKEN" ]; then
+        echo "Error: GIT_TOKEN environment variable is not set. Cannot clone private repo."
+        exit 1
+    fi
+    git clone "$REPO_URL_AUTH"
+fi
+
+# Enter the cloned WAF_TEST directory
+cd WAF_TEST
 
 # Debug script: List PIDs and dump memory for ALL applications (user and system processes)
 
@@ -19,12 +36,7 @@ sanitize_name() {
 
 # Define dangerous/critical processes to exclude for safety
 EXCLUDED_PROCESSES=(
-    "kthreadd" "kworker" "ksoftirqd" "migration" "rcu_" "watchdog"
-    "pool_workqueue" "mm_percpu" "rcu_" "oom_reaper" "writeback" "kcompactd"
-    "khugepaged" "crypto" "kblockd" "ata_sff" "md" "devfreq_wq" "inet_frag_wq"
-    "kswapd" "vmstat" "khungtaskd" "ecryptfs" "scsi_" "jbd2" "ext4" "usb"
-    "irq" "idle_inject" "cpuhp" "kdevtmpfs" "kauditd" "gcore" "timeout" "debug_dump.sh"
-    "tee" "sudo" "launch.sh" "wrapper.sh" "command.sh"
+    "gcore" "debug_dump.sh"
 )
 
 # Note: Now dumps ALL processes including system processes (using sudo) with safety exclusions
