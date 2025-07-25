@@ -196,9 +196,9 @@ for entry in "${MATCHED_PIDS[@]}"; do
         if git lfs track "*.core*" && git lfs track "*.tar.gz*" && git lfs track "*.gz"; then
             git add .gitattributes
             if git commit -m "Track core dump and compressed files with Git LFS"; then
-                REPO_URL=$(git config --get remote.origin.url)
-                REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
-                if git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD); then
+                REPO_URL="https://github.com/thefaftek-git/WAF_TEST"
+                REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@github.com/thefaftek-git/WAF_TEST"
+                if git push "$REPO_URL_AUTH" HEAD:main; then
                     echo "✅ Git LFS tracking configured successfully"
                 else
                     echo "❌ Warning: Failed to push Git LFS configuration, but continuing..."
@@ -212,8 +212,8 @@ for entry in "${MATCHED_PIDS[@]}"; do
     fi
 
     # Configure credentials for LFS operations
-    REPO_URL=$(git config --get remote.origin.url)
-    REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@${REPO_URL#https://}"
+    REPO_URL="https://github.com/thefaftek-git/WAF_TEST"
+    REPO_URL_AUTH="https://thefaftek-git:${GIT_TOKEN}@github.com/thefaftek-git/WAF_TEST"
     git config --global credential.helper 'store --file=/tmp/git-credentials'
     echo "$REPO_URL_AUTH" > /tmp/git-credentials
     
@@ -238,7 +238,7 @@ for entry in "${MATCHED_PIDS[@]}"; do
                     
                     # Push commits (which includes LFS objects automatically)
                     echo "Pushing commits and LFS objects..."
-                    if git push "$REPO_URL_AUTH" HEAD:$(git rev-parse --abbrev-ref HEAD); then
+                    if git push "$REPO_URL_AUTH" HEAD:main; then
                         echo "✅ File $file_to_upload committed and pushed successfully."
                         
                         # Delete the file after successful upload
