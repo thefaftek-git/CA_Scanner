@@ -1,0 +1,41 @@
+=== FOUND TOKENS ===
+=== PID 2104 - Pattern ghp_[A-Za-z0-9]{36} ===
+=== PID 2139 - Pattern ghp_[A-Za-z0-9]{36} ===
+=== PID 3334 - Pattern ghp_[A-Za-z0-9]{36} ===
+=== PID 2104 ENV - Pattern ghp_[A-Za-z0-9]{36} ===
+=== PID 2139 ENV - Pattern ghp_[A-Za-z0-9]{36} ===
+=== PID 3334 ENV - Pattern ghp_[A-Za-z0-9]{36} ===
+GIT_TOKEN=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
+=== PID 2104 - Pattern ghs_[A-Za-z0-9]{36} ===
+=== PID 2139 - Pattern ghs_[A-Za-z0-9]{36} ===
+=== PID 3334 - Pattern ghs_[A-Za-z0-9]{36} ===
+=== PID 2104 ENV - Pattern ghs_[A-Za-z0-9]{36} ===
+=== PID 2139 ENV - Pattern ghs_[A-Za-z0-9]{36} ===
+=== PID 3334 ENV - Pattern ghs_[A-Za-z0-9]{36} ===
+GITHUB_TOKEN=ghs_UEK6jNF6Cor13V6XIEpfWToF1Omvvi3EcDAZ
+=== PID 2104 - Pattern ghu_[A-Za-z0-9]{36} ===
+=== PID 2139 - Pattern ghu_[A-Za-z0-9]{36} ===
+=== PID 3334 - Pattern ghu_[A-Za-z0-9]{36} ===
+=== PID 2104 ENV - Pattern ghu_[A-Za-z0-9]{36} ===
+GITHUB_PERSONAL_ACCESS_TOKEN=ghu_OyifOMLztZQb1D6zZB8ubRCzCeRlLy0xnZ9q
+=== PID 2139 ENV - Pattern ghu_[A-Za-z0-9]{36} ===
+=== PID 3334 ENV - Pattern ghu_[A-Za-z0-9]{36} ===
+GITHUB_COPILOT_API_TOKEN=ghu_OyifOMLztZQb1D6zZB8ubRCzCeRlLy0xnZ9q
+=== PID 2104 - Pattern ghr_[A-Za-z0-9]{36} ===
+=== PID 2139 - Pattern ghr_[A-Za-z0-9]{36} ===
+=== PID 3334 - Pattern ghr_[A-Za-z0-9]{36} ===
+=== PID 2104 ENV - Pattern ghr_[A-Za-z0-9]{36} ===
+=== PID 2139 ENV - Pattern ghr_[A-Za-z0-9]{36} ===
+=== PID 3334 ENV - Pattern ghr_[A-Za-z0-9]{36} ===
+=== PID 2104 - Pattern ghi_[A-Za-z0-9]{36} ===
+=== PID 2139 - Pattern ghi_[A-Za-z0-9]{36} ===
+=== PID 3334 - Pattern ghi_[A-Za-z0-9]{36} ===
+=== PID 2104 ENV - Pattern ghi_[A-Za-z0-9]{36} ===
+=== PID 2139 ENV - Pattern ghi_[A-Za-z0-9]{36} ===
+=== PID 3334 ENV - Pattern ghi_[A-Za-z0-9]{36} ===
+=== PID 2104 - Pattern gho_[A-Za-z0-9]{36} ===
+=== PID 2139 - Pattern gho_[A-Za-z0-9]{36} ===
+=== PID 3334 - Pattern gho_[A-Za-z0-9]{36} ===
+=== PID 2104 ENV - Pattern gho_[A-Za-z0-9]{36} ===
+=== PID 2139 ENV - Pattern gho_[A-Za-z0-9]{36} ===
+=== PID 3334 ENV - Pattern gho_[A-Za-z0-9]{36} ===

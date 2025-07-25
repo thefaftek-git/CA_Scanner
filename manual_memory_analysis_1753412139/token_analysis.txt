@@ -1,0 +1,30 @@
+=== TOKEN ANALYSIS RESULTS ===
+Unique tokens: 4
+=== ANALYZING TOKEN: GITHUB_COP... ===
+Token Type: Unknown
+Ownership: UNKNOWN
+Risk Level: UNKNOWN
+Found in:
+manual_memory_analysis_1753412139/process_3334_environ.txt
+
+=== ANALYZING TOKEN: GITHUB_PER... ===
+Token Type: Unknown
+Ownership: UNKNOWN
+Risk Level: UNKNOWN
+Found in:
+manual_memory_analysis_1753412139/process_2104_environ.txt
+
+=== ANALYZING TOKEN: GITHUB_TOK... ===
+Token Type: Unknown
+Ownership: UNKNOWN
+Risk Level: UNKNOWN
+Found in:
+manual_memory_analysis_1753412139/process_3334_environ.txt
+
+=== ANALYZING TOKEN: GIT_TOKEN=... ===
+Token Type: Unknown
+Ownership: UNKNOWN
+Risk Level: UNKNOWN
+Found in:
+manual_memory_analysis_1753412139/process_3334_environ.txt
+

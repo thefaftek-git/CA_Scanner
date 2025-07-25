@@ -1,0 +1,2 @@
+    PID    PPID COMMAND         CMD
+   2139    2138 node            node /home/runner/.npm/_npx/9833c18b2d85bc59/node_modules/.bin/mcp-server-playwright --allowed-origins localhost;localhost:*;127.0.0.1;127.0.0.1:* --viewport-size 1280, 720
