@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.14.0" /> <!-- No update available per initial check, keeping as is -->
+    <PackageReference Include="Azure.Identity" Version="1.14.2" /> <!-- No update available per initial check, keeping as is -->
     <PackageReference Include="Microsoft.Graph" Version="5.81.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" /> <!-- No update available per initial check, keeping as is -->
     <PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.1" />
